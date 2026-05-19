@@ -2,6 +2,7 @@ using LawFlow.Data;
 using LawFlow.Models;
 using Microsoft.EntityFrameworkCore;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -14,6 +15,13 @@ namespace LawFlow.Services
         public VerdictService(ApplicationDbContext context)
         {
             _context = context;
+        }
+
+        public async Task<List<Verdict>> GetAllVerdictsAsync()
+        {
+            return await _context.Verdicts
+                .OrderByDescending(v => v.IssuedAt)
+                .ToListAsync();
         }
 
         public async Task<bool> IssueVerdictAsync(int caseId, string judgeId, VerdictType type, string details)

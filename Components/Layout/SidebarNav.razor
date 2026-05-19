@@ -1,4 +1,6 @@
-@* Nav menu used in both desktop sidebar and mobile drawer. Role-filtered. *@
+@* Nav menu used in both desktop sidebar and mobile drawer. Role-filtered.
+   Every link is gated by AuthorizeView Roles so a circuit with a tampered role
+   claim cannot render links for another role. *@
 
 <div class="px-3 py-4 flex flex-col gap-0.5 min-h-full">
     @if (User?.Identity?.IsAuthenticated == true)
@@ -17,32 +19,86 @@
 
         <div class="px-2 pt-3 pb-1 font-mono text-2xs text-muted uppercase tracking-wider">Workspace</div>
         <LfNavLink Href="@($"/{rl}/dashboard")" Icon="layout-dashboard">Dashboard</LfNavLink>
-        <LfNavLink Href="@($"/{rl}/cases")" Icon="folder-open">All Case Files</LfNavLink>
 
-        <AuthorizeView Roles="Judge" Context="_">
-            <LfNavLink Href="/judge/cases" Icon="scale">Presiding Caseload</LfNavLink>
-        </AuthorizeView>
-        <AuthorizeView Roles="Lawyer" Context="_">
-            <LfNavLink Href="/lawyer/cases" Icon="briefcase">Attorney Cabinet</LfNavLink>
-        </AuthorizeView>
-        <AuthorizeView Roles="Client" Context="_">
-            <LfNavLink Href="/client/submit" Icon="file-plus">Lodge Incident</LfNavLink>
-        </AuthorizeView>
-        <AuthorizeView Roles="Police" Context="_">
-            <LfNavLink Href="/police/cases" Icon="shield">Investigation Queue</LfNavLink>
-            <LfNavLink Href="/police/registry" Icon="file-text">Criminal Registry</LfNavLink>
-        </AuthorizeView>
-        <AuthorizeView Roles="Clerk,Admin" Context="_">
+        @* === ADMIN === *@
+        <AuthorizeView Roles="Admin" Context="_admin">
+            <LfNavLink Href="/admin/cases" Icon="folder-open">All Cases</LfNavLink>
+            <LfNavLink Href="/admin/assignments" Icon="user-check">Assignments</LfNavLink>
+
             <div class="px-2 pt-3 pb-1 font-mono text-2xs text-muted uppercase tracking-wider">Scheduling</div>
             <LfNavLink Href="/hearings" Icon="calendar">Hearings</LfNavLink>
-        </AuthorizeView>
-        <AuthorizeView Roles="Clerk" Context="_">
-            <LfNavLink Href="/clerk/verdicts" Icon="file-text">Verdict Registry</LfNavLink>
-        </AuthorizeView>
-        <AuthorizeView Roles="Admin" Context="_">
+
             <div class="px-2 pt-3 pb-1 font-mono text-2xs text-muted uppercase tracking-wider">Administration</div>
             <LfNavLink Href="/admin/users" Icon="users">User Management</LfNavLink>
             <LfNavLink Href="/admin/logs" Icon="history">Audit Logs</LfNavLink>
+
+            <div class="px-2 pt-3 pb-1 font-mono text-2xs text-muted uppercase tracking-wider">Communication</div>
+            <LfNavLink Href="/chat" Icon="message-circle">Chat with Police</LfNavLink>
+            <LfNavLink Href="/notifications" Icon="bell">Notifications</LfNavLink>
+        </AuthorizeView>
+
+        @* === JUDGE === *@
+        <AuthorizeView Roles="Judge" Context="_judge">
+            <LfNavLink Href="/judge/cases" Icon="scale">Assigned Cases</LfNavLink>
+            <LfNavLink Href="/judge/hearings" Icon="calendar">Hearings</LfNavLink>
+            <LfNavLink Href="/judge/verdicts" Icon="gavel">Verdict Management</LfNavLink>
+            <LfNavLink Href="/judge/documents" Icon="file-text">Documents</LfNavLink>
+
+            <div class="px-2 pt-3 pb-1 font-mono text-2xs text-muted uppercase tracking-wider">Communication</div>
+            <LfNavLink Href="/chat" Icon="message-circle">Chat with Clerk</LfNavLink>
+            <LfNavLink Href="/notifications" Icon="bell">Notifications</LfNavLink>
+        </AuthorizeView>
+
+        @* === LAWYER === *@
+        <AuthorizeView Roles="Lawyer" Context="_lawyer">
+            <LfNavLink Href="/lawyer/offered" Icon="inbox">Offered Cases</LfNavLink>
+            <LfNavLink Href="/lawyer/cases" Icon="briefcase">Active Cases</LfNavLink>
+            <LfNavLink Href="/lawyer/documents" Icon="file-text">Documents</LfNavLink>
+            <LfNavLink Href="/lawyer/verdicts" Icon="gavel">Verdicts</LfNavLink>
+            <LfNavLink Href="/lawyer/judges" Icon="scale">Assigned Judges</LfNavLink>
+            <LfNavLink Href="/lawyer/police" Icon="shield">Assigned Police</LfNavLink>
+
+            <div class="px-2 pt-3 pb-1 font-mono text-2xs text-muted uppercase tracking-wider">Communication</div>
+            <LfNavLink Href="/chat" Icon="message-circle">Chat with Client</LfNavLink>
+            <LfNavLink Href="/notifications" Icon="bell">Notifications</LfNavLink>
+        </AuthorizeView>
+
+        @* === CLIENT === *@
+        <AuthorizeView Roles="Client" Context="_client">
+            <LfNavLink Href="/client/submit" Icon="file-plus">Lodge FIR</LfNavLink>
+            <LfNavLink Href="/client/cases" Icon="folder-open">My Cases</LfNavLink>
+            <LfNavLink Href="/client/lawyers" Icon="briefcase">Browse Lawyers</LfNavLink>
+            <LfNavLink Href="/client/judges" Icon="scale">My Judges</LfNavLink>
+            <LfNavLink Href="/client/hearings" Icon="calendar">Hearing Schedule</LfNavLink>
+            <LfNavLink Href="/client/documents" Icon="file-text">Documents</LfNavLink>
+            <LfNavLink Href="/client/verdicts" Icon="gavel">Verdicts</LfNavLink>
+
+            <div class="px-2 pt-3 pb-1 font-mono text-2xs text-muted uppercase tracking-wider">Communication</div>
+            <LfNavLink Href="/chat" Icon="message-circle">Chat with Lawyer</LfNavLink>
+            <LfNavLink Href="/notifications" Icon="bell">Notifications</LfNavLink>
+        </AuthorizeView>
+
+        @* === POLICE === *@
+        <AuthorizeView Roles="Police" Context="_police">
+            <LfNavLink Href="/police/cases" Icon="shield">Assigned Cases</LfNavLink>
+            <LfNavLink Href="/police/registry" Icon="file-text">Criminal Registry</LfNavLink>
+            <LfNavLink Href="/police/verdicts" Icon="gavel">Verdicts</LfNavLink>
+
+            <div class="px-2 pt-3 pb-1 font-mono text-2xs text-muted uppercase tracking-wider">Communication</div>
+            <LfNavLink Href="/chat" Icon="message-circle">Chat with Admin</LfNavLink>
+            <LfNavLink Href="/notifications" Icon="bell">Notifications</LfNavLink>
+        </AuthorizeView>
+
+        @* === CLERK === *@
+        <AuthorizeView Roles="Clerk" Context="_clerk">
+            <LfNavLink Href="/clerk/cases" Icon="folder-open">Assigned Cases</LfNavLink>
+            <LfNavLink Href="/hearings" Icon="calendar">Manage Hearings</LfNavLink>
+            <LfNavLink Href="/clerk/verdicts" Icon="gavel">Verdict Registry</LfNavLink>
+            <LfNavLink Href="/clerk/documents" Icon="file-text">Documents</LfNavLink>
+
+            <div class="px-2 pt-3 pb-1 font-mono text-2xs text-muted uppercase tracking-wider">Communication</div>
+            <LfNavLink Href="/chat" Icon="message-circle">Chat with Judge</LfNavLink>
+            <LfNavLink Href="/notifications" Icon="bell">Notifications</LfNavLink>
         </AuthorizeView>
 
         <div class="mt-auto pt-4">

@@ -1,0 +1,93 @@
+@page "/judge/hearings"
+@page "/client/hearings"
+@attribute [Authorize(Roles = "Judge,Client")]
+@inject CaseService CaseService
+@inject HearingService HearingService
+@inject AuthenticationStateProvider AuthStateProvider
+
+<PageTitle>Hearings — LawFlow</PageTitle>
+
+<div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-6">
+    <div>
+        <div class="font-mono text-2xs uppercase tracking-[0.18em] text-muted flex items-center gap-2">
+            <span class="w-6 h-px bg-muted/60"></span>
+            <span>@_role · Hearings</span>
+        </div>
+        <h1 class="mt-1.5 text-2xl md:text-3xl font-semibold tracking-tight text-balance">Court hearings</h1>
+        <p class="mt-1 text-sm text-muted">All hearings scheduled on cases you are a party to.</p>
+    </div>
+</div>
+
+@if (_loading)
+{
+    <div class="lf-card p-10 text-center text-sm text-muted">Loading…</div>
+}
+else if (_rows.Count == 0)
+{
+    <div class="lf-card p-10 text-center text-sm text-muted">No hearings scheduled.</div>
+}
+else
+{
+    <div class="lf-card p-0 overflow-hidden">
+        <table class="lf-table">
+            <thead>
+                <tr>
+                    <th>Case</th>
+                    <th>Title</th>
+                    <th>Date</th>
+                    <th>Location</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var h in _rows)
+                {
+                    <tr>
+                        <td><span class="lf-tag-num">@h.Case?.CaseNumber</span></td>
+                        <td class="font-medium">@h.Case?.Title</td>
+                        <td class="font-mono text-xs">@h.HearingDate.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</td>
+                        <td>@h.Location</td>
+                        <td><LfChip Tone="@StatusTone(h.Status)" ShowDot="true">@h.Status</LfChip></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+@code {
+    private bool _loading = true;
+    private string _role = "";
+    private string _userId = "";
+    private List<Hearing> _rows = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var auth = await AuthStateProvider.GetAuthenticationStateAsync();
+            _role = auth.User.FindFirst(ClaimTypes.Role)?.Value ?? "";
+            _userId = auth.User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "";
+
+            if (!Enum.TryParse<UserRole>(_role, true, out var role)) return;
+            var cases = await CaseService.GetCasesForUserAsync(_userId, role);
+            var caseIds = cases.Select(c => c.Id).ToHashSet();
+
+            var all = await HearingService.GetAllHearingsAsync();
+            _rows = all.Where(h => caseIds.Contains(h.CaseId)).ToList();
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private static string StatusTone(string s) => s switch
+    {
+        "Scheduled" => "info",
+        "Completed" => "success",
+        "Cancelled" => "danger",
+        "Adjourned" => "warning",
+        _ => "neutral"
+    };
+}

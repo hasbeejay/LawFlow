@@ -31,7 +31,8 @@
     --lf-main-bg: linear-gradient(180deg, #f3f6fb 0%, #edf2f9 100%);
 }
 
-.mud-dark-mode {
+.mud-dark-mode,
+.dark {
     --lf-primary: #8fb7ff;
     --lf-primary-strong: #c7dcff;
     --lf-secondary: #59c1b2;
@@ -163,7 +164,8 @@ body {
     transition: transform 160ms ease, box-shadow 180ms ease, border-color 180ms ease;
 }
 
-.mud-dark-mode .lf-glass-panel {
+.mud-dark-mode .lf-glass-panel,
+.dark .lf-glass-panel {
     background: linear-gradient(180deg, rgba(25, 38, 57, 0.88) 0%, rgba(19, 31, 49, 0.82) 100%) !important;
 }
 
@@ -215,11 +217,13 @@ body {
     font-weight: 700 !important;
 }
 
-.mud-dark-mode .mud-nav-link:hover {
+.mud-dark-mode .mud-nav-link:hover,
+.dark .mud-nav-link:hover {
     color: var(--lf-text) !important;
 }
 
-.mud-dark-mode .mud-nav-link.active {
+.mud-dark-mode .mud-nav-link.active,
+.dark .mud-nav-link.active {
     color: var(--lf-text) !important;
     background: linear-gradient(90deg, rgba(127, 171, 255, 0.24), rgba(127, 171, 255, 0.1)) !important;
 }
@@ -256,6 +260,32 @@ body {
     color: var(--lf-text) !important;
 }
 
+/* Extra dark-mode hardening for Mud tables/filters */
+.dark .mud-table-root,
+.dark .mud-table-container {
+    background: transparent !important;
+}
+
+.dark .mud-table-head .mud-table-cell {
+    background: color-mix(in srgb, var(--lf-surface-elevated) 92%, transparent) !important;
+    color: var(--lf-text-soft) !important;
+    border-bottom: 1px solid var(--lf-border) !important;
+}
+
+.dark .mud-table-body .mud-table-row {
+    background: var(--lf-surface-elevated) !important;
+}
+
+.dark .mud-table-body .mud-table-cell {
+    color: var(--lf-text) !important;
+}
+
+.dark .mud-input > input,
+.dark .mud-select-input,
+.dark .mud-input-slot {
+    color: var(--lf-text) !important;
+}
+
 /* Buttons */
 .mud-button {
     border-radius: 10px !important;
@@ -266,7 +296,8 @@ body {
     box-shadow: 0 6px 16px rgba(22, 46, 81, 0.2) !important;
 }
 
-.mud-dark-mode .mud-button-filled {
+.mud-dark-mode .mud-button-filled,
+.dark .mud-button-filled {
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35) !important;
 }
 
@@ -284,7 +315,11 @@ body {
 .mud-dark-mode [style*="rgba(0,0,0,0.02)"],
 .mud-dark-mode [style*="rgba(0, 0, 0, 0.02)"],
 .mud-dark-mode [style*="rgba(0,0,0,0.05)"],
-.mud-dark-mode [style*="rgba(0, 0, 0, 0.05)"] {
+.mud-dark-mode [style*="rgba(0, 0, 0, 0.05)"],
+.dark [style*="rgba(0,0,0,0.02)"],
+.dark [style*="rgba(0, 0, 0, 0.02)"],
+.dark [style*="rgba(0,0,0,0.05)"],
+.dark [style*="rgba(0, 0, 0, 0.05)"] {
     background: rgba(158, 182, 220, 0.08) !important;
     border-color: rgba(158, 182, 220, 0.2) !important;
 }
@@ -292,7 +327,11 @@ body {
 .mud-dark-mode [style*="color:#1E3A8A"],
 .mud-dark-mode [style*="color: #1E3A8A"],
 .mud-dark-mode [style*="color:#3B82F6"],
-.mud-dark-mode [style*="color: #3B82F6"] {
+.mud-dark-mode [style*="color: #3B82F6"],
+.dark [style*="color:#1E3A8A"],
+.dark [style*="color: #1E3A8A"],
+.dark [style*="color:#3B82F6"],
+.dark [style*="color: #3B82F6"] {
     color: var(--lf-primary) !important;
 }
 

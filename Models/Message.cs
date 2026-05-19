@@ -29,5 +29,10 @@ namespace LawFlow.Models
 
         [Required]
         public string Content { get; set; } = string.Empty;
+
+        // Which two-party channel this message belongs to. Determined server-side
+        // from the sender's role; clients never get to assert it.
+        [Required]
+        public ChatChannel Channel { get; set; } = ChatChannel.ClientLawyer;
     }
 }

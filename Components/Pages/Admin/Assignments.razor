@@ -1,0 +1,125 @@
+@page "/admin/assignments"
+@attribute [Authorize(Roles = "Admin")]
+@inject CaseService CaseService
+@inject AuthService AuthService
+@inject AuthenticationStateProvider AuthStateProvider
+@inject ToastService Toast
+
+<PageTitle>Case Assignments — LawFlow</PageTitle>
+
+<div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-6">
+    <div>
+        <div class="font-mono text-2xs uppercase tracking-[0.18em] text-muted flex items-center gap-2">
+            <span class="w-6 h-px bg-muted/60"></span>
+            <span>Admin · Assignments</span>
+        </div>
+        <h1 class="mt-1.5 text-2xl md:text-3xl font-semibold tracking-tight text-balance">Assign officials to cases</h1>
+        <p class="mt-1 text-sm text-muted">Pick a Judge, Police officer, and Clerk for each case awaiting assignment.</p>
+    </div>
+</div>
+
+@if (_loading)
+{
+    <div class="lf-card p-10 text-center text-sm text-muted">Loading…</div>
+}
+else if (_cases.Count == 0)
+{
+    <div class="lf-card p-10 text-center text-sm text-muted">No cases awaiting assignment.</div>
+}
+else
+{
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        @foreach (var c in _cases)
+        {
+            <div class="lf-card p-5">
+                <div class="flex items-start justify-between gap-3">
+                    <span class="lf-tag-num">@c.CaseNumber</span>
+                    <LfStatusChip Status="@c.Status" />
+                </div>
+                <div class="mt-2 font-semibold text-ink">@c.Title</div>
+                <div class="mt-1 text-xs text-muted line-clamp-2">@c.Description</div>
+
+                <div class="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-2">
+                    <select class="bg-transparent border border-hairline rounded-card px-2 py-1.5 text-sm" @bind="_judgeSel[c.Id]">
+                        <option value="">Judge…</option>
+                        @foreach (var u in _judges) { <option value="@u.Id">@u.FullName</option> }
+                    </select>
+                    <select class="bg-transparent border border-hairline rounded-card px-2 py-1.5 text-sm" @bind="_policeSel[c.Id]">
+                        <option value="">Police…</option>
+                        @foreach (var u in _polices) { <option value="@u.Id">@u.FullName</option> }
+                    </select>
+                    <select class="bg-transparent border border-hairline rounded-card px-2 py-1.5 text-sm" @bind="_clerkSel[c.Id]">
+                        <option value="">Clerk…</option>
+                        @foreach (var u in _clerks) { <option value="@u.Id">@u.FullName</option> }
+                    </select>
+                </div>
+
+                <div class="mt-3 flex items-center gap-2">
+                    <LfButton OnClick="@(() => Publish(c.Id))" Variant="primary" Icon="send" Disabled="@(!CanPublish(c.Id))">Publish</LfButton>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+@code {
+    private bool _loading = true;
+    private string _userId = "";
+    private List<Case> _cases = new();
+    private List<ApplicationUser> _judges = new();
+    private List<ApplicationUser> _polices = new();
+    private List<ApplicationUser> _clerks = new();
+    private Dictionary<int, string> _judgeSel = new();
+    private Dictionary<int, string> _policeSel = new();
+    private Dictionary<int, string> _clerkSel = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var auth = await AuthStateProvider.GetAuthenticationStateAsync();
+            _userId = auth.User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "";
+
+            _judges = await AuthService.GetUsersByRoleAsync(UserRole.Judge);
+            _polices = await AuthService.GetUsersByRoleAsync(UserRole.Police);
+            _clerks = await AuthService.GetUsersByRoleAsync(UserRole.Clerk);
+
+            await Reload();
+        }
+        finally { _loading = false; }
+    }
+
+    private async Task Reload()
+    {
+        var all = await CaseService.GetAllCasesAsync();
+        _cases = all.Where(c => c.Status == CaseStatus.Created || c.Status == CaseStatus.ReviewedByAdmin).ToList();
+        foreach (var c in _cases)
+        {
+            _judgeSel.TryAdd(c.Id, c.JudgeId ?? "");
+            _policeSel.TryAdd(c.Id, c.PoliceId ?? "");
+            _clerkSel.TryAdd(c.Id, c.ClerkId ?? "");
+        }
+    }
+
+    private bool CanPublish(int caseId) =>
+        !string.IsNullOrEmpty(_judgeSel.GetValueOrDefault(caseId, ""))
+        && !string.IsNullOrEmpty(_policeSel.GetValueOrDefault(caseId, ""))
+        && !string.IsNullOrEmpty(_clerkSel.GetValueOrDefault(caseId, ""));
+
+    private async Task Publish(int caseId)
+    {
+        if (!CanPublish(caseId)) return;
+
+        // Approve the FIR first so workflow can advance to assignment.
+        var c = _cases.First(x => x.Id == caseId);
+        if (c.Status == CaseStatus.Created)
+            await CaseService.ReviewFIRAsync(caseId, _userId, true);
+
+        var ok = await CaseService.AssignCoreOfficialsAsync(caseId, _userId,
+            _judgeSel[caseId], _policeSel[caseId], _clerkSel[caseId]);
+
+        if (ok) Toast.Success("Case published. Lawyers will be notified.");
+        else Toast.Error("Could not publish.");
+        await Reload();
+    }
+}

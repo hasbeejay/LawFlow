@@ -1,0 +1,38 @@
+@* Consistent placeholder for sidebar items whose data view is still being built.
+   Renders in the established design system so navigation feels complete. *@
+
+<div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-6">
+    <div>
+        <div class="font-mono text-2xs uppercase tracking-[0.18em] text-muted flex items-center gap-2">
+            <span class="w-6 h-px bg-muted/60"></span>
+            <span>@Section</span>
+        </div>
+        <h1 class="mt-1.5 text-2xl md:text-3xl font-semibold tracking-tight text-balance">@Title</h1>
+        @if (!string.IsNullOrWhiteSpace(Subtitle))
+        {
+            <p class="mt-1 text-sm text-muted">@Subtitle</p>
+        }
+    </div>
+</div>
+
+<div class="lf-card p-10 text-center">
+    <div class="inline-flex items-center justify-center w-12 h-12 rounded-card bg-canvas border border-hairline text-muted">
+        <LfIcon Name="@Icon" Size="20" />
+    </div>
+    <div class="mt-3 text-sm font-medium">@Title</div>
+    <div class="mt-1 text-sm text-muted max-w-md mx-auto">
+        This view is wired into the sidebar and protected by role permissions. The data surface is shipping next — your access is already in place.
+    </div>
+    @if (!string.IsNullOrWhiteSpace(BackHref))
+    {
+        <div class="mt-5"><LfButton Href="@BackHref" Variant="outline" Icon="arrow-left">Back</LfButton></div>
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired] public string Section { get; set; } = "";
+    [Parameter, EditorRequired] public string Title { get; set; } = "";
+    [Parameter] public string? Subtitle { get; set; }
+    [Parameter] public string Icon { get; set; } = "construction";
+    [Parameter] public string? BackHref { get; set; }
+}

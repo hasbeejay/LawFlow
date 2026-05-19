@@ -118,7 +118,7 @@
 /Users/Raheem/Desktop/Hasbeejay - VP/LawFlow/obj/Debug/net10.0/LawFlow.pdb
 /Users/Raheem/Desktop/Hasbeejay - VP/LawFlow/obj/Debug/net10.0/LawFlow.genruntimeconfig.cache
 /Users/Raheem/Desktop/Hasbeejay - VP/LawFlow/obj/Debug/net10.0/ref/LawFlow.dll
-/Users/Raheem/Desktop/Hasbeejay - VP/LawFlow/obj/Debug/net10.0/compressed/se26rdiey6-{0}-0xzzbused1-0xzzbused1.gz
 /Users/Raheem/Desktop/Hasbeejay - VP/LawFlow/bin/Debug/net10.0/package-lock.json
 /Users/Raheem/Desktop/Hasbeejay - VP/LawFlow/bin/Debug/net10.0/package.json
-/Users/Raheem/Desktop/Hasbeejay - VP/LawFlow/obj/Debug/net10.0/compressed/o4b58mm576-{0}-icf2vafxae-icf2vafxae.gz
+/Users/Raheem/Desktop/Hasbeejay - VP/LawFlow/obj/Debug/net10.0/compressed/se26rdiey6-{0}-w9ug3lcpf8-w9ug3lcpf8.gz
+/Users/Raheem/Desktop/Hasbeejay - VP/LawFlow/obj/Debug/net10.0/compressed/o4b58mm576-{0}-y7iw3pqdj0-y7iw3pqdj0.gz

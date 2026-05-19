@@ -413,25 +413,14 @@ else
                                 <MudText Typo="Typo.h6" Class="font-weight-bold" Style="color: var(--lf-primary);">Secure Consultation Room</MudText>
                             </div>
                             
-                            @if (_role == "Admin")
-                            {
-                                <MudSelect T="string" Label="Consultation Channel" Variant="Variant.Outlined" @bind-Value="_activeChatChannel" Margin="Margin.Dense" Style="max-width: 250px; background: white;">
-                                    <MudSelectItem Value="@("ClientLawyer")">Client ↔ Lawyer</MudSelectItem>
-                                    <MudSelectItem Value="@("JudgeClerk")">Judge ↔ Clerk</MudSelectItem>
-                                    <MudSelectItem Value="@("AdminPolice")">Admin ↔ Police</MudSelectItem>
-                                </MudSelect>
-                            }
-                            else
-                            {
-                                <MudChip T="string" Color="Color.Primary" Variant="Variant.Filled" Size="Size.Small" Style="font-weight: 700; border-radius: 6px;">
-                                    @(_activeChatChannel switch {
-                                        "ClientLawyer" => "Client ↔ Lawyer Channel",
-                                        "JudgeClerk" => "Judge ↔ Clerk Channel",
-                                        "AdminPolice" => "Admin ↔ Police Channel",
-                                        _ => "Secure Channel"
-                                    })
-                                </MudChip>
-                            }
+                            <MudChip T="string" Color="Color.Primary" Variant="Variant.Filled" Size="Size.Small" Style="font-weight: 700; border-radius: 6px;">
+                                @(_activeChatChannel switch {
+                                    "ClientLawyer" => "Client ↔ Lawyer Channel",
+                                    "JudgeClerk" => "Judge ↔ Clerk Channel",
+                                    "AdminPolice" => "Admin ↔ Police Channel",
+                                    _ => "Secure Channel"
+                                })
+                            </MudChip>
                         </div>
                         <MudText Typo="Typo.body2" Class="text-muted mb-4">Encrypted channel restricted strictly to official courtroom officers and the assigned client.</MudText>
 
@@ -682,8 +671,8 @@ else
             _activeChatChannel = "AdminPolice";
         }
 
-        // Fetch secure case chat history
-        _chatMessages = await MessageService.GetMessagesForCaseAsync(Id);
+        // Fetch secure case chat history — server filters by user's allowed channel.
+        _chatMessages = await MessageService.GetMessagesForCaseAsync(Id, _userId, _role);
 
         // Initialize SignalR connection for case chat
         var baseUri = NavigationManager.BaseUri;
@@ -719,7 +708,7 @@ else
         });
 
         await _hubConnection.StartAsync();
-        await _hubConnection.SendAsync("JoinCase", Id);
+        await _hubConnection.SendAsync("JoinCaseChannel", Id, _userId, _role);
 
         // Load pending announcements for clerk review
         if (_role == "Clerk")
@@ -964,13 +953,15 @@ else
             }
         }
 
-        // Save to DB
-        await MessageService.SaveMessageAsync(Id, _userId, senderName, _role, _newMessageContent.Trim());
-        
-        // Broadcast via SignalR CaseChatHub
+        // Hub now handles save + broadcast atomically — no double-save from the client.
         if (_hubConnection is not null && _hubConnection.State == HubConnectionState.Connected)
         {
             await _hubConnection.SendAsync("SendMessage", Id, _userId, senderName, _role, _newMessageContent.Trim());
+        }
+        else
+        {
+            // Fallback: hub not connected. Save directly so the message isn't lost.
+            await MessageService.SaveMessageAsync(Id, _userId, senderName, _role, _newMessageContent.Trim());
         }
 
         _newMessageContent = string.Empty;
@@ -1022,14 +1013,8 @@ else
             {
                 await NotificationService.SendNotificationAsync(pId, broadcastTitle, announcementText);
             }
-
-            // Post to secure consultation chamber as a System Order
-            await MessageService.SaveMessageAsync(Id, "SYSTEM", "Court Clerk Announcement", "System Order", announcementText);
-            
-            if (_hubConnection is not null && _hubConnection.State == HubConnectionState.Connected)
-            {
-                await _hubConnection.SendAsync("SendMessage", Id, "SYSTEM", "Court Clerk Announcement", "System Order", announcementText);
-            }
+            // Announcements are delivered as Notifications (not Messages) so they
+            // reach every participant regardless of which chat channel they belong to.
         }
 
         Snackbar.Add("Announcement published and broadcasted successfully.", Severity.Success);
@@ -1061,7 +1046,7 @@ else
         
         try 
         {
-            await _hubConnection.SendAsync("LeaveCase", Id);
+            await _hubConnection.SendAsync("LeaveCaseChannel", Id, _userId, _role);
             await _hubConnection.DisposeAsync();
         } 
         catch { }

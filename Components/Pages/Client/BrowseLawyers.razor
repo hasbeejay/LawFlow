@@ -1,0 +1,115 @@
+@page "/client/lawyers"
+@attribute [Authorize(Roles = "Client")]
+@inject AuthService AuthService
+@inject CaseService CaseService
+@inject AuthenticationStateProvider AuthStateProvider
+@inject ToastService Toast
+
+<PageTitle>Browse Lawyers — LawFlow</PageTitle>
+
+<div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-6">
+    <div>
+        <div class="font-mono text-2xs uppercase tracking-[0.18em] text-muted flex items-center gap-2">
+            <span class="w-6 h-px bg-muted/60"></span>
+            <span>Client</span>
+        </div>
+        <h1 class="mt-1.5 text-2xl md:text-3xl font-semibold tracking-tight text-balance">Browse lawyers</h1>
+        <p class="mt-1 text-sm text-muted">Pick a lawyer and forward one of your cases. They'll see it under Offered Cases.</p>
+    </div>
+</div>
+
+@if (_loading)
+{
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        @for (int i = 0; i < 6; i++)
+        {
+            <div class="lf-card p-5 animate-pulse">
+                <div class="h-4 w-2/3 bg-hairline rounded-xs"></div>
+                <div class="mt-2 h-3 w-1/2 bg-hairline/60 rounded-xs"></div>
+            </div>
+        }
+    </div>
+}
+else if (_lawyers.Count == 0)
+{
+    <div class="lf-card p-10 text-center text-sm text-muted">No lawyers available right now.</div>
+}
+else
+{
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        @foreach (var l in _lawyers)
+        {
+            <div class="lf-card p-5">
+                <div class="flex items-center gap-3">
+                    <LfAvatar Name="@l.FullName" Size="lg" />
+                    <div class="min-w-0">
+                        <div class="text-sm font-semibold text-ink truncate">@l.FullName</div>
+                        <div class="font-mono text-2xs text-muted">@(l.Specialization ?? "Defense Attorney")</div>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <label class="font-mono text-2xs uppercase tracking-wider text-muted">Forward case</label>
+                    <select class="mt-1 w-full bg-transparent border border-hairline rounded-card px-2 py-1.5 text-sm outline-none focus:border-primary/40"
+                            @bind="_forwardSelections[l.Id]">
+                        <option value="">— select one of your cases —</option>
+                        @foreach (var c in _myCases)
+                        {
+                            <option value="@c.Id">@c.CaseNumber — @c.Title</option>
+                        }
+                    </select>
+                </div>
+                <div class="mt-3">
+                    <LfButton OnClick="@(() => Forward(l.Id))" Variant="primary" Icon="send" FullWidth Disabled="@(!CanForward(l.Id))">Forward to @l.FullName.Split(' ').First()</LfButton>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+@code {
+    private bool _loading = true;
+    private string _userId = "";
+    private List<ApplicationUser> _lawyers = new();
+    private List<Case> _myCases = new();
+    private Dictionary<string, string> _forwardSelections = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var auth = await AuthStateProvider.GetAuthenticationStateAsync();
+            _userId = auth.User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "";
+
+            _lawyers = await AuthService.GetUsersByRoleAsync(UserRole.Lawyer);
+            var all = await CaseService.GetCasesForUserAsync(_userId, UserRole.Client);
+            _myCases = all.Where(c => c.Status != CaseStatus.Closed && c.Status != CaseStatus.VerdictIssued).ToList();
+            foreach (var l in _lawyers) _forwardSelections[l.Id] = "";
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private bool CanForward(string lawyerId) =>
+        _forwardSelections.TryGetValue(lawyerId, out var v) && int.TryParse(v, out _);
+
+    private async Task Forward(string lawyerId)
+    {
+        if (!_forwardSelections.TryGetValue(lawyerId, out var v) || !int.TryParse(v, out var caseId))
+        {
+            Toast.Warn("Pick a case first.");
+            return;
+        }
+        var ok = await CaseService.ForwardCaseToLawyerAsync(caseId, _userId, lawyerId);
+        if (ok)
+        {
+            Toast.Success("Case forwarded. The lawyer has been notified.");
+            _forwardSelections[lawyerId] = "";
+        }
+        else
+        {
+            Toast.Error("Could not forward this case.");
+        }
+    }
+}

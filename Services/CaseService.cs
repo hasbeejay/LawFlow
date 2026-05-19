@@ -235,6 +235,32 @@ namespace LawFlow.Services
             return true;
         }
 
+        // Client forwards a case to a specific lawyer. The case must be at a stage
+        // where lawyer engagement makes sense and must belong to this client.
+        public async Task<bool> ForwardCaseToLawyerAsync(int caseId, string clientId, string lawyerId)
+        {
+            var c = await _context.Cases.FirstOrDefaultAsync(x => x.Id == caseId);
+            if (c == null) return false;
+            if (c.ClientId != clientId) return false;
+            if (c.Status is CaseStatus.Closed or CaseStatus.VerdictIssued) return false;
+
+            // Promote to AvailableForLawyers if it isn't already past that point.
+            if (c.Status == CaseStatus.Created || c.Status == CaseStatus.ReviewedByAdmin
+                || c.Status == CaseStatus.AssignedToJudgeAndPolice)
+            {
+                c.Status = CaseStatus.AvailableForLawyers;
+            }
+
+            c.LawyerId = lawyerId;
+            c.UpdatedAt = DateTime.UtcNow;
+
+            await LogActivityAsync(clientId, "Lawyer Offer Sent", $"Client forwarded case {c.CaseNumber} to lawyer {lawyerId}");
+            await SendNotificationAsync(lawyerId, "New Case Offered", $"You have been offered case {c.CaseNumber}. Open Offered Cases to accept or decline.");
+
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
         // 3. Lawyer accepts/declines case
         public async Task<bool> UpdateLawyerAssignmentAsync(int caseId, string lawyerId, bool accept)
         {
@@ -244,9 +270,12 @@ namespace LawFlow.Services
             if (accept)
             {
                 if (c.Status != CaseStatus.AvailableForLawyers) return false;
+                // Only the offered lawyer can accept. If no specific lawyer was offered
+                // (admin published the case open), any lawyer claims it first.
+                if (!string.IsNullOrEmpty(c.LawyerId) && c.LawyerId != lawyerId) return false;
 
                 c.LawyerId = lawyerId;
-                
+
                 // Move sequentially through LawyerAccepted -> AssignedToLawyer
                 c.Status = CaseStatus.LawyerAccepted;
                 c.UpdatedAt = DateTime.UtcNow;

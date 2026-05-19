@@ -32,4 +32,11 @@ namespace LawFlow.Models
         Dismissed,
         Appealed
     }
+
+    public enum ChatChannel
+    {
+        ClientLawyer = 0,
+        JudgeClerk = 1,
+        AdminPolice = 2
+    }
 }

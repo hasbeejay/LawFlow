@@ -35,6 +35,13 @@
 </head>
 
 <body>
+    <svg width="0" height="0" aria-hidden="true" focusable="false" style="position:absolute;left:-9999px;overflow:hidden">
+        <filter id="lf-distortion">
+            <feTurbulence type="turbulence" baseFrequency="0.01 0.1" numOctaves="1" result="turbulence"></feTurbulence>
+            <feDisplacementMap in2="turbulence" in="SourceGraphic" scale="8" xChannelSelector="R" yChannelSelector="G"></feDisplacementMap>
+        </filter>
+    </svg>
+
     <Routes @rendermode="new InteractiveServerRenderMode(prerender: false)" />
 
     <!-- Theme toggle interop -->

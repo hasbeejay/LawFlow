@@ -241,14 +241,26 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
-        var user = authState.User;
-
-        if (user.Identity?.IsAuthenticated ?? false)
+        try
         {
-            _fullName = user.FindFirst(ClaimTypes.GivenName)?.Value ?? user.Identity.Name ?? "User";
-            _role     = user.FindFirst(ClaimTypes.Role)?.Value ?? "Client";
-            _userId   = user.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "";
+            var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+            var user = authState.User;
+
+            if (!(user.Identity?.IsAuthenticated ?? false))
+            {
+                // Not signed in — let MainLayout's auth check handle the redirect.
+                return;
+            }
+
+            // Pull identity claims (with sane fallbacks so the greeting never renders blank).
+            _fullName = user.FindFirst(ClaimTypes.GivenName)?.Value ?? "";
+            if (string.IsNullOrWhiteSpace(_fullName))
+                _fullName = user.Identity?.Name ?? "";
+            if (string.IsNullOrWhiteSpace(_fullName))
+                _fullName = "there";
+
+            _role   = user.FindFirst(ClaimTypes.Role)?.Value ?? "Client";
+            _userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "";
             var roleLower = _role.ToLowerInvariant();
 
             _subtitle = _role switch
@@ -262,6 +274,11 @@ else
                 _        => "Smart Judicial Portal — case lifecycle in one place.",
             };
 
+            // Role sub-route correction — purely cosmetic. All these URLs map to this
+            // same component class, so Blazor REUSES the existing instance on redirect
+            // (OnInitializedAsync does not re-run). That means we must NOT early-return
+            // here — we'd strand the component with _loading=true forever. Just fire the
+            // navigation and continue loading data inline; the URL update is harmless.
             var route = Navigation.ToBaseRelativePath(Navigation.Uri).Trim('/').ToLowerInvariant();
             var firstSegment = route.Split('/', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
             var knownRoles = new[] { "admin", "lawyer", "client", "judge", "police", "clerk" };
@@ -274,23 +291,25 @@ else
                 Navigation.NavigateTo($"/{roleLower}/dashboard", replace: true);
             }
 
-            try
+            // Role-specific stats
+            switch (_role)
             {
-                switch (_role)
-                {
-                    case "Admin":  _adminStats  = await DashboardService.GetAdminStatsAsync(); break;
-                    case "Judge":  _judgeStats  = await DashboardService.GetJudgeStatsAsync(_userId); break;
-                    case "Lawyer": _lawyerStats = await DashboardService.GetLawyerStatsAsync(_userId); break;
-                    case "Client": _clientStats = await DashboardService.GetClientStatsAsync(_userId); break;
-                    case "Police": _policeStats = await DashboardService.GetPoliceStatsAsync(_userId); break;
-                    case "Clerk":  _clerkStats  = await DashboardService.GetClerkStatsAsync(_userId); break;
-                }
+                case "Admin":  _adminStats  = await DashboardService.GetAdminStatsAsync(); break;
+                case "Judge":  _judgeStats  = await DashboardService.GetJudgeStatsAsync(_userId); break;
+                case "Lawyer": _lawyerStats = await DashboardService.GetLawyerStatsAsync(_userId); break;
+                case "Client": _clientStats = await DashboardService.GetClientStatsAsync(_userId); break;
+                case "Police": _policeStats = await DashboardService.GetPoliceStatsAsync(_userId); break;
+                case "Clerk":  _clerkStats  = await DashboardService.GetClerkStatsAsync(_userId); break;
+            }
 
-                if (_role is "Admin" or "Judge" or "Lawyer")
-                {
-                    _trends   = await DashboardService.GetCaseCompletionTrendsAsync();
-                    _verdicts = await DashboardService.GetVerdictDistributionAsync();
+            // Charts (admin/judge/lawyer only)
+            if (_role is "Admin" or "Judge" or "Lawyer")
+            {
+                _trends   = await DashboardService.GetCaseCompletionTrendsAsync();
+                _verdicts = await DashboardService.GetVerdictDistributionAsync();
 
+                if (_verdicts != null)
+                {
                     _verdictSlices = new List<LfDonutChart.Slice>
                     {
                         new("Guilty",    _verdicts.Guilty,    "primary"),
@@ -299,16 +318,23 @@ else
                         new("Appealed",  _verdicts.Appealed,  "warning"),
                     };
                 }
+            }
 
-                var cases = await CaseService.GetCasesForUserAsync(_userId, Enum.Parse<UserRole>(_role));
+            // Recent cases — safe enum parse
+            if (Enum.TryParse<UserRole>(_role, ignoreCase: true, out var parsedRole))
+            {
+                var cases = await CaseService.GetCasesForUserAsync(_userId, parsedRole);
                 _recentCases = cases.Take(8).ToList();
             }
-            catch (Exception ex)
-            {
-                Toast.Error($"Dashboard failed to load: {ex.Message}");
-            }
         }
-
-        _loading = false;
+        catch (Exception ex)
+        {
+            // Surface the failure but don't leave the user staring at a skeleton forever.
+            Toast.Error($"Dashboard failed to load: {ex.Message}");
+        }
+        finally
+        {
+            _loading = false;
+        }
     }
 }

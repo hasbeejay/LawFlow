@@ -1,0 +1,90 @@
+@page "/judge/verdicts"
+@page "/lawyer/verdicts"
+@page "/client/verdicts"
+@page "/police/verdicts"
+@attribute [Authorize(Roles = "Judge,Lawyer,Client,Police")]
+@inject CaseService CaseService
+@inject VerdictService VerdictService
+@inject AuthenticationStateProvider AuthStateProvider
+
+<PageTitle>Verdicts — LawFlow</PageTitle>
+
+<div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-6">
+    <div>
+        <div class="font-mono text-2xs uppercase tracking-[0.18em] text-muted flex items-center gap-2">
+            <span class="w-6 h-px bg-muted/60"></span>
+            <span>@_role · Verdicts</span>
+        </div>
+        <h1 class="mt-1.5 text-2xl md:text-3xl font-semibold tracking-tight text-balance">Verdict register</h1>
+        <p class="mt-1 text-sm text-muted">Outcomes issued on cases you are a party to.</p>
+    </div>
+</div>
+
+@if (_loading)
+{
+    <div class="lf-card p-10 text-center text-sm text-muted">Loading…</div>
+}
+else if (_rows.Count == 0)
+{
+    <div class="lf-card p-10 text-center text-sm text-muted">No verdicts yet.</div>
+}
+else
+{
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        @foreach (var v in _rows)
+        {
+            var c = _casesById.TryGetValue(v.CaseId, out var cc) ? cc : null;
+            <div class="lf-card p-5">
+                <div class="flex items-start justify-between gap-3">
+                    <span class="lf-tag-num">@(c?.CaseNumber ?? "—")</span>
+                    <LfChip Tone="@VerdictTone(v.Type)" ShowDot="true">@v.Type</LfChip>
+                </div>
+                <div class="mt-2 font-semibold text-ink">@(c?.Title ?? "Case")</div>
+                <div class="mt-2 text-sm text-muted line-clamp-3">@v.Details</div>
+                <div class="mt-3 flex items-center justify-between text-2xs font-mono text-muted">
+                    <span>Issued · @v.IssuedAt.ToLocalTime().ToString("yyyy-MM-dd")</span>
+                    <span>@(v.IsPublished ? "Published" : "Pending publication")</span>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+@code {
+    private bool _loading = true;
+    private string _role = "";
+    private string _userId = "";
+    private List<Verdict> _rows = new();
+    private Dictionary<int, Case> _casesById = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var auth = await AuthStateProvider.GetAuthenticationStateAsync();
+            _role = auth.User.FindFirst(ClaimTypes.Role)?.Value ?? "";
+            _userId = auth.User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "";
+
+            if (!Enum.TryParse<UserRole>(_role, true, out var role)) return;
+            var cases = await CaseService.GetCasesForUserAsync(_userId, role);
+            _casesById = cases.ToDictionary(c => c.Id, c => c);
+            var caseIds = _casesById.Keys.ToHashSet();
+
+            var all = await VerdictService.GetAllVerdictsAsync();
+            _rows = all.Where(v => caseIds.Contains(v.CaseId)).OrderByDescending(v => v.IssuedAt).ToList();
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private static string VerdictTone(VerdictType t) => t switch
+    {
+        VerdictType.Guilty   => "danger",
+        VerdictType.Acquitted => "success",
+        VerdictType.Dismissed => "neutral",
+        VerdictType.Appealed  => "warning",
+        _ => "neutral"
+    };
+}

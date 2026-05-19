@@ -1,0 +1,25 @@
+@page "/judge/documents"
+@page "/lawyer/documents"
+@page "/client/documents"
+@page "/clerk/documents"
+@attribute [Authorize(Roles = "Judge,Lawyer,Client,Clerk")]
+
+<LfComingSoon Section="@($"{_role} · Documents")"
+              Title="Case documents"
+              Subtitle="Upload, view, and verify evidence and filings tied to your cases."
+              Icon="file-text"
+              BackHref="@($"/{_role.ToLowerInvariant()}/dashboard")" />
+
+@code {
+    [CascadingParameter] private Task<AuthenticationState>? AuthState { get; set; }
+    private string _role = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (AuthState != null)
+        {
+            var s = await AuthState;
+            _role = s.User.FindFirst(ClaimTypes.Role)?.Value ?? "";
+        }
+    }
+}

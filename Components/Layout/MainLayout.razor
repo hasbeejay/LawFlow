@@ -3,10 +3,12 @@
 @inject AuthenticationStateProvider AuthStateProvider
 @inject NotificationService NotificationService
 @inject CustomAuthenticationStateProvider CustomAuth
+@inject ThemeService Theme
 @implements IDisposable
 
-@* Legacy MudBlazor providers kept mounted so un-migrated pages keep working through the transition. *@
-<MudThemeProvider Theme="_legacyTheme" IsDarkMode="false" />
+@* Legacy MudBlazor providers kept mounted so un-migrated pages keep working through the transition.
+   IsDarkMode is bound to our ThemeService so MudBlazor pages flip palette with the rest of the app. *@
+<MudThemeProvider Theme="_legacyTheme" IsDarkMode="@Theme.IsDark" />
 <MudPopoverProvider />
 <MudDialogProvider FullWidth="true" MaxWidth="MaxWidth.ExtraSmall" />
 <MudSnackbarProvider />
@@ -23,7 +25,7 @@
         {
             <div class="min-h-dvh bg-canvas text-ink flex flex-col">
                 <!-- Top bar — liquid-glass chrome -->
-                <header class="sticky top-0 z-30 h-14 lf-glass-bar">
+                <header class="sticky top-0 z-30 h-14 lf-liquid-bar">
                     <div class="h-full px-4 lg:px-6 flex items-center gap-3">
                         <button type="button" @onclick="ToggleDrawer"
                                 class="lg:hidden lf-btn-ghost p-2 -ml-1 rounded-card border border-hairline"
@@ -33,17 +35,20 @@
 
                         <LfBrand Href="@DashboardHref(_currentUser)" />
 
-                        <!-- Global search -->
+                        <!-- Global search — frosted pill -->
                         <div class="hidden md:flex flex-1 max-w-md mx-3">
                             <form @onsubmit="HandleTopSearch" @onsubmit:preventDefault="true"
-                                  class="w-full flex items-center gap-2 px-3 py-1.5 rounded-card border border-hairline bg-surface text-sm focus-within:border-primary/40 transition-colors">
-                                <LfIcon Name="search" Size="14" />
-                                <input id="lf-top-search"
-                                       @bind="_topSearchQuery"
-                                       @bind:event="oninput"
-                                       type="text"
-                                       placeholder="Search cases, people, hearings..."
-                                       class="flex-1 bg-transparent text-ink placeholder:text-muted outline-none min-w-0" />
+                                  class="w-full lf-liquid lf-liquid-soft !rounded-card text-sm focus-within:!border-primary/40 transition-colors">
+                                <div class="flex items-center gap-2 px-3 py-1.5">
+                                    <LfIcon Name="search" Size="14" Class="text-muted" />
+                                    <input id="lf-top-search"
+                                           @bind="_topSearchQuery"
+                                           @bind:event="oninput"
+                                           type="text"
+                                           placeholder="Search cases, people, hearings..."
+                                           class="flex-1 bg-transparent text-ink placeholder:text-muted outline-none min-w-0" />
+                                    <span class="font-mono text-2xs px-1.5 py-0.5 rounded-xs border border-hairline text-muted hidden lg:inline">⌘K</span>
+                                </div>
                             </form>
                         </div>
 
@@ -126,8 +131,9 @@
 
                 <div class="flex-1 relative">
                     <!-- DESKTOP SIDEBAR — fixed overlay, liquid glass.
-                         Content scrolls UNDER the right edge so the blur picks up depth. -->
-                    <aside class="hidden lg:flex flex-col fixed top-14 left-0 bottom-0 w-64 z-20 lf-glass lf-glass-shine border-r border-hairline overflow-y-auto">
+                         Block layout so SidebarNav's `min-h-full + mt-auto` pattern keeps
+                         the nav items at the top and the system-status block pinned to bottom. -->
+                    <aside class="hidden lg:block fixed top-14 left-0 bottom-0 w-64 z-20 lf-liquid !rounded-none !border-l-0 !border-t-0 !border-b-0 overflow-y-auto overflow-x-hidden">
                         <SidebarNav User="_currentUser" />
                     </aside>
 
@@ -135,7 +141,7 @@
                     @if (_drawerOpen)
                     {
                         <div @onclick="ToggleDrawer" class="lg:hidden fixed inset-0 z-30 bg-black/40 backdrop-blur-sm"></div>
-                        <aside class="lg:hidden fixed top-14 bottom-0 left-0 w-64 z-40 lf-glass border-r border-hairline overflow-y-auto animate-fade-in-up">
+                        <aside class="lg:hidden fixed top-14 bottom-0 left-0 w-64 z-40 lf-liquid lf-liquid-strong !rounded-none !border-l-0 !border-t-0 !border-b-0 overflow-y-auto overflow-x-hidden animate-fade-in-up">
                             <SidebarNav User="_currentUser" />
                         </aside>
                     }
@@ -168,17 +174,75 @@
     private ClaimsPrincipal? _currentUser;
     private string _topSearchQuery = string.Empty;
 
-    // Kept minimal — just enough so legacy MudBlazor pages don't blow up while we migrate them.
+    // Legacy MudBlazor theme — mirrors the Midnight Gavel palette in both modes so
+    // un-migrated pages don't look out of place when the user toggles dark mode.
     private readonly MudTheme _legacyTheme = new()
     {
-        PaletteLight = new PaletteLight() { Primary = "#6D4FE8", Secondary = "#B5862A" },
+        PaletteLight = new PaletteLight()
+        {
+            Primary          = "#5B3CDE",
+            Secondary        = "#B5862A",
+            Background       = "#FAFAFB",
+            Surface          = "#FFFFFF",
+            AppbarBackground = "#FFFFFF",
+            AppbarText       = "#0A0A0F",
+            DrawerBackground = "#FFFFFF",
+            DrawerText       = "#0A0A0F",
+            TextPrimary      = "#0A0A0F",
+            TextSecondary    = "#585864",
+            Success          = "#16A34A",
+            Warning          = "#EA580C",
+            Error            = "#DC2626",
+            Info             = "#0284C7",
+            LinesDefault     = "#E1E1E8",
+            LinesInputs      = "#E1E1E8",
+            TableLines       = "#E1E1E8",
+            TableHover       = "rgba(91, 60, 222, 0.04)",
+            ActionDefault    = "#0A0A0F",
+        },
+        PaletteDark = new PaletteDark()
+        {
+            Primary          = "#7C5CFA",
+            Secondary        = "#D4A24C",
+            Background       = "#0A0A0F",
+            Surface          = "#15151E",
+            AppbarBackground = "#15151E",
+            AppbarText       = "#ECECF1",
+            DrawerBackground = "#15151E",
+            DrawerText       = "#ECECF1",
+            TextPrimary      = "#ECECF1",
+            TextSecondary    = "#8B8B96",
+            TextDisabled     = "#5B5B66",
+            Success          = "#4ADE80",
+            Warning          = "#FB923C",
+            Error            = "#EF4444",
+            Info             = "#38BDF8",
+            LinesDefault     = "#25252F",
+            LinesInputs      = "#25252F",
+            TableLines       = "#25252F",
+            TableHover       = "rgba(124, 92, 250, 0.10)",
+            TableStriped     = "rgba(255, 255, 255, 0.02)",
+            ActionDefault    = "#ECECF1",
+            DrawerIcon       = "#ECECF1",
+        },
         LayoutProperties = new LayoutProperties() { DefaultBorderRadius = "10px" }
     };
 
     protected override void OnInitialized()
     {
         NotificationService.OnNotificationChanged += HandleNotificationChange;
+        Theme.OnChange += HandleThemeChange;
     }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await Theme.InitializeAsync();
+        }
+    }
+
+    private void HandleThemeChange() => InvokeAsync(StateHasChanged);
 
     protected override async Task OnParametersSetAsync()
     {
@@ -276,5 +340,6 @@
     public void Dispose()
     {
         NotificationService.OnNotificationChanged -= HandleNotificationChange;
+        Theme.OnChange -= HandleThemeChange;
     }
 }

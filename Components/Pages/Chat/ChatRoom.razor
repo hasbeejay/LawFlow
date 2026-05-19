@@ -1,0 +1,184 @@
+@page "/chat/{CaseId:int}"
+@attribute [Authorize(Roles = "Admin,Judge,Lawyer,Client,Police,Clerk")]
+@inject MessageService MessageService
+@inject AuthService AuthService
+@inject CaseService CaseService
+@inject AuthenticationStateProvider AuthStateProvider
+@inject NavigationManager Navigation
+@using Microsoft.AspNetCore.SignalR.Client
+@implements IAsyncDisposable
+
+<PageTitle>Chat · case @(_case?.CaseNumber) — LawFlow</PageTitle>
+
+@if (_loading)
+{
+    <div class="lf-card p-10 text-center text-sm text-muted">Loading chat…</div>
+}
+else if (_denied || _case == null)
+{
+    <div class="lf-card p-10 text-center">
+        <div class="text-base font-semibold">No access</div>
+        <p class="mt-1 text-sm text-muted">You can't chat on this case from your role.</p>
+        <div class="mt-4"><LfButton Href="/chat" Variant="outline" Icon="arrow-left">Back to cases</LfButton></div>
+    </div>
+}
+else
+{
+    <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-4">
+        <div>
+            <div class="font-mono text-2xs uppercase tracking-[0.18em] text-muted flex items-center gap-2">
+                <span class="w-6 h-px bg-muted/60"></span>
+                <span class="lf-tag-num">@_case.CaseNumber</span>
+                <span>·</span>
+                <span>@_channelLabel</span>
+            </div>
+            <h1 class="mt-1.5 text-xl md:text-2xl font-semibold tracking-tight text-balance">@_case.Title</h1>
+        </div>
+        <LfButton Href="/chat" Variant="ghost" Icon="arrow-left">All chats</LfButton>
+    </div>
+
+    <div class="lf-card p-0 overflow-hidden">
+        <div id="lf-chat-scroll" style="height: 480px; overflow-y: auto; padding: 16px; display:flex; flex-direction:column; gap:10px; background: var(--lf-canvas);">
+            @if (_messages.Count == 0)
+            {
+                <div class="m-auto text-center text-muted">
+                    <LfIcon Name="message-circle" Size="22" />
+                    <div class="mt-2 text-sm">No messages yet. Say hello.</div>
+                </div>
+            }
+            else
+            {
+                @foreach (var m in _messages)
+                {
+                    var mine = m.SenderId == _userId;
+                    <div style="align-self: @(mine ? "flex-end" : "flex-start"); max-width: 78%;">
+                        <div style="border-radius: 12px; padding: 10px 12px; background: @(mine ? "var(--lf-primary)" : "var(--lf-surface)"); color: @(mine ? "#fff" : "var(--lf-text)"); border: 1px solid var(--lf-border);">
+                            <div class="flex items-center gap-2" style="font-size: 11px; font-weight: 600; opacity: 0.85;">
+                                <span>@m.SenderName</span>
+                                <span style="opacity: 0.6;">· @m.SenderRole</span>
+                                <span class="ml-auto" style="opacity: 0.6; font-variant-numeric: tabular-nums;">@m.CreatedAt.ToLocalTime().ToString("HH:mm · MMM d")</span>
+                            </div>
+                            <div style="margin-top: 4px; font-size: 13.5px; line-height: 1.45; white-space: pre-wrap; word-break: break-word;">@m.Content</div>
+                        </div>
+                    </div>
+                }
+            }
+        </div>
+        <div class="border-t border-hairline p-3 flex items-center gap-2">
+            <input type="text"
+                   @bind="_draft" @bind:event="oninput"
+                   @onkeydown="HandleKeyDown"
+                   placeholder="Type a message…"
+                   class="flex-1 bg-transparent border border-hairline rounded-card px-3 py-2 text-sm outline-none focus:border-primary/40" />
+            <LfButton OnClick="Send" Variant="primary" Icon="send" Disabled="@(string.IsNullOrWhiteSpace(_draft))">Send</LfButton>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public int CaseId { get; set; }
+
+    private bool _loading = true;
+    private bool _denied = false;
+    private string _userId = "";
+    private string _role = "";
+    private string _senderName = "";
+    private string _channelLabel = "";
+    private Case? _case;
+    private List<Message> _messages = new();
+    private string _draft = "";
+    private HubConnection? _hub;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var auth = await AuthStateProvider.GetAuthenticationStateAsync();
+            var user = auth.User;
+            if (!(user.Identity?.IsAuthenticated ?? false)) { _denied = true; return; }
+
+            _role = user.FindFirst(ClaimTypes.Role)?.Value ?? "";
+            _userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "";
+            _senderName = user.FindFirst(ClaimTypes.GivenName)?.Value ?? user.Identity?.Name ?? "";
+
+            if (!await MessageService.CanUserAccessCaseChatAsync(_userId, _role, CaseId))
+            {
+                _denied = true;
+                return;
+            }
+
+            _case = await CaseService.GetCaseByIdAsync(CaseId);
+            _messages = await MessageService.GetMessagesForCaseAsync(CaseId, _userId, _role);
+
+            var ch = MessageService.GetChannelForRole(_role);
+            _channelLabel = ch switch
+            {
+                ChatChannel.ClientLawyer => "Client ↔ Lawyer",
+                ChatChannel.JudgeClerk   => "Judge ↔ Clerk",
+                ChatChannel.AdminPolice  => "Admin ↔ Police",
+                _ => "Secure channel"
+            };
+
+            _hub = new HubConnectionBuilder()
+                .WithUrl(Navigation.ToAbsoluteUri("/casechathub"))
+                .WithAutomaticReconnect()
+                .Build();
+
+            _hub.On<int, string, string, string, string, DateTime, int>("ReceiveMessage", (caseId, senderId, senderName, senderRole, content, ts, channel) =>
+            {
+                if (caseId != CaseId) return;
+                InvokeAsync(() =>
+                {
+                    _messages.Add(new Message
+                    {
+                        CaseId = caseId,
+                        SenderId = senderId,
+                        SenderName = senderName,
+                        SenderRole = senderRole,
+                        Content = content,
+                        Channel = (ChatChannel)channel,
+                        CreatedAt = ts
+                    });
+                    StateHasChanged();
+                });
+            });
+
+            await _hub.StartAsync();
+            await _hub.SendAsync("JoinCaseChannel", CaseId, _userId, _role);
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private async Task Send()
+    {
+        if (string.IsNullOrWhiteSpace(_draft)) return;
+        var content = _draft.Trim();
+        _draft = "";
+
+        if (_hub is not null && _hub.State == HubConnectionState.Connected)
+        {
+            await _hub.SendAsync("SendMessage", CaseId, _userId, _senderName, _role, content);
+        }
+        else
+        {
+            // Hub offline → persist directly so the message survives, even if peers don't see it live.
+            var saved = await MessageService.SaveMessageAsync(CaseId, _userId, _senderName, _role, content);
+            if (saved != null) _messages.Add(saved);
+        }
+    }
+
+    private async Task HandleKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter" && !e.ShiftKey) await Send();
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_hub is null) return;
+        try { await _hub.SendAsync("LeaveCaseChannel", CaseId, _userId, _role); } catch { }
+        try { await _hub.DisposeAsync(); } catch { }
+    }
+}
