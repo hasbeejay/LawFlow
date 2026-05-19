@@ -295,6 +295,3 @@ Planned future enhancements:
 hasbeejay
 
 Built using modern .NET and Blazor technologies.
-
-```
-```
