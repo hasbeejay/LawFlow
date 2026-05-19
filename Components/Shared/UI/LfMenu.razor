@@ -1,0 +1,36 @@
+@* Lightweight popover menu. Toggles via internal state; click outside / Escape dismisses. *@
+
+@{
+    var alignCls = Align == "left" ? "left-0" : "right-0";
+}
+
+<div class="relative inline-flex" @onkeydown="HandleKeydown">
+    <span @onclick="Toggle" @onclick:stopPropagation="true">@Trigger</span>
+
+    @if (_open)
+    {
+        <button type="button"
+                class="fixed inset-0 z-[70] cursor-default bg-transparent"
+                aria-label="Close menu"
+                @onclick="Close"></button>
+        <div class="absolute @alignCls mt-2 min-w-[220px] z-[80] lf-glass-pop p-1 animate-fade-in-up"
+             @onclick:stopPropagation="true">
+            @ChildContent
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired] public RenderFragment Trigger { get; set; } = default!;
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public string Align { get; set; } = "right";  // left | right
+
+    private bool _open;
+    private void Toggle() => _open = !_open;
+    private void Close() => _open = false;
+    private void HandleKeydown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Escape")
+            _open = false;
+    }
+}

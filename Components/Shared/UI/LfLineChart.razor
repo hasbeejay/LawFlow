@@ -1,0 +1,94 @@
+@* Two-series line chart. Inline SVG, themable via currentColor / CSS vars. *@
+
+@{
+    var w = 100.0;                     // viewBox width units
+    var h = 36.0;                      // viewBox height units
+    var leftPad = 0.0;
+    var topPad = 1.5;
+    var botPad = 4.0;
+
+    var pointsA = BuildPath(SeriesA, w, h, leftPad, topPad, botPad);
+    var pointsB = SeriesB != null ? BuildPath(SeriesB, w, h, leftPad, topPad, botPad) : (line:"", area:"");
+    var allMax = SeriesA.Concat(SeriesB ?? Array.Empty<double>()).DefaultIfEmpty(0).Max();
+}
+
+<div class="@Class">
+    <div class="flex items-center justify-between gap-3">
+        <div class="flex items-center gap-4 text-xs text-muted">
+            <span class="inline-flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-primary"></span>
+                @LabelA
+            </span>
+            @if (SeriesB != null)
+            {
+                <span class="inline-flex items-center gap-1.5">
+                    <span class="w-2 h-2 rounded-full bg-info"></span>
+                    @LabelB
+                </span>
+            }
+        </div>
+        <span class="font-mono text-2xs text-muted uppercase tracking-wider">peak · @allMax.ToString("0")</span>
+    </div>
+
+    <svg class="w-full mt-3" viewBox="0 0 100 36" preserveAspectRatio="none"
+         style="height: @(Height)px;">
+        <!-- gridlines -->
+        @for (int i = 1; i <= 3; i++)
+        {
+            var y = (topPad + (h - topPad - botPad) * i / 4).ToString("0.##");
+            <line x1="0" x2="100" y1="@y" y2="@y" class="lf-grid-line"/>
+        }
+
+        @if (!string.IsNullOrEmpty(pointsA.area))
+        {
+            <path d="@pointsA.area" class="lf-area-primary" />
+        }
+        @if (!string.IsNullOrEmpty(pointsB.area))
+        {
+            <path d="@pointsB.area" class="lf-area-info" />
+        }
+
+        @if (!string.IsNullOrEmpty(pointsA.line))
+        {
+            <path d="@pointsA.line" class="lf-stroke-primary" fill="none" stroke-width="0.55" stroke-linecap="round" stroke-linejoin="round"/>
+        }
+        @if (!string.IsNullOrEmpty(pointsB.line))
+        {
+            <path d="@pointsB.line" class="lf-stroke-info" fill="none" stroke-width="0.55" stroke-linecap="round" stroke-linejoin="round"/>
+        }
+    </svg>
+
+    @if (Labels != null && Labels.Length > 0)
+    {
+        <div class="mt-1.5 flex justify-between font-mono text-2xs text-muted/80 uppercase tracking-wider">
+            @foreach (var l in Labels)
+            {
+                <span>@l</span>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired] public double[] SeriesA { get; set; } = Array.Empty<double>();
+    [Parameter] public double[]? SeriesB { get; set; }
+    [Parameter] public string[]? Labels { get; set; }
+    [Parameter] public string LabelA { get; set; } = "Series A";
+    [Parameter] public string LabelB { get; set; } = "Series B";
+    [Parameter] public int Height { get; set; } = 220;
+    [Parameter] public string? Class { get; set; }
+
+    private static (string line, string area) BuildPath(double[] data, double w, double h, double leftPad, double topPad, double botPad)
+    {
+        if (data.Length < 2) return ("", "");
+        var max = data.Max();
+        if (max < 0.001) max = 1;
+        var stepX = (w - leftPad) / (data.Length - 1);
+        var range = h - topPad - botPad;
+        var pts = data.Select((v, i) => (x: leftPad + i * stepX, y: topPad + range * (1 - v / max))).ToArray();
+
+        var line = "M " + string.Join(" L ", pts.Select(p => $"{p.x:0.##},{p.y:0.##}"));
+        var area = line + $" L {pts[^1].x:0.##},{h - botPad:0.##} L {pts[0].x:0.##},{h - botPad:0.##} Z";
+        return (line, area);
+    }
+}

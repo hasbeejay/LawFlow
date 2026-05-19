@@ -1,0 +1,28 @@
+@* Maps CaseStatus enum to a chip tone + label. Single source of truth. *@
+
+@{
+    var (tone, label, pulse) = Map(Status);
+}
+
+<LfChip Tone="@tone" Pulse="@pulse" Class="@Class">@label</LfChip>
+
+@code {
+    [Parameter, EditorRequired] public CaseStatus Status { get; set; }
+    [Parameter] public string? Class { get; set; }
+
+    public static (string tone, string label, bool pulse) Map(CaseStatus s) => s switch
+    {
+        CaseStatus.Created                  => ("neutral", "Complaint Lodged",   false),
+        CaseStatus.ReviewedByAdmin          => ("info",    "Admin Reviewed",     false),
+        CaseStatus.AssignedToJudgeAndPolice => ("info",    "Officials Appointed",false),
+        CaseStatus.AvailableForLawyers      => ("warning", "Open for Defense",   true),
+        CaseStatus.LawyerAccepted           => ("warning", "Lawyer Accepting",   false),
+        CaseStatus.AssignedToLawyer         => ("info",    "Defense Retained",   false),
+        CaseStatus.ClerkAssignedByJudge     => ("info",    "Clerk Assigned",     false),
+        CaseStatus.Investigation            => ("warning", "Investigating",      true),
+        CaseStatus.Hearing                  => ("primary", "Court Hearing",      true),
+        CaseStatus.VerdictIssued            => ("primary", "Verdict Issued",     false),
+        CaseStatus.Closed                   => ("success", "Closed",             false),
+        _                                   => ("neutral", "—",                  false),
+    };
+}

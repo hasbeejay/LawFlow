@@ -1,0 +1,74 @@
+@* KPI tile. Big mono numeral. Optional sparkline (8-point array). Subtle violet halo. *@
+
+@{
+    var trendCls = TrendDirection switch {
+        "up"   => "text-success",
+        "down" => "text-danger",
+        _      => "text-muted",
+    };
+}
+
+<div class="lf-kpi">
+    <div class="flex items-start justify-between gap-3 relative z-10">
+        <div class="min-w-0">
+            <div class="text-xs text-muted uppercase tracking-wider font-medium">@Label</div>
+            <div class="mt-2 font-mono text-3xl text-ink leading-none tabular-nums">
+                @Value
+            </div>
+            @if (!string.IsNullOrEmpty(Hint))
+            {
+                <div class="mt-2 text-xs text-muted">@Hint</div>
+            }
+        </div>
+
+        @if (!string.IsNullOrEmpty(Icon))
+        {
+            <div class="w-9 h-9 rounded-card bg-primary/8 text-primary border border-primary/15 inline-flex items-center justify-center shrink-0">
+                <LfIcon Name="@Icon" Size="16" />
+            </div>
+        }
+    </div>
+
+    @if (Sparkline is { Length: > 1 })
+    {
+        var pts = BuildSparkPoints(Sparkline);
+        <svg class="lf-spark mt-3 w-full relative z-10" viewBox="0 0 100 28" preserveAspectRatio="none" height="28">
+            <path class="area" d="@pts.area" />
+            <path d="@pts.line" />
+        </svg>
+    }
+
+    @if (!string.IsNullOrEmpty(Trend))
+    {
+        <div class="mt-3 flex items-center gap-1.5 text-xs @trendCls relative z-10">
+            @if (TrendDirection == "up")   { <LfIcon Name="trending-up" Size="13" /> }
+            <span class="font-mono tabular-nums">@Trend</span>
+            <span class="text-muted">@TrendSuffix</span>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired] public string Label { get; set; } = "";
+    [Parameter, EditorRequired] public string Value { get; set; } = "0";
+    [Parameter] public string? Icon { get; set; }
+    [Parameter] public string? Hint { get; set; }
+    [Parameter] public string? Trend { get; set; }
+    [Parameter] public string TrendDirection { get; set; } = "flat";  // up | down | flat
+    [Parameter] public string TrendSuffix { get; set; } = "vs last month";
+    [Parameter] public double[]? Sparkline { get; set; }
+
+    private static (string line, string area) BuildSparkPoints(double[] data)
+    {
+        if (data.Length < 2) return ("", "");
+        double min = data.Min(), max = data.Max();
+        var range = max - min;
+        if (range < 0.0001) range = 1;
+        double stepX = 100.0 / (data.Length - 1);
+        var pts = data.Select((v, i) =>
+            ($"{i * stepX:0.##},{(24 - ((v - min) / range) * 22):0.##}")).ToArray();
+        var line = "M " + string.Join(" L ", pts);
+        var area = line + $" L 100,28 L 0,28 Z";
+        return (line, area);
+    }
+}

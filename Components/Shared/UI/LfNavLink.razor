@@ -1,0 +1,47 @@
+@inherits ComponentBase
+@inject NavigationManager Nav
+@implements IDisposable
+
+@{
+    var active = IsActive();
+    var cls = $"lf-nav {(active ? "lf-nav-active" : "")} {Class}".Trim();
+}
+
+<a href="@Href" class="@cls">
+    @if (!string.IsNullOrEmpty(Icon))
+    {
+        <LfIcon Name="@Icon" Size="16" Class="@(active ? "text-primary" : "")" />
+    }
+    <span class="truncate flex-1">@ChildContent</span>
+    @if (Badge > 0)
+    {
+        <span class="font-mono text-2xs px-1.5 py-0.5 rounded-xs bg-primary/15 text-primary">@Badge</span>
+    }
+</a>
+
+@code {
+    [Parameter, EditorRequired] public string Href { get; set; } = "";
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public string? Icon { get; set; }
+    [Parameter] public int Badge { get; set; }
+    [Parameter] public bool ExactMatch { get; set; } = false;
+    [Parameter] public string? Class { get; set; }
+
+    protected override void OnInitialized()
+    {
+        Nav.LocationChanged += HandleLoc;
+    }
+
+    private void HandleLoc(object? s, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e) => InvokeAsync(StateHasChanged);
+
+    private bool IsActive()
+    {
+        var rel = "/" + Nav.ToBaseRelativePath(Nav.Uri).Split('?', '#')[0].TrimEnd('/');
+        var target = Href.TrimEnd('/');
+        if (string.IsNullOrEmpty(target)) target = "/";
+        if (ExactMatch) return string.Equals(rel, target, StringComparison.OrdinalIgnoreCase);
+        return rel.StartsWith(target, StringComparison.OrdinalIgnoreCase);
+    }
+
+    public void Dispose() { Nav.LocationChanged -= HandleLoc; }
+}

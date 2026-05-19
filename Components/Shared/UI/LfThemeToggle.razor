@@ -1,0 +1,31 @@
+@inject ThemeService Theme
+@implements IDisposable
+
+<button type="button" @onclick="Toggle"
+        title="@(Theme.IsDark ? "Switch to light" : "Switch to dark")"
+        aria-label="Toggle theme"
+        class="lf-btn-ghost p-2 rounded-card border border-hairline hover:border-primary/40 group">
+    @if (Theme.IsDark)
+    {
+        <LfIcon Name="sun" Size="16" Class="text-amber group-hover:rotate-12 transition-transform" />
+    }
+    else
+    {
+        <LfIcon Name="moon" Size="16" Class="group-hover:-rotate-12 transition-transform" />
+    }
+</button>
+
+@code {
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            Theme.OnChange += Render;
+            await Theme.InitializeAsync();
+        }
+    }
+
+    private async Task Toggle() => await Theme.ToggleAsync();
+    private void Render() => InvokeAsync(StateHasChanged);
+    public void Dispose() { Theme.OnChange -= Render; }
+}

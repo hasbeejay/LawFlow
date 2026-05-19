@@ -85,6 +85,8 @@ builder.Services.AddTransient<AuditLogService>();
 builder.Services.AddScoped<NotificationService>();
 builder.Services.AddTransient<DashboardService>();
 builder.Services.AddTransient<MessageService>();
+builder.Services.AddScoped<ThemeService>();
+builder.Services.AddScoped<ToastService>();
 
 // Add SignalR support
 builder.Services.AddSignalR();

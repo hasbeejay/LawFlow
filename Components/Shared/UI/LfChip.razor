@@ -1,0 +1,27 @@
+@{
+    // Tone determines color tokens. Amber is intentionally absent from chips.
+    var (textCls, bgCls, dotCls) = Tone switch {
+        "success" => ("text-success", "bg-success/10 border-success/25", "bg-success"),
+        "warning" => ("text-warning", "bg-warning/10 border-warning/25", "bg-warning"),
+        "danger"  => ("text-danger",  "bg-danger/10 border-danger/25",   "bg-danger"),
+        "info"    => ("text-info",    "bg-info/10 border-info/25",       "bg-info"),
+        "primary" => ("text-primary", "bg-primary/10 border-primary/25", "bg-primary"),
+        _         => ("text-muted",   "bg-canvas border-hairline",       "bg-muted"),
+    };
+    var combined = $"lf-pill {textCls} {bgCls} {Class}".Trim();
+}
+
+<span class="@combined">
+    @if (ShowDot) {
+        <span class="lf-pill-dot @dotCls @(Pulse ? "animate-pulse-dot" : "")"></span>
+    }
+    @ChildContent
+</span>
+
+@code {
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public string Tone { get; set; } = "neutral";  // neutral | primary | success | warning | danger | info
+    [Parameter] public bool ShowDot { get; set; } = true;
+    [Parameter] public bool Pulse { get; set; } = false;
+    [Parameter] public string? Class { get; set; }
+}

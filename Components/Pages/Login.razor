@@ -3,113 +3,181 @@
 @inject AuthService AuthService
 @inject CustomAuthenticationStateProvider CustomAuth
 @inject NavigationManager Navigation
-@inject ISnackbar Snackbar
+@inject ToastService Toast
 
-<PageTitle>Sign In - LawFlow</PageTitle>
+<PageTitle>Sign In — LawFlow</PageTitle>
 
-<div class="lf-auth-shell lf-page-transition">
-    <div class="lf-auth-grid">
-        <section class="lf-auth-brand lf-glass-panel">
-            <div class="d-flex align-center">
-                <MudIcon Icon="@Icons.Material.Filled.Gavel" Color="Color.Primary" Size="Size.Large" Style="font-size: 36px;" />
-                <MudText Typo="Typo.h4" Class="ml-2 font-weight-bold lf-brand">
-                    <span class="lf-brand-wordmark">Law<span class="lf-brand-accent">Flow</span></span>
-                </MudText>
+<div class="min-h-dvh w-full bg-canvas relative overflow-hidden">
+    <!-- Decorative grid backdrop (radial-masked, faint) -->
+    <div class="absolute inset-0 grid-bg opacity-60 pointer-events-none"></div>
+
+    <div class="relative min-h-dvh flex flex-col">
+        <!-- Header strip -->
+        <header class="h-14 px-6 lg:px-10 flex items-center justify-between border-b border-hairline bg-canvas/70 backdrop-blur">
+            <LfBrand Href="/login" />
+            <div class="flex items-center gap-3">
+                <span class="hidden md:inline-flex items-center gap-1.5 font-mono text-2xs text-muted uppercase tracking-wider">
+                    <span class="w-1.5 h-1.5 rounded-full bg-success animate-pulse-dot"></span>
+                    session · gateway-01
+                </span>
+                <LfThemeToggle />
             </div>
+        </header>
 
-            <div class="lf-auth-kicker mt-8">Judicial Operations Platform</div>
-            <h1 class="lf-auth-title">Secure case intelligence for courts, counsel, and investigators.</h1>
-            <p class="lf-auth-subtitle">
-                Centralized filing, assignment, hearing schedules, and verdict workflows with role-aware controls and a complete audit trail.
-            </p>
+        <div class="flex-1 grid lg:grid-cols-[1.1fr_1fr] xl:grid-cols-[1.3fr_1fr]">
+            <!-- LEFT — editorial/manifest side -->
+            <section class="hidden lg:flex flex-col justify-between p-10 xl:p-14 border-r border-hairline relative">
+                <!-- Document header -->
+                <div class="space-y-7">
+                    <div class="flex items-center gap-2 font-mono text-2xs uppercase tracking-[0.18em] text-muted">
+                        <span class="w-6 h-px bg-muted/60"></span>
+                        <span>Judicial Operations Platform</span>
+                        <span>·</span>
+                        <span class="text-primary font-semibold">LF-0001</span>
+                    </div>
 
-            <div class="lf-auth-meta">
-                <div class="lf-auth-meta-card">
-                    <div class="lf-auth-meta-label">Workflow</div>
-                    <div class="lf-auth-meta-value">11-stage lifecycle</div>
+                    <h1 class="text-balance text-4xl xl:text-[3.4rem] font-semibold tracking-tight leading-[1.04] max-w-xl text-ink">
+                        Secure case intelligence
+                        <br/>for
+                        <span class="relative inline-block">
+                            <span class="text-primary">courts</span><span class="text-ink">, </span><span class="text-primary">counsel</span><span class="text-ink">,</span>
+                        </span>
+                        <br/>
+                        <span class="text-ink">and</span>
+                        <span class="text-primary">investigators</span><span class="text-ink">.</span>
+                    </h1>
+
+                    <p class="text-muted text-base max-w-md leading-relaxed">
+                        Centralised filing, role-aware assignments, hearing schedules, and verdict workflows — with a complete audit trail on every action.
+                    </p>
                 </div>
-                <div class="lf-auth-meta-card">
-                    <div class="lf-auth-meta-label">Roles</div>
-                    <div class="lf-auth-meta-value">Admin to Clerk</div>
+
+                <!-- Live system strip — animated, makes the page feel alive -->
+                <div class="mt-10 max-w-md">
+                    <div class="flex items-center gap-2.5 font-mono text-2xs uppercase tracking-[0.16em] text-muted mb-3">
+                        <span class="inline-flex w-1.5 h-1.5 rounded-full bg-success animate-pulse-dot"></span>
+                        <span>Live · across jurisdictions</span>
+                    </div>
+                    <div class="lf-card overflow-hidden">
+                        <div class="grid grid-cols-3 divide-x divide-hairline">
+                            <div class="p-4">
+                                <div class="font-mono text-2xs uppercase tracking-wider text-muted">Open cases</div>
+                                <div class="mt-1.5 font-mono text-2xl tabular-nums text-ink">2,481</div>
+                                <div class="mt-1 flex items-center gap-1 text-2xs text-success">
+                                    <LfIcon Name="trending-up" Size="11" />
+                                    <span class="font-mono tabular-nums">+12 / 24h</span>
+                                </div>
+                            </div>
+                            <div class="p-4">
+                                <div class="font-mono text-2xs uppercase tracking-wider text-muted">Hearings today</div>
+                                <div class="mt-1.5 font-mono text-2xl tabular-nums text-ink">36</div>
+                                <div class="mt-1 text-2xs text-muted font-mono">across 8 courts</div>
+                            </div>
+                            <div class="p-4">
+                                <div class="font-mono text-2xs uppercase tracking-wider text-muted">Verdicts MTD</div>
+                                <div class="mt-1.5 font-mono text-2xl tabular-nums text-ink">128</div>
+                                <div class="mt-1 flex items-center gap-1 text-2xs text-primary">
+                                    <span class="font-mono tabular-nums">68% closed</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="px-4 py-2.5 border-t border-hairline bg-canvas/50 flex items-center justify-between">
+                            <div class="font-mono text-2xs uppercase tracking-wider text-muted">case · LF-2481/Q · STATE v. AHMED</div>
+                            <LfChip Tone="primary" Pulse="true">Hearing 14:30</LfChip>
+                        </div>
+                    </div>
                 </div>
-                <div class="lf-auth-meta-card">
-                    <div class="lf-auth-meta-label">Mode</div>
-                    <div class="lf-auth-meta-value">Realtime + audited</div>
+
+                <!-- Footer line -->
+                <div class="mt-8 flex items-center justify-between text-2xs font-mono uppercase tracking-wider text-muted">
+                    <span>Confidential · TLS 1.3</span>
+                    <span class="flex items-center gap-1.5">
+                        <LfIcon Name="shield" Size="12" /> session-bound · cookie-auth
+                    </span>
                 </div>
-            </div>
-        </section>
+            </section>
 
-        <section class="lf-auth-card lf-glass-panel">
-            <MudText Typo="Typo.h5" Class="font-weight-bold mb-1">Welcome back</MudText>
-            <MudText Typo="Typo.body2" Class="text-muted mb-5">Sign in to continue into your judicial workspace.</MudText>
+            <!-- RIGHT — sign-in card -->
+            <section class="flex items-center justify-center p-6 lg:p-10">
+                <div class="w-full max-w-md">
+                    <!-- Card stamp header -->
+                    <div class="flex items-center justify-between mb-4">
+                        <span class="font-mono text-2xs uppercase tracking-[0.16em] text-muted">FORM · AUTH-001</span>
+                        <span class="font-mono text-2xs uppercase tracking-wider @StatusClass">
+                            <span class="inline-block w-1.5 h-1.5 rounded-full @StatusDotClass mr-1.5 align-middle"></span>
+                            @StatusText
+                        </span>
+                    </div>
 
-            <EditForm Model="@_loginModel" OnValidSubmit="HandleLogin">
-                <DataAnnotationsValidator />
+                    <div class="lf-card p-7 shadow-pop">
+                        <h2 class="text-xl font-semibold tracking-tight text-ink">Sign in</h2>
+                        <p class="text-sm text-muted mt-1">Enter your credentials to continue.</p>
 
-                <MudTextField @bind-Value="_loginModel.Username"
-                              Label="Username"
-                              Variant="Variant.Outlined"
-                              Adornment="Adornment.Start"
-                              AdornmentIcon="@Icons.Material.Filled.Person"
-                              For="@(() => _loginModel.Username)"
-                              Class="mb-4" />
+                        <EditForm Model="@_loginModel" OnValidSubmit="HandleLogin" class="mt-6 space-y-4">
+                            <DataAnnotationsValidator />
 
-                <MudTextField @bind-Value="_loginModel.Password"
-                              Label="Password"
-                              Variant="Variant.Outlined"
-                              InputType="@_passwordInput"
-                              Adornment="Adornment.End"
-                              AdornmentIcon="@_passwordInputIcon"
-                              OnAdornmentClick="TogglePasswordVisibility"
-                              For="@(() => _loginModel.Password)"
-                              Class="mb-5" />
+                            <LfInput Label="Username"
+                                     StartIcon="user"
+                                     Placeholder="username"
+                                     AutoComplete="username"
+                                     Required
+                                     @bind-Value="_loginModel.Username" />
 
-                <MudButton ButtonType="ButtonType.Submit"
-                           Variant="Variant.Filled"
-                           Color="Color.Primary"
-                           FullWidth="true"
-                           Size="Size.Large"
-                           Style="height: 50px;"
-                           Disabled="@_loading">
-                    @if (_loading)
-                    {
-                        <MudProgressCircular Color="Color.Secondary" Size="Size.Small" Indeterminate="true" Class="mr-2" />
-                        <span>Signing in...</span>
-                    }
-                    else
-                    {
-                        <span>Sign in to LawFlow</span>
-                    }
-                </MudButton>
-            </EditForm>
+                            <LfInput Label="Password"
+                                     Type="@(_showPassword ? "text" : "password")"
+                                     StartIcon="shield"
+                                     EndIcon="@(_showPassword ? "eye-off" : "eye")"
+                                     OnEndIconClick="TogglePasswordVisibility"
+                                     Placeholder="••••••••••"
+                                     AutoComplete="current-password"
+                                     Required
+                                     @bind-Value="_loginModel.Password" />
 
-            <div class="lf-auth-demo">
-                <MudText Typo="Typo.subtitle2" Class="font-weight-bold mb-3">
-                    <MudIcon Icon="@Icons.Material.Filled.Bolt" Color="Color.Warning" Size="Size.Small" Class="mr-1" />
-                    Quick demo access (Password: Password123!)
-                </MudText>
-                <MudGrid Spacing="1">
-                    <MudItem xs="6" sm="4">
-                        <MudButton FullWidth="true" Variant="Variant.Outlined" Size="Size.Small" Color="Color.Primary" OnClick='() => AutoFill("admin")'>Admin</MudButton>
-                    </MudItem>
-                    <MudItem xs="6" sm="4">
-                        <MudButton FullWidth="true" Variant="Variant.Outlined" Size="Size.Small" Color="Color.Primary" OnClick='() => AutoFill("judge_ali")'>Judge</MudButton>
-                    </MudItem>
-                    <MudItem xs="6" sm="4">
-                        <MudButton FullWidth="true" Variant="Variant.Outlined" Size="Size.Small" Color="Color.Primary" OnClick='() => AutoFill("lawyer_faisal")'>Lawyer</MudButton>
-                    </MudItem>
-                    <MudItem xs="6" sm="4">
-                        <MudButton FullWidth="true" Variant="Variant.Outlined" Size="Size.Small" Color="Color.Primary" OnClick='() => AutoFill("client_zaheer")'>Client</MudButton>
-                    </MudItem>
-                    <MudItem xs="6" sm="4">
-                        <MudButton FullWidth="true" Variant="Variant.Outlined" Size="Size.Small" Color="Color.Primary" OnClick='() => AutoFill("police_rahim")'>Police</MudButton>
-                    </MudItem>
-                    <MudItem xs="6" sm="4">
-                        <MudButton FullWidth="true" Variant="Variant.Outlined" Size="Size.Small" Color="Color.Primary" OnClick='() => AutoFill("clerk_ahmad")'>Clerk</MudButton>
-                    </MudItem>
-                </MudGrid>
-            </div>
-        </section>
+                            <LfButton Type="submit" Variant="primary" Size="lg" FullWidth Loading="_loading">
+                                @if (_loading) { <span>Authenticating…</span> } else { <span>Sign in</span> }
+                                @if (!_loading) { <LfIcon Name="arrow-right" Size="15" /> }
+                            </LfButton>
+
+                            @if (!string.IsNullOrEmpty(_errorMessage))
+                            {
+                                <div class="flex items-start gap-2 p-3 rounded-card border border-danger/30 bg-danger/8 text-sm">
+                                    <LfIcon Name="alert-circle" Size="15" Class="text-danger mt-0.5" />
+                                    <div>
+                                        <div class="font-mono text-2xs uppercase tracking-wider text-danger">err · 401</div>
+                                        <div class="text-ink mt-0.5">@_errorMessage</div>
+                                    </div>
+                                </div>
+                            }
+                        </EditForm>
+
+                        <!-- Demo accounts panel -->
+                        <div class="mt-7">
+                            <div class="flex items-center gap-3">
+                                <div class="flex-1 lf-rule"></div>
+                                <span class="font-mono text-2xs uppercase tracking-wider text-muted">quick demo · pwd: Password123!</span>
+                                <div class="flex-1 lf-rule"></div>
+                            </div>
+
+                            <div class="mt-4 grid grid-cols-3 gap-1.5">
+                                @foreach (var demo in _demoUsers)
+                                {
+                                    <button type="button" @onclick="@(() => AutoFill(demo.username))"
+                                            class="group lf-btn-outline !py-1.5 !px-2 flex-col items-center !gap-0.5">
+                                        <span class="font-mono text-2xs text-muted uppercase tracking-wider group-hover:text-primary transition-colors">@demo.role</span>
+                                        <span class="text-xs truncate w-full text-center">@demo.username</span>
+                                    </button>
+                                }
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tiny footnote -->
+                    <p class="mt-5 text-center text-2xs font-mono uppercase tracking-wider text-muted">
+                        All actions logged · ts @_now
+                    </p>
+                </div>
+            </section>
+        </div>
     </div>
 </div>
 
@@ -117,45 +185,54 @@
     private LoginViewModel _loginModel = new();
     private bool _loading = false;
     private bool _showPassword = false;
-    private InputType _passwordInput = InputType.Password;
-    private string _passwordInputIcon = Icons.Material.Filled.VisibilityOff;
+    private string? _errorMessage;
+    private string _now = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm 'UTC'");
 
-    private void TogglePasswordVisibility()
+    private readonly (string role, string username)[] _demoUsers = new[]
     {
-        _showPassword = !_showPassword;
-        _passwordInput = _showPassword ? InputType.Text : InputType.Password;
-        _passwordInputIcon = _showPassword ? Icons.Material.Filled.Visibility : Icons.Material.Filled.VisibilityOff;
-    }
+        ("admin",  "admin"),
+        ("judge",  "judge_ali"),
+        ("lawyer", "lawyer_faisal"),
+        ("client", "client_zaheer"),
+        ("police", "police_rahim"),
+        ("clerk",  "clerk_ahmad"),
+    };
+
+    private string StatusText  => _loading ? "AUTHENTICATING…" : (!string.IsNullOrEmpty(_errorMessage) ? "REJECTED" : "READY");
+    private string StatusClass => _loading ? "text-info"   : (!string.IsNullOrEmpty(_errorMessage) ? "text-danger" : "text-muted");
+    private string StatusDotClass => _loading ? "bg-info animate-pulse-dot" : (!string.IsNullOrEmpty(_errorMessage) ? "bg-danger" : "bg-success animate-pulse-dot");
+
+    private void TogglePasswordVisibility() => _showPassword = !_showPassword;
 
     private void AutoFill(string username)
     {
         _loginModel.Username = username;
         _loginModel.Password = "Password123!";
+        _errorMessage = null;
     }
 
     private async Task HandleLogin()
     {
         _loading = true;
+        _errorMessage = null;
         try
         {
             var session = await AuthService.LoginAsync(_loginModel.Username, _loginModel.Password);
             if (session != null)
             {
                 await CustomAuth.UpdateAuthenticationState(session);
-                Snackbar.Add($"Logged in successfully as {session.FullName}", Severity.Success);
-                var roleRoute = string.IsNullOrWhiteSpace(session.Role)
-                    ? "client"
-                    : session.Role.ToLowerInvariant();
+                Toast.Success($"Welcome back, {session.FullName}");
+                var roleRoute = string.IsNullOrWhiteSpace(session.Role) ? "client" : session.Role.ToLowerInvariant();
                 Navigation.NavigateTo($"/{roleRoute}/dashboard", replace: true);
             }
             else
             {
-                Snackbar.Add("Invalid username or password.", Severity.Error);
+                _errorMessage = "Invalid username or password.";
             }
         }
         catch (Exception ex)
         {
-            Snackbar.Add($"Login failed: {ex.Message}", Severity.Error);
+            _errorMessage = ex.Message;
         }
         finally
         {

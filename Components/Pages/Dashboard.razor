@@ -11,319 +11,200 @@
 @inject CaseService CaseService
 @inject AuthenticationStateProvider AuthStateProvider
 @inject NavigationManager Navigation
-@inject ISnackbar Snackbar
-@using System.Security.Claims
+@inject ToastService Toast
 
-<PageTitle>Dashboard - LawFlow</PageTitle>
+<PageTitle>Dashboard — LawFlow</PageTitle>
 
-<div class="lf-page-transition">
-    <!-- Top Welcome Banner -->
-    <div class="d-flex flex-column flex-sm-row justify-space-between align-start align-sm-center mb-6 pa-6 lf-glass-panel" style="border-radius: 16px;">
-        <div>
-            <MudText Typo="Typo.h4" Class="font-weight-bold" Style="color: var(--lf-primary); font-weight: 700;">
-                Welcome, @_fullName
-            </MudText>
-            <MudText Typo="Typo.body2" Class="text-muted mt-1">Smart Judicial Portal — LawFlow Enterprise Dashboard</MudText>
+<!-- HEADER STRIP -->
+<div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-6">
+    <div>
+        <div class="font-mono text-2xs uppercase tracking-[0.18em] text-muted flex items-center gap-2">
+            <span class="w-6 h-px bg-muted/60"></span>
+            <span>Dashboard · @_role</span>
+            <span class="text-primary">@(DateTime.UtcNow.ToString("yyyy-MM-dd"))</span>
         </div>
-        <div class="mt-4 mt-sm-0">
-            <MudChip T="string" Color="Color.Primary" Variant="Variant.Filled" Size="Size.Large" Icon="@Icons.Material.Filled.Security" Style="border-radius: 8px;">
-                Role: @_role
-            </MudChip>
-        </div>
+        <h1 class="mt-1.5 text-2xl md:text-3xl font-semibold tracking-tight text-balance">
+            @Greeting, @_fullName.
+        </h1>
+        <p class="mt-1 text-sm text-muted">@_subtitle</p>
     </div>
 
-    <!-- ROLE SPECIFIC METRICS & QUICK ACTIONS -->
-    @if (_loading)
-    {
-        <div class="d-flex justify-center align-center py-10">
-            <MudProgressCircular Color="Color.Primary" Size="Size.Large" Indeterminate="true" />
-        </div>
-    }
-    else
-    {
-        <!-- Metrics Grid -->
-        <MudGrid Class="mb-6">
-            @if (_role == "Admin" && _adminStats != null)
-            {
-                <MudItem xs="12" sm="4" md="2">
-                    <MudPaper Class="pa-4 lf-glow-card" Style="background: linear-gradient(135deg, #1E3A8A 0%, #3B82F6 100%); color: white;">
-                        <MudText Typo="Typo.subtitle2" Class="font-weight-bold opacity-75">Total Cases</MudText>
-                        <MudText Typo="Typo.h3" Class="font-weight-bold mt-1">@_adminStats.TotalCases</MudText>
-                    </MudPaper>
-                </MudItem>
-                <MudItem xs="12" sm="4" md="2">
-                    <MudPaper Class="pa-4 lf-glow-card" Style="background: white; border-left: 5px solid #EF4444;">
-                        <MudText Typo="Typo.subtitle2" Class="text-muted font-weight-bold">Pending Review</MudText>
-                        <MudText Typo="Typo.h3" Class="font-weight-bold mt-1 text-danger">@_adminStats.PendingReview</MudText>
-                    </MudPaper>
-                </MudItem>
-                <MudItem xs="12" sm="4" md="2">
-                    <MudPaper Class="pa-4 lf-glow-card" Style="background: white; border-left: 5px solid #F59E0B;">
-                        <MudText Typo="Typo.subtitle2" Class="text-muted font-weight-bold">Active Investigations</MudText>
-                        <MudText Typo="Typo.h3" Class="font-weight-bold mt-1 text-warning">@_adminStats.ActiveInvestigations</MudText>
-                    </MudPaper>
-                </MudItem>
-                <MudItem xs="12" sm="4" md="2">
-                    <MudPaper Class="pa-4 lf-glow-card" Style="background: white; border-left: 5px solid #3B82F6;">
-                        <MudText Typo="Typo.subtitle2" Class="text-muted font-weight-bold">In Hearings</MudText>
-                        <MudText Typo="Typo.h3" Class="font-weight-bold mt-1 text-primary">@_adminStats.ActiveHearings</MudText>
-                    </MudPaper>
-                </MudItem>
-                <MudItem xs="12" sm="4" md="2">
-                    <MudPaper Class="pa-4 lf-glow-card" Style="background: white; border-left: 5px solid #10B981;">
-                        <MudText Typo="Typo.subtitle2" Class="text-muted font-weight-bold">Closed Cases</MudText>
-                        <MudText Typo="Typo.h3" Class="font-weight-bold mt-1 text-success">@_adminStats.ClosedCases</MudText>
-                    </MudPaper>
-                </MudItem>
-                <MudItem xs="12" sm="4" md="2">
-                    <MudPaper Class="pa-4 lf-glow-card" Style="background: white; border-left: 5px solid #8B5CF6;">
-                        <MudText Typo="Typo.subtitle2" Class="text-muted font-weight-bold">Active Staff</MudText>
-                        <MudText Typo="Typo.h3" Class="font-weight-bold mt-1 text-purple">@_adminStats.ActiveUsers</MudText>
-                    </MudPaper>
-                </MudItem>
-            }
-            else if (_role == "Judge" && _judgeStats != null)
-            {
-                <MudItem xs="12" sm="6" md="3">
-                    <MudPaper Class="pa-4 lf-glow-card" Style="background: linear-gradient(135deg, #1E3A8A 0%, #3B82F6 100%); color: white;">
-                        <MudText Typo="Typo.subtitle2" Class="font-weight-bold opacity-75">Assigned Cases</MudText>
-                        <MudText Typo="Typo.h3" Class="font-weight-bold mt-1">@_judgeStats.TotalAssigned</MudText>
-                    </MudPaper>
-                </MudItem>
-                <MudItem xs="12" sm="6" md="3">
-                    <MudPaper Class="pa-4 lf-glow-card" Style="background: white; border-left: 5px solid #EF4444;">
-                        <MudText Typo="Typo.subtitle2" Class="text-muted font-weight-bold">Verdict Pending</MudText>
-                        <MudText Typo="Typo.h3" Class="font-weight-bold mt-1 text-danger">@_judgeStats.VerdictPending</MudText>
-                    </MudPaper>
-                </MudItem>
-                <MudItem xs="12" sm="6" md="3">
-                    <MudPaper Class="pa-4 lf-glow-card" Style="background: white; border-left: 5px solid #F59E0B;">
-                        <MudText Typo="Typo.subtitle2" Class="text-muted font-weight-bold">Scheduled Hearings</MudText>
-                        <MudText Typo="Typo.h3" Class="font-weight-bold mt-1 text-warning">@_judgeStats.ScheduledHearings</MudText>
-                    </MudPaper>
-                </MudItem>
-                <MudItem xs="12" sm="6" md="3">
-                    <MudPaper Class="pa-4 lf-glow-card" Style="background: white; border-left: 5px solid #10B981;">
-                        <MudText Typo="Typo.subtitle2" Class="text-muted font-weight-bold">Closed Presided Cases</MudText>
-                        <MudText Typo="Typo.h3" Class="font-weight-bold mt-1 text-success">@_judgeStats.ClosedCases</MudText>
-                    </MudPaper>
-                </MudItem>
-            }
-            else if (_role == "Lawyer" && _lawyerStats != null)
-            {
-                <MudItem xs="12" sm="6" md="3">
-                    <MudPaper Class="pa-4 lf-glow-card" Style="background: linear-gradient(135deg, #0EA5E9 0%, #1E3A8A 100%); color: white;">
-                        <MudText Typo="Typo.subtitle2" Class="font-weight-bold opacity-75">Active Clients</MudText>
-                        <MudText Typo="Typo.h3" Class="font-weight-bold mt-1">@_lawyerStats.ActiveCases</MudText>
-                    </MudPaper>
-                </MudItem>
-                <MudItem xs="12" sm="6" md="3">
-                    <MudPaper Class="pa-4 lf-glow-card" Style="background: white; border-left: 5px solid #10B981;">
-                        <MudText Typo="Typo.subtitle2" Class="text-muted font-weight-bold">Resolved Cases</MudText>
-                        <MudText Typo="Typo.h3" Class="font-weight-bold mt-1 text-success">@_lawyerStats.CompletedCases</MudText>
-                    </MudPaper>
-                </MudItem>
-                <MudItem xs="12" sm="6" md="3">
-                    <MudPaper Class="pa-4 lf-glow-card" Style="background: white; border-left: 5px solid #3B82F6;">
-                        <MudText Typo="Typo.subtitle2" Class="text-muted font-weight-bold">Upcoming Court Hearings</MudText>
-                        <MudText Typo="Typo.h3" Class="font-weight-bold mt-1 text-primary">@_lawyerStats.UpcomingHearings</MudText>
-                    </MudPaper>
-                </MudItem>
-                <MudItem xs="12" sm="6" md="3">
-                    <MudPaper Class="pa-4 lf-glow-card lf-pulse-badge" Style="background: white; border-left: 5px solid #EF4444;">
-                        <MudText Typo="Typo.subtitle2" Class="text-muted font-weight-bold">Cases Offered</MudText>
-                        <MudText Typo="Typo.h3" Class="font-weight-bold mt-1 text-danger">@_lawyerStats.OfferedCases</MudText>
-                    </MudPaper>
-                </MudItem>
-            }
-            else if (_role == "Client" && _clientStats != null)
-            {
-                <MudItem xs="12" sm="4">
-                    <MudPaper Class="pa-4 lf-glow-card" Style="background: linear-gradient(135deg, #1E3A8A 0%, #3B82F6 100%); color: white;">
-                        <MudText Typo="Typo.subtitle2" Class="font-weight-bold opacity-75">My Lodged Cases</MudText>
-                        <MudText Typo="Typo.h3" Class="font-weight-bold mt-1">@_clientStats.TotalCases</MudText>
-                    </MudPaper>
-                </MudItem>
-                <MudItem xs="12" sm="4">
-                    <MudPaper Class="pa-4 lf-glow-card" Style="background: white; border-left: 5px solid #F59E0B;">
-                        <MudText Typo="Typo.subtitle2" Class="text-muted font-weight-bold">Active Cases</MudText>
-                        <MudText Typo="Typo.h3" Class="font-weight-bold mt-1 text-warning">@_clientStats.ActiveCases</MudText>
-                    </MudPaper>
-                </MudItem>
-                <MudItem xs="12" sm="4">
-                    <MudPaper Class="pa-4 lf-glow-card" Style="background: white; border-left: 5px solid #10B981;">
-                        <MudText Typo="Typo.subtitle2" Class="text-muted font-weight-bold">Closed Cases</MudText>
-                        <MudText Typo="Typo.h3" Class="font-weight-bold mt-1 text-success">@_clientStats.ClosedCases</MudText>
-                    </MudPaper>
-                </MudItem>
-            }
-            else if (_role == "Police" && _policeStats != null)
-            {
-                <MudItem xs="12" sm="4">
-                    <MudPaper Class="pa-4 lf-glow-card" Style="background: linear-gradient(135deg, #1E3A8A 0%, #0EA5E9 100%); color: white;">
-                        <MudText Typo="Typo.subtitle2" Class="font-weight-bold opacity-75">Investigation Queue</MudText>
-                        <MudText Typo="Typo.h3" Class="font-weight-bold mt-1">@_policeStats.TotalAssigned</MudText>
-                    </MudPaper>
-                </MudItem>
-                <MudItem xs="12" sm="4">
-                    <MudPaper Class="pa-4 lf-glow-card" Style="background: white; border-left: 5px solid #F59E0B;">
-                        <MudText Typo="Typo.subtitle2" Class="text-muted font-weight-bold">Active Cases</MudText>
-                        <MudText Typo="Typo.h3" Class="font-weight-bold mt-1 text-warning">@_policeStats.UnderInvestigation</MudText>
-                    </MudPaper>
-                </MudItem>
-                <MudItem xs="12" sm="4">
-                    <MudPaper Class="pa-4 lf-glow-card" Style="background: white; border-left: 5px solid #10B981;">
-                        <MudText Typo="Typo.subtitle2" Class="text-muted font-weight-bold">Reports Filed</MudText>
-                        <MudText Typo="Typo.h3" Class="font-weight-bold mt-1 text-success">@_policeStats.ReportsSubmitted</MudText>
-                    </MudPaper>
-                </MudItem>
-            }
-            else if (_role == "Clerk" && _clerkStats != null)
-            {
-                <MudItem xs="12" sm="4">
-                    <MudPaper Class="pa-4 lf-glow-card" Style="background: linear-gradient(135deg, #1E3A8A 0%, #3B82F6 100%); color: white;">
-                        <MudText Typo="Typo.subtitle2" Class="font-weight-bold opacity-75">Assigned Cases</MudText>
-                        <MudText Typo="Typo.h3" Class="font-weight-bold mt-1">@_clerkStats.TotalAssigned</MudText>
-                    </MudPaper>
-                </MudItem>
-                <MudItem xs="12" sm="4">
-                    <MudPaper Class="pa-4 lf-glow-card" Style="background: white; border-left: 5px solid #3B82F6;">
-                        <MudText Typo="Typo.subtitle2" Class="text-muted font-weight-bold">Scheduled Hearings</MudText>
-                        <MudText Typo="Typo.h3" Class="font-weight-bold mt-1 text-primary">@_clerkStats.ScheduledHearings</MudText>
-                    </MudPaper>
-                </MudItem>
-                <MudItem xs="12" sm="4">
-                    <MudPaper Class="pa-4 lf-glow-card" Style="background: white; border-left: 5px solid #F59E0B;">
-                        <MudText Typo="Typo.subtitle2" Class="text-muted font-weight-bold">Verdicts Pending Publication</MudText>
-                        <MudText Typo="Typo.h3" Class="font-weight-bold mt-1 text-warning">@_clerkStats.PendingVerdicts</MudText>
-                    </MudPaper>
-                </MudItem>
-            }
-        </MudGrid>
-
-        <!-- Quick Actions Panel -->
-        <div class="lf-glass-panel pa-6 mb-6">
-            <MudText Typo="Typo.h6" Class="font-weight-bold mb-4">
-                <MudIcon Icon="@Icons.Material.Filled.Bolt" Color="Color.Warning" Class="mr-2" />
-                Quick Actions
-            </MudText>
-            <div class="d-flex flex-wrap gap-4">
-                @if (_role == "Client")
-                {
-                    <MudButton Href="/cases" Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Add" Style="border-radius: 8px;">
-                        Submit New Case (FIR)
-                    </MudButton>
-                }
-                <MudButton Href="/cases" Variant="Variant.Filled" Color="Color.Secondary" StartIcon="@Icons.Material.Filled.FolderOpen" Style="border-radius: 8px;">
-                    View Case Records
-                </MudButton>
-                @if (_role == "Clerk" || _role == "Admin")
-                {
-                    <MudButton Href="/hearings" Variant="Variant.Filled" Color="Color.Success" StartIcon="@Icons.Material.Filled.Add" Style="border-radius: 8px;">
-                        Schedule Judicial Hearing
-                    </MudButton>
-                }
-                @if (_role == "Admin")
-                {
-                    <MudButton Href="/admin/users" Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.PersonAdd" Style="border-radius: 8px;">
-                        Manage Judicial Accounts
-                    </MudButton>
-                    <MudButton Href="/admin/logs" Variant="Variant.Filled" Color="Color.Dark" StartIcon="@Icons.Material.Filled.History" Style="border-radius: 8px;">
-                        System Activity Logs
-                    </MudButton>
-                }
-            </div>
-        </div>
-
-        <!-- CHARTS SECTION (Admins & Judges & Lawyers) -->
-        @if (_role == "Admin" || _role == "Judge" || _role == "Lawyer")
+    <div class="flex flex-wrap items-center gap-2">
+        @if (_role == "Client")
         {
-            <MudGrid Class="mb-6">
-                <!-- Case Trend Line Chart -->
-                <MudItem xs="12" md="8">
-                    <MudPaper Class="pa-6 lf-glass-panel" Style="height: 400px; border-radius: 16px;">
-                        <div class="d-flex justify-space-between align-center mb-4">
-                            <MudText Typo="Typo.h6" Class="font-weight-bold">Monthly Judicial Case Analytics</MudText>
-                            <MudChip T="string" Color="Color.Primary" Variant="Variant.Outlined" Size="Size.Small">Year @DateTime.UtcNow.Year</MudChip>
-                        </div>
-                        @if (_trends != null)
-                        {
-                            <MudChart T="double" ChartType="ChartType.Line" 
-                                      ChartSeries="@_series" 
-                                      ChartLabels="@_trends.Months" 
-                                      Width="100%" 
-                                      Height="300px" 
-                                      ChartOptions="@_chartOptions" />
-                        }
-                    </MudPaper>
-                </MudItem>
-
-                <!-- Verdict Distribution Donut Chart -->
-                <MudItem xs="12" md="4">
-                    <MudPaper Class="pa-6 lf-glass-panel" Style="height: 400px; border-radius: 16px;">
-                        <MudText Typo="Typo.h6" Class="font-weight-bold mb-4">Verdict Distribution</MudText>
-                        @if (_verdicts != null)
-                        {
-                            <MudChart T="double" ChartType="ChartType.Donut" 
-                                      ChartSeries="@_donutSeries" 
-                                      ChartLabels="@_donutLabels" 
-                                      Width="100%" 
-                                      Height="250px" />
-                            <div class="d-flex justify-space-around mt-4" style="font-size: 11px;">
-                                <div><span style="color:#1E3A8A; font-weight:700;">●</span> Guilty (@_verdicts.Guilty)</div>
-                                <div><span style="color:#0EA5E9; font-weight:700;">●</span> Acquitted (@_verdicts.Acquitted)</div>
-                                <div><span style="color:#10B981; font-weight:700;">●</span> Dismissed (@_verdicts.Dismissed)</div>
-                                <div><span style="color:#F59E0B; font-weight:700;">●</span> Appealed (@_verdicts.Appealed)</div>
-                            </div>
-                        }
-                    </MudPaper>
-                </MudItem>
-            </MudGrid>
+            <LfButton Href="/cases" Variant="primary" Icon="plus">Submit New FIR</LfButton>
         }
-
-        <!-- RECENT CASES LIST -->
-        <MudPaper Class="pa-6 lf-glass-panel" Style="border-radius: 16px;">
-            <div class="d-flex justify-space-between align-center mb-4">
-                <MudText Typo="Typo.h6" Class="font-weight-bold">Recent Case Activities</MudText>
-                <MudButton Href="/cases" EndIcon="@Icons.Material.Filled.ArrowForward" Color="Color.Primary" Size="Size.Small">View All</MudButton>
-            </div>
-
-            <MudTable Items="@_recentCases" Hover="true" Breakpoint="Breakpoint.Sm" Elevation="0" Style="background: transparent;">
-                <HeaderContent>
-                    <MudTh>Case Number</MudTh>
-                    <MudTh>Title</MudTh>
-                    <MudTh>Client</MudTh>
-                    <MudTh>Status</MudTh>
-                    <MudTh>Filing Date</MudTh>
-                    <MudTh Style="text-align: right;">Action</MudTh>
-                </HeaderContent>
-                <RowTemplate>
-                    <MudTd DataLabel="Case Number">
-                        <MudChip T="string" Color="Color.Primary" Variant="Variant.Outlined" Size="Size.Small" Style="border-radius:6px; font-weight:600;">
-                            @context.CaseNumber
-                        </MudChip>
-                    </MudTd>
-                    <MudTd DataLabel="Title" Style="font-weight: 500;">@context.Title</MudTd>
-                    <MudTd DataLabel="Client">@context.Client?.FullName</MudTd>
-                    <MudTd DataLabel="Status">
-                        <MudChip T="string" Color="@GetStatusColor(context.Status)" Size="Size.Small" Style="border-radius:6px; font-weight: 600;">
-                            @GetStatusLabel(context.Status)
-                        </MudChip>
-                    </MudTd>
-                    <MudTd DataLabel="Filing Date">@context.CreatedAt.ToLocalTime().ToString("d")</MudTd>
-                    <MudTd Style="text-align: right;">
-                        <MudButton Href="@($"/{_role.ToLower()}/cases/{context.Id}")" Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small" Style="border-radius: 6px; text-transform:none;">
-                            Open Portal
-                        </MudButton>
-                    </MudTd>
-                </RowTemplate>
-                <PagerContent>
-                    <MudTablePager PageSizeOptions="new int[]{5, 10}" />
-                </PagerContent>
-            </MudTable>
-        </MudPaper>
-    }
+        @if (_role == "Clerk" || _role == "Admin")
+        {
+            <LfButton Href="/hearings" Variant="primary" Icon="calendar">Schedule Hearing</LfButton>
+        }
+        @if (_role == "Admin")
+        {
+            <LfButton Href="/admin/users" Variant="outline" Icon="users">Manage Accounts</LfButton>
+        }
+        <LfButton Href="/cases" Variant="outline" Icon="folder-open">Case Records</LfButton>
+    </div>
 </div>
+
+@if (_loading)
+{
+    <!-- Skeleton state -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        @for (int i = 0; i < 4; i++)
+        {
+            <div class="lf-card p-5 animate-pulse">
+                <div class="h-3 w-24 bg-hairline rounded-xs"></div>
+                <div class="mt-4 h-8 w-20 bg-hairline rounded-xs"></div>
+                <div class="mt-3 h-2.5 w-full bg-hairline/60 rounded-xs"></div>
+            </div>
+        }
+    </div>
+}
+else
+{
+    <!-- KPI GRID — role aware -->
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
+        @if (_role == "Admin" && _adminStats != null)
+        {
+            <LfKpi Label="Total Cases"        Value="@(_adminStats.TotalCases.ToString("N0"))"        Icon="folder-open" Sparkline="@_trends?.CasesFiled"  Hint="all jurisdictions" />
+            <LfKpi Label="Pending Review"     Value="@(_adminStats.PendingReview.ToString("N0"))"     Icon="alert-circle" Hint="awaiting admin" />
+            <LfKpi Label="Investigations"     Value="@(_adminStats.ActiveInvestigations.ToString("N0"))" Icon="shield" Hint="active" />
+            <LfKpi Label="In Hearings"        Value="@(_adminStats.ActiveHearings.ToString("N0"))"    Icon="scale" Hint="courtroom-bound" />
+            <LfKpi Label="Closed Cases"       Value="@(_adminStats.ClosedCases.ToString("N0"))"       Icon="check-circle" Sparkline="@_trends?.CasesClosed" Hint="archived" />
+            <LfKpi Label="Active Staff"       Value="@(_adminStats.ActiveUsers.ToString("N0"))"       Icon="users" Hint="signed-in users" />
+        }
+        else if (_role == "Judge" && _judgeStats != null)
+        {
+            <LfKpi Label="Assigned Cases"     Value="@(_judgeStats.TotalAssigned.ToString("N0"))"     Icon="scale" Sparkline="@_trends?.CasesFiled" Class="lg:col-span-2" />
+            <LfKpi Label="Verdict Pending"    Value="@(_judgeStats.VerdictPending.ToString("N0"))"    Icon="alert-circle" />
+            <LfKpi Label="Scheduled Hearings" Value="@(_judgeStats.ScheduledHearings.ToString("N0"))" Icon="calendar" />
+            <LfKpi Label="Closed"             Value="@(_judgeStats.ClosedCases.ToString("N0"))"       Icon="check-circle" Sparkline="@_trends?.CasesClosed" Class="lg:col-span-2" />
+        }
+        else if (_role == "Lawyer" && _lawyerStats != null)
+        {
+            <LfKpi Label="Active Clients"     Value="@(_lawyerStats.ActiveCases.ToString("N0"))"      Icon="briefcase" Sparkline="@_trends?.CasesFiled" />
+            <LfKpi Label="Resolved Cases"     Value="@(_lawyerStats.CompletedCases.ToString("N0"))"   Icon="check-circle" />
+            <LfKpi Label="Upcoming Hearings"  Value="@(_lawyerStats.UpcomingHearings.ToString("N0"))" Icon="calendar" />
+            <LfKpi Label="Cases Offered"      Value="@(_lawyerStats.OfferedCases.ToString("N0"))"     Icon="bell" Hint="awaiting your acceptance" />
+        }
+        else if (_role == "Client" && _clientStats != null)
+        {
+            <LfKpi Label="My Lodged Cases"    Value="@(_clientStats.TotalCases.ToString("N0"))"       Icon="folder-open" Class="col-span-2 sm:col-span-1" />
+            <LfKpi Label="Active"             Value="@(_clientStats.ActiveCases.ToString("N0"))"      Icon="circle-dot" />
+            <LfKpi Label="Closed"             Value="@(_clientStats.ClosedCases.ToString("N0"))"      Icon="check-circle" />
+        }
+        else if (_role == "Police" && _policeStats != null)
+        {
+            <LfKpi Label="Investigation Queue" Value="@(_policeStats.TotalAssigned.ToString("N0"))"    Icon="shield" Class="col-span-2 sm:col-span-1" />
+            <LfKpi Label="Active Cases"        Value="@(_policeStats.UnderInvestigation.ToString("N0"))" Icon="circle-dot" />
+            <LfKpi Label="Reports Filed"       Value="@(_policeStats.ReportsSubmitted.ToString("N0"))" Icon="file-text" />
+        }
+        else if (_role == "Clerk" && _clerkStats != null)
+        {
+            <LfKpi Label="Assigned Cases"      Value="@(_clerkStats.TotalAssigned.ToString("N0"))"     Icon="folder-open" Class="col-span-2 sm:col-span-1" />
+            <LfKpi Label="Scheduled Hearings"  Value="@(_clerkStats.ScheduledHearings.ToString("N0"))" Icon="calendar" />
+            <LfKpi Label="Pending Verdicts"    Value="@(_clerkStats.PendingVerdicts.ToString("N0"))"   Icon="file-text" Hint="awaiting publication" />
+        }
+    </div>
+
+    @if ((_role == "Admin" || _role == "Judge" || _role == "Lawyer") && _trends != null && _verdicts != null)
+    {
+        <!-- CHART ROW -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 mb-6">
+            <LfCard Class="lg:col-span-8">
+                <Header>
+                    <div>
+                        <div class="font-mono text-2xs uppercase tracking-wider text-muted">Annual analytics</div>
+                        <div class="text-base font-semibold mt-0.5">Case filings vs closures</div>
+                    </div>
+                </Header>
+                <HeaderActions>
+                    <LfChip Tone="neutral" ShowDot="false">@DateTime.UtcNow.Year</LfChip>
+                </HeaderActions>
+                <ChildContent>
+                    <LfLineChart SeriesA="@_trends.CasesFiled"
+                                 SeriesB="@_trends.CasesClosed"
+                                 Labels="@_trends.Months"
+                                 LabelA="Filed"
+                                 LabelB="Closed"
+                                 Height="240" />
+                </ChildContent>
+            </LfCard>
+
+            <LfCard Class="lg:col-span-4">
+                <Header>
+                    <div>
+                        <div class="font-mono text-2xs uppercase tracking-wider text-muted">Verdicts</div>
+                        <div class="text-base font-semibold mt-0.5">Outcome distribution</div>
+                    </div>
+                </Header>
+                <ChildContent>
+                    <LfDonutChart CenterLabel="verdicts" Size="150" Slices="@_verdictSlices" />
+                </ChildContent>
+            </LfCard>
+        </div>
+    }
+
+    <!-- RECENT CASES -->
+    <LfCard Padding="false">
+        <Header>
+            <div class="p-5">
+                <div class="font-mono text-2xs uppercase tracking-wider text-muted">Activity</div>
+                <div class="text-base font-semibold mt-0.5">Recent case files</div>
+            </div>
+        </Header>
+        <HeaderActions>
+            <div class="p-5">
+                <LfButton Href="/cases" Variant="ghost" Size="sm" EndIcon="arrow-right">View all</LfButton>
+            </div>
+        </HeaderActions>
+        <ChildContent>
+            @if (_recentCases.Count == 0)
+            {
+                <div class="px-6 py-14 text-center">
+                    <div class="inline-flex items-center justify-center w-12 h-12 rounded-card bg-canvas border border-hairline text-muted">
+                        <LfIcon Name="folder-open" Size="20" />
+                    </div>
+                    <div class="mt-3 text-sm text-muted">No case files yet.</div>
+                </div>
+            }
+            else
+            {
+                <div class="overflow-x-auto">
+                    <table class="lf-table">
+                        <thead>
+                            <tr>
+                                <th class="w-44">Case</th>
+                                <th>Title</th>
+                                <th class="hidden md:table-cell">Client</th>
+                                <th>Status</th>
+                                <th class="hidden sm:table-cell">Filed</th>
+                                <th class="w-20 text-right pr-5">—</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var c in _recentCases)
+                            {
+                                <tr>
+                                    <td class="pl-5">
+                                        <span class="lf-tag-num">@c.CaseNumber</span>
+                                    </td>
+                                    <td class="font-medium text-ink">@c.Title</td>
+                                    <td class="hidden md:table-cell text-muted">@c.Client?.FullName</td>
+                                    <td><LfStatusChip Status="@c.Status" /></td>
+                                    <td class="hidden sm:table-cell font-mono text-xs text-muted">@(c.CreatedAt.ToLocalTime().ToString("yyyy-MM-dd"))</td>
+                                    <td class="text-right pr-5">
+                                        <LfButton Href="@($"/{_role.ToLower()}/cases/{c.Id}")" Variant="ghost" Size="sm" EndIcon="arrow-up-right">Open</LfButton>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </ChildContent>
+    </LfCard>
+}
 
 @code {
     private bool _loading = true;
@@ -331,7 +212,6 @@
     private string _role = string.Empty;
     private string _userId = string.Empty;
 
-    // Aggregates
     private AdminStats? _adminStats;
     private JudgeStats? _judgeStats;
     private LawyerStats? _lawyerStats;
@@ -339,15 +219,25 @@
     private PoliceStats? _policeStats;
     private ClerkStats? _clerkStats;
 
-    // Charts
     private CaseCompletionTrends? _trends;
     private VerdictDistribution? _verdicts;
-    private List<ChartSeries<double>> _series = new();
-    private List<ChartSeries<double>> _donutSeries = new();
-    private string[] _donutLabels = new[] { "Guilty", "Acquitted", "Dismissed", "Appealed" };
-    private ChartOptions _chartOptions = new();
+    private List<LfDonutChart.Slice> _verdictSlices = new();
 
     private List<Case> _recentCases = new();
+
+    private string Greeting
+    {
+        get
+        {
+            var h = DateTime.Now.Hour;
+            if (h < 5)  return "Good evening";
+            if (h < 12) return "Good morning";
+            if (h < 17) return "Good afternoon";
+            return "Good evening";
+        }
+    }
+
+    private string _subtitle = "Smart Judicial Portal — case lifecycle in one place.";
 
     protected override async Task OnInitializedAsync()
     {
@@ -357,11 +247,21 @@
         if (user.Identity?.IsAuthenticated ?? false)
         {
             _fullName = user.FindFirst(ClaimTypes.GivenName)?.Value ?? user.Identity.Name ?? "User";
-            _role = user.FindFirst(ClaimTypes.Role)?.Value ?? "Client";
-            _userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "";
+            _role     = user.FindFirst(ClaimTypes.Role)?.Value ?? "Client";
+            _userId   = user.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "";
             var roleLower = _role.ToLowerInvariant();
 
-            // Role sub-routing correction
+            _subtitle = _role switch
+            {
+                "Admin"  => "System-wide oversight across courts, registry, and audit trail.",
+                "Judge"  => "Your presiding caseload, hearings, and pending verdicts.",
+                "Lawyer" => "Active defense engagements and offered cases.",
+                "Client" => "Status of your lodged complaints and filings.",
+                "Police" => "Investigation queue and recent report submissions.",
+                "Clerk"  => "Hearing scheduling and verdict publication queue.",
+                _        => "Smart Judicial Portal — case lifecycle in one place.",
+            };
+
             var route = Navigation.ToBaseRelativePath(Navigation.Uri).Trim('/').ToLowerInvariant();
             var firstSegment = route.Split('/', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
             var knownRoles = new[] { "admin", "lawyer", "client", "judge", "police", "clerk" };
@@ -371,106 +271,44 @@
 
             if (mismatch || isGenericDashboardRoute)
             {
-                // Same component serves multiple routes; avoid early return here
-                // to prevent leaving _loading=true on first-login route redirects.
                 Navigation.NavigateTo($"/{roleLower}/dashboard", replace: true);
             }
 
             try
             {
-                // Load metrics based on Role
                 switch (_role)
                 {
-                    case "Admin":
-                        _adminStats = await DashboardService.GetAdminStatsAsync();
-                        break;
-                    case "Judge":
-                        _judgeStats = await DashboardService.GetJudgeStatsAsync(_userId);
-                        break;
-                    case "Lawyer":
-                        _lawyerStats = await DashboardService.GetLawyerStatsAsync(_userId);
-                        break;
-                    case "Client":
-                        _clientStats = await DashboardService.GetClientStatsAsync(_userId);
-                        break;
-                    case "Police":
-                        _policeStats = await DashboardService.GetPoliceStatsAsync(_userId);
-                        break;
-                    case "Clerk":
-                        _clerkStats = await DashboardService.GetClerkStatsAsync(_userId);
-                        break;
+                    case "Admin":  _adminStats  = await DashboardService.GetAdminStatsAsync(); break;
+                    case "Judge":  _judgeStats  = await DashboardService.GetJudgeStatsAsync(_userId); break;
+                    case "Lawyer": _lawyerStats = await DashboardService.GetLawyerStatsAsync(_userId); break;
+                    case "Client": _clientStats = await DashboardService.GetClientStatsAsync(_userId); break;
+                    case "Police": _policeStats = await DashboardService.GetPoliceStatsAsync(_userId); break;
+                    case "Clerk":  _clerkStats  = await DashboardService.GetClerkStatsAsync(_userId); break;
                 }
 
-                // Load charts data (common for Admins/Judges/Lawyers)
-                if (_role == "Admin" || _role == "Judge" || _role == "Lawyer")
+                if (_role is "Admin" or "Judge" or "Lawyer")
                 {
-                    _trends = await DashboardService.GetCaseCompletionTrendsAsync();
+                    _trends   = await DashboardService.GetCaseCompletionTrendsAsync();
                     _verdicts = await DashboardService.GetVerdictDistributionAsync();
 
-                    _series = new List<ChartSeries<double>>
+                    _verdictSlices = new List<LfDonutChart.Slice>
                     {
-                        new ChartSeries<double> { Name = "Cases Filed", Data = _trends.CasesFiled },
-                        new ChartSeries<double> { Name = "Cases Closed", Data = _trends.CasesClosed }
-                    };
-
-                    _donutSeries = new List<ChartSeries<double>>
-                    {
-                        new ChartSeries<double>
-                        {
-                            Name = "Verdicts",
-                            Data = new double[] { _verdicts.Guilty, _verdicts.Acquitted, _verdicts.Dismissed, _verdicts.Appealed }
-                        }
+                        new("Guilty",    _verdicts.Guilty,    "primary"),
+                        new("Acquitted", _verdicts.Acquitted, "info"),
+                        new("Dismissed", _verdicts.Dismissed, "success"),
+                        new("Appealed",  _verdicts.Appealed,  "warning"),
                     };
                 }
 
-                // Load recent cases for quick overview
                 var cases = await CaseService.GetCasesForUserAsync(_userId, Enum.Parse<UserRole>(_role));
-                _recentCases = cases.Take(5).ToList();
+                _recentCases = cases.Take(8).ToList();
             }
             catch (Exception ex)
             {
-                Snackbar.Add($"Dashboard failed to load: {ex.Message}", Severity.Error);
+                Toast.Error($"Dashboard failed to load: {ex.Message}");
             }
         }
 
         _loading = false;
-    }
-
-    private Color GetStatusColor(CaseStatus status)
-    {
-        return status switch
-        {
-            CaseStatus.Created => Color.Default,
-            CaseStatus.ReviewedByAdmin => Color.Primary,
-            CaseStatus.AssignedToJudgeAndPolice => Color.Info,
-            CaseStatus.AvailableForLawyers => Color.Warning,
-            CaseStatus.LawyerAccepted => Color.Warning,
-            CaseStatus.AssignedToLawyer => Color.Info,
-            CaseStatus.ClerkAssignedByJudge => Color.Info,
-            CaseStatus.Investigation => Color.Warning,
-            CaseStatus.Hearing => Color.Primary,
-            CaseStatus.VerdictIssued => Color.Secondary,
-            CaseStatus.Closed => Color.Success,
-            _ => Color.Default
-        };
-    }
-
-    private string GetStatusLabel(CaseStatus status)
-    {
-        return status switch
-        {
-            CaseStatus.Created => "Complaint Lodged",
-            CaseStatus.ReviewedByAdmin => "Reviewed By Admin",
-            CaseStatus.AssignedToJudgeAndPolice => "Officials Appointed",
-            CaseStatus.AvailableForLawyers => "Open for Defense",
-            CaseStatus.LawyerAccepted => "Lawyer Accepting",
-            CaseStatus.AssignedToLawyer => "Defense Retained",
-            CaseStatus.ClerkAssignedByJudge => "Clerk Assigned",
-            CaseStatus.Investigation => "Under Investigation",
-            CaseStatus.Hearing => "Court Hearings",
-            CaseStatus.VerdictIssued => "Verdict Issued",
-            CaseStatus.Closed => "Closed / Archived",
-            _ => "Unknown"
-        };
     }
 }

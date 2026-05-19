@@ -1,0 +1,31 @@
+@inject ToastService Toast
+@implements IDisposable
+
+<div class="fixed bottom-5 right-5 z-[100] flex flex-col gap-2 max-w-sm w-full pointer-events-none">
+    @foreach (var t in Toast.Toasts.ToList())
+    {
+        var (iconName, accentCls) = t.Severity switch {
+            ToastSeverity.Success => ("check-circle",   "text-success border-success/30"),
+            ToastSeverity.Warning => ("alert-triangle", "text-warning border-warning/30"),
+            ToastSeverity.Danger  => ("alert-circle",   "text-danger border-danger/30"),
+            _                     => ("info",           "text-info border-info/30"),
+        };
+        <div @key="t.Id"
+             class="lf-glass-pop flex items-start gap-3 p-3 pr-2 pointer-events-auto animate-fade-in-up @accentCls">
+            <span class="mt-0.5 shrink-0"><LfIcon Name="@iconName" Size="16" /></span>
+            <div class="flex-1 text-sm text-ink min-w-0">
+                @t.Message
+            </div>
+            <button @onclick="() => Toast.Dismiss(t.Id)"
+                    class="text-muted hover:text-ink p-1 rounded-xs shrink-0" aria-label="Dismiss">
+                <LfIcon Name="x" Size="14" />
+            </button>
+        </div>
+    }
+</div>
+
+@code {
+    protected override void OnInitialized() => Toast.OnChange += Render;
+    private void Render() => InvokeAsync(StateHasChanged);
+    public void Dispose() => Toast.OnChange -= Render;
+}

@@ -3,247 +3,181 @@
 @inject AuthenticationStateProvider AuthStateProvider
 @inject NotificationService NotificationService
 @inject CustomAuthenticationStateProvider CustomAuth
-@using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
-@inject ProtectedLocalStorage LocalStorage
+@implements IDisposable
 
-<MudThemeProvider @bind-IsDarkMode="_isDarkMode" Theme="_theme" />
+@* Legacy MudBlazor providers kept mounted so un-migrated pages keep working through the transition. *@
+<MudThemeProvider Theme="_legacyTheme" IsDarkMode="false" />
 <MudPopoverProvider />
 <MudDialogProvider FullWidth="true" MaxWidth="MaxWidth.ExtraSmall" />
 <MudSnackbarProvider />
+
+<LfToastHost />
 
 <AuthorizeView Context="authContext">
     <Authorized>
         @if (IsLoginPage())
         {
-            @Body
+            <main class="min-h-dvh bg-canvas">@Body</main>
         }
         else
         {
-            <MudLayout Class="lf-app-layout">
-                <MudAppBar Elevation="0" Color="Color.Surface" Dense="false" Fixed="false" Class="lf-appbar lf-topbar">
-                    <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@ToggleDrawer" Class="lf-toolbar-icon" />
-                    <MudText Typo="Typo.h5" Class="ml-3 font-weight-bold lf-brand">
-                        <MudIcon Icon="@Icons.Material.Filled.Gavel" Color="Color.Primary" />
-                        <span class="lf-brand-wordmark">Law<span class="lf-brand-accent">Flow</span></span>
-                    </MudText>
-                    
-                    <MudSpacer />
-                    
-                    <!-- Notification Bell -->
-                    <MudMenu Icon="@Icons.Material.Filled.Notifications" Color="Color.Default" AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.TopRight" MaxHeight="300">
-                        <ActivatorContent>
-                            <MudBadge Content="@_unreadNotificationCount" Color="Color.Error" Overlap="true" Visible="@(_unreadNotificationCount > 0)">
-                                <MudIcon Icon="@Icons.Material.Filled.Notifications" Color="Color.Default" Class="lf-toolbar-icon" />
-                            </MudBadge>
-                        </ActivatorContent>
-                        <ChildContent>
-                            <div style="width: 280px; padding: 12px;">
-                                <div class="d-flex justify-space-between align-center mb-2">
-                                    <MudText Typo="Typo.subtitle2" Style="font-weight: 600;">Notifications</MudText>
-                                    @if (_unreadNotificationCount > 0)
-                                    {
-                                        <MudButton Size="Size.Small" Color="Color.Primary" OnClick="MarkAllNotificationsAsRead">Mark all read</MudButton>
-                                    }
-                                </div>
-                                <MudDivider Class="mb-2" />
-                                @if (_notifications.Count == 0)
-                                {
-                                    <MudText Typo="Typo.body2" Align="Align.Center" Class="py-4 text-muted">No new alerts</MudText>
-                                }
-                                else
-                                {
-                                    @foreach (var n in _notifications)
-                                    {
-                                        <div class="py-2" style="border-bottom: 1px solid var(--lf-border); cursor: pointer;" @onclick="() => MarkRead(n.Id)">
-                                            <MudText Typo="Typo.caption" Color="Color.Primary" Class="d-block">@n.Title</MudText>
-                                            <MudText Typo="Typo.body2" Class="d-block" Style="font-size: 12px; line-height: 1.2;">@n.Message</MudText>
-                                            <MudText Typo="Typo.caption" Class="text-muted" Style="font-size: 10px;">@n.CreatedAt.ToLocalTime().ToString("t")</MudText>
-                                        </div>
-                                    }
-                                }
-                            </div>
-                        </ChildContent>
-                    </MudMenu>
+            <div class="min-h-dvh bg-canvas text-ink flex flex-col">
+                <!-- Top bar — liquid-glass chrome -->
+                <header class="sticky top-0 z-30 h-14 lf-glass-bar">
+                    <div class="h-full px-4 lg:px-6 flex items-center gap-3">
+                        <button type="button" @onclick="ToggleDrawer"
+                                class="lg:hidden lf-btn-ghost p-2 -ml-1 rounded-card border border-hairline"
+                                aria-label="Toggle navigation">
+                            <LfIcon Name="menu" Size="16" />
+                        </button>
 
-                    <!-- Theme Toggle -->
-                    <MudIconButton Icon="@(_isDarkMode ? Icons.Material.Filled.LightMode : Icons.Material.Filled.DarkMode)" 
-                                   Color="Color.Inherit" 
-                                   OnClick="ToggleTheme" 
-                                   Class="mx-2 lf-toolbar-icon" />
+                        <LfBrand Href="@DashboardHref(_currentUser)" />
 
-                    <!-- User Profile Menu -->
-                    <MudMenu AnchorOrigin="Origin.BottomRight" TransformOrigin="Origin.TopRight">
-                        <ActivatorContent>
-                            <MudChip T="string" Color="Color.Primary" Variant="Variant.Filled" Label="true" Class="lf-user-chip" Style="cursor: pointer;">
-                                @authContext.User.Identity?.Name
-                            </MudChip>
-                        </ActivatorContent>
-                        <ChildContent>
-                            <div class="px-4 py-2" style="min-width: 150px;">
-                                <MudText Typo="Typo.subtitle2" Style="font-weight:600;">@authContext.User.Identity?.Name</MudText>
-                                <MudText Typo="Typo.caption" Color="Color.Primary">Role: @GetUserRole(authContext.User)</MudText>
-                            </div>
-                            <MudDivider />
-                            <MudMenuItem Icon="@Icons.Material.Filled.Dashboard" OnClick="NavigateToDashboard">My Dashboard</MudMenuItem>
-                            <MudMenuItem Icon="@Icons.Material.Filled.Logout" OnClick="Logout">Sign Out</MudMenuItem>
-                        </ChildContent>
-                    </MudMenu>
+                        <!-- Global search -->
+                        <div class="hidden md:flex flex-1 max-w-md mx-3">
+                            <form @onsubmit="HandleTopSearch" @onsubmit:preventDefault="true"
+                                  class="w-full flex items-center gap-2 px-3 py-1.5 rounded-card border border-hairline bg-surface text-sm focus-within:border-primary/40 transition-colors">
+                                <LfIcon Name="search" Size="14" />
+                                <input id="lf-top-search"
+                                       @bind="_topSearchQuery"
+                                       @bind:event="oninput"
+                                       type="text"
+                                       placeholder="Search cases, people, hearings..."
+                                       class="flex-1 bg-transparent text-ink placeholder:text-muted outline-none min-w-0" />
+                            </form>
+                        </div>
 
-                    <!-- Dedicated Logout Button -->
-                    <MudButton Variant="Variant.Outlined"
-                               Color="Color.Inherit"
-                               StartIcon="@Icons.Material.Filled.Logout"
-                               OnClick="Logout"
-                               Class="ml-2 lf-signout-btn">
-                        Sign out
-                    </MudButton>
-                </MudAppBar>
+                        <div class="ml-auto flex items-center gap-1.5">
+                            <!-- Notifications -->
+                            <LfMenu>
+                                <Trigger>
+                                    <button type="button"
+                                            class="lf-btn-ghost p-2 rounded-card border border-hairline hover:border-primary/40 relative"
+                                            aria-label="Notifications">
+                                        <LfIcon Name="bell" Size="16" />
+                                        @if (_unreadNotificationCount > 0)
+                                        {
+                                            <span class="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 px-1 rounded-full bg-danger text-white font-mono text-2xs inline-flex items-center justify-center">
+                                                @(_unreadNotificationCount > 9 ? "9+" : _unreadNotificationCount.ToString())
+                                            </span>
+                                        }
+                                    </button>
+                                </Trigger>
+                                <ChildContent>
+                                    <div class="px-3 py-2 flex items-center justify-between">
+                                        <div class="text-xs uppercase tracking-wider text-muted font-medium">Notifications</div>
+                                        @if (_unreadNotificationCount > 0)
+                                        {
+                                            <button @onclick="MarkAllNotificationsAsRead" class="text-xs text-primary hover:underline">Mark all read</button>
+                                        }
+                                    </div>
+                                    <div class="lf-rule"></div>
+                                    <div class="max-h-80 overflow-y-auto py-1 min-w-[300px]">
+                                        @if (_notifications.Count == 0)
+                                        {
+                                            <div class="px-3 py-6 text-center text-sm text-muted">No new alerts</div>
+                                        }
+                                        else
+                                        {
+                                            @foreach (var n in _notifications)
+                                            {
+                                                <button @onclick="() => MarkRead(n.Id)"
+                                                        class="w-full text-left px-3 py-2 rounded-xs hover:bg-ink/5 transition-colors flex items-start gap-2.5">
+                                                    <span class="w-1.5 h-1.5 rounded-full @(n.IsRead ? "bg-hairline" : "bg-primary") mt-1.5 shrink-0"></span>
+                                                    <span class="flex-1 min-w-0">
+                                                        <span class="block text-xs font-medium text-primary truncate">@n.Title</span>
+                                                        <span class="block text-sm text-ink mt-0.5 line-clamp-2">@n.Message</span>
+                                                        <span class="block font-mono text-2xs text-muted mt-1">@n.CreatedAt.ToLocalTime().ToString("HH:mm · MMM d")</span>
+                                                    </span>
+                                                </button>
+                                            }
+                                        }
+                                    </div>
+                                </ChildContent>
+                            </LfMenu>
 
-                <!-- Sidebar Drawer -->
-                <MudDrawer @bind-Open="_drawerOpen" Elevation="0" Color="Color.Surface" ClipMode="DrawerClipMode.Always" Class="lf-drawer">
-                    <div class="pa-4 d-flex flex-column align-center lf-drawer-profile">
-                        <MudAvatar Color="Color.Primary" Style="height:60px; width:60px; font-size: 24px; font-weight:600; border-radius: 12px;">
-                            @(authContext.User.Identity?.Name?[..1].ToUpper() ?? "U")
-                        </MudAvatar>
-                        <MudText Typo="Typo.subtitle1" Class="mt-2 font-weight-bold">@authContext.User.FindFirst(System.Security.Claims.ClaimTypes.GivenName)?.Value</MudText>
-                        <MudChip T="string" Size="Size.Small" Color="Color.Primary" Style="border-radius: 6px; font-size: 11px;">@GetUserRole(authContext.User)</MudChip>
+                            <LfThemeToggle />
+
+                            <!-- User menu -->
+                            <LfMenu>
+                                <Trigger>
+                                    <button type="button" class="lf-btn-ghost flex items-center gap-2 pl-1 pr-2 py-1 rounded-card border border-hairline hover:border-primary/40">
+                                        <LfAvatar Name="@(authContext.User.FindFirst(ClaimTypes.GivenName)?.Value ?? authContext.User.Identity?.Name)" Size="sm" />
+                                        <span class="hidden sm:flex flex-col text-left leading-tight">
+                                            <span class="text-xs font-medium truncate max-w-[120px]">@(authContext.User.FindFirst(ClaimTypes.GivenName)?.Value ?? authContext.User.Identity?.Name)</span>
+                                            <span class="font-mono text-2xs text-muted uppercase">@GetUserRole(authContext.User)</span>
+                                        </span>
+                                        <LfIcon Name="chevron-down" Size="13" Class="text-muted" />
+                                    </button>
+                                </Trigger>
+                                <ChildContent>
+                                    <div class="px-3 py-2">
+                                        <div class="text-sm font-medium">@authContext.User.Identity?.Name</div>
+                                        <div class="font-mono text-2xs text-muted uppercase mt-0.5">role · @GetUserRole(authContext.User)</div>
+                                    </div>
+                                    <div class="lf-rule"></div>
+                                    <LfMenuItem Icon="layout-dashboard" OnClick="NavigateToDashboard">My Dashboard</LfMenuItem>
+                                    <LfMenuItem Icon="log-out" OnClick="Logout">Sign Out</LfMenuItem>
+                                </ChildContent>
+                            </LfMenu>
+                        </div>
                     </div>
-                    
-                    <MudNavMenu Class="pa-2">
-                        @if (_currentUser != null && _currentUser.Identity?.IsAuthenticated == true)
-                        {
-                            var roleLower = GetUserRole(_currentUser).ToLower();
-                            <MudNavLink Href="@($"/{roleLower}/dashboard")" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Dashboard">Dashboard</MudNavLink>
-                            <MudNavLink Href="@($"/{roleLower}/cases")" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.FolderOpen">All Case Files</MudNavLink>
-                        }
-                        else
-                        {
-                            <MudNavLink Href="/dashboard" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Dashboard">Dashboard</MudNavLink>
-                            <MudNavLink Href="/cases" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.FolderOpen">All Case Files</MudNavLink>
-                        }
-                        
-                        <AuthorizeView Roles="Judge">
-                            <MudNavLink Href="/judge/cases" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Gavel">Presiding Caseload</MudNavLink>
-                        </AuthorizeView>
+                </header>
 
-                        <AuthorizeView Roles="Lawyer">
-                            <MudNavLink Href="/lawyer/cases" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.AccountBalance">Attorney Cabinet</MudNavLink>
-                        </AuthorizeView>
+                <div class="flex-1 relative">
+                    <!-- DESKTOP SIDEBAR — fixed overlay, liquid glass.
+                         Content scrolls UNDER the right edge so the blur picks up depth. -->
+                    <aside class="hidden lg:flex flex-col fixed top-14 left-0 bottom-0 w-64 z-20 lf-glass lf-glass-shine border-r border-hairline overflow-y-auto">
+                        <SidebarNav User="_currentUser" />
+                    </aside>
 
-                        <AuthorizeView Roles="Client">
-                            <MudNavLink Href="/client/submit" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.PostAdd">Lodge Incident (FIR)</MudNavLink>
-                        </AuthorizeView>
+                    <!-- MOBILE DRAWER — same glass, overlay only when open -->
+                    @if (_drawerOpen)
+                    {
+                        <div @onclick="ToggleDrawer" class="lg:hidden fixed inset-0 z-30 bg-black/40 backdrop-blur-sm"></div>
+                        <aside class="lg:hidden fixed top-14 bottom-0 left-0 w-64 z-40 lf-glass border-r border-hairline overflow-y-auto animate-fade-in-up">
+                            <SidebarNav User="_currentUser" />
+                        </aside>
+                    }
 
-                        <AuthorizeView Roles="Police">
-                            <MudNavLink Href="/police/cases" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.LocalPolice">Investigation Queue</MudNavLink>
-                            <MudNavLink Href="/police/registry" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.ReceiptLong">Criminal Registry</MudNavLink>
-                        </AuthorizeView>
-
-                        <AuthorizeView Roles="Clerk,Admin">
-                            <MudNavLink Href="/hearings" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.CalendarMonth">Schedule Hearings</MudNavLink>
-                        </AuthorizeView>
-
-                        <AuthorizeView Roles="Clerk">
-                            <MudNavLink Href="/clerk/verdicts" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.AppRegistration">Verdict Registry</MudNavLink>
-                        </AuthorizeView>
-                        
-                        <AuthorizeView Roles="Admin">
-                            <MudNavLink Href="/admin/users" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.People">User Management</MudNavLink>
-                            <MudNavLink Href="/admin/logs" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.History">Audit Logs</MudNavLink>
-                        </AuthorizeView>
-                    </MudNavMenu>
-                </MudDrawer>
-
-                <MudMainContent Class="pa-6 lf-main-content lf-page-transition">
-                    @Body
-                </MudMainContent>
-            </MudLayout>
+                    <!-- Main content — ml-64 on lg+ to clear the fixed sidebar -->
+                    <main class="relative lg:ml-64 min-w-0">
+                        <div class="px-4 sm:px-6 lg:px-8 py-6 animate-fade-in-up">
+                            @Body
+                        </div>
+                    </main>
+                </div>
+            </div>
         }
     </Authorized>
     <NotAuthorized>
-        <!-- Custom styled wrapper for Login page if not authorized -->
-        @Body
+        <main class="min-h-dvh bg-canvas">@Body</main>
     </NotAuthorized>
 </AuthorizeView>
 
-<div id="blazor-error-ui">
+<div id="blazor-error-ui" class="fixed bottom-4 left-4 z-[200] px-4 py-3 lf-elevated text-sm hidden">
     An unhandled error has occurred.
-    <a href="" class="reload">Reload</a>
-    <a class="dismiss">🗙</a>
+    <a href="" class="reload text-primary underline ml-1">Reload</a>
+    <a class="dismiss ml-2 text-muted">✕</a>
 </div>
 
 @code {
-    private bool _drawerOpen = true;
-    private bool _isDarkMode = false;
+    private bool _drawerOpen = false;
     private int _unreadNotificationCount = 0;
     private List<Notification> _notifications = new();
     private ClaimsPrincipal? _currentUser;
+    private string _topSearchQuery = string.Empty;
 
-    private readonly MudTheme _theme = new()
+    // Kept minimal — just enough so legacy MudBlazor pages don't blow up while we migrate them.
+    private readonly MudTheme _legacyTheme = new()
     {
-        PaletteLight = new PaletteLight()
-        {
-            Primary = "#1F3F65",
-            Secondary = "#2F8F83",
-            Tertiary = "#BF8B30",
-            Background = "#F3F6FB",
-            Surface = "#FFFFFF",
-            AppbarBackground = "#FFFFFF",
-            AppbarText = "#1A2738",
-            DrawerBackground = "#F7F9FD",
-            DrawerText = "#2B3D55",
-            Success = "#1F9D67",
-            Warning = "#CB8B2A",
-            Error = "#C84F4F",
-            Info = "#3B67D6",
-            TableHover = "rgba(31, 63, 101, 0.04)"
-        },
-        PaletteDark = new PaletteDark()
-        {
-            Primary = "#8FB7FF",
-            Secondary = "#59C1B2",
-            Tertiary = "#E0B66D",
-            Background = "#0A121D",
-            Surface = "#131F31",
-            AppbarBackground = "#111A2A",
-            AppbarText = "#E5ECF7",
-            DrawerBackground = "#0F1A2A",
-            DrawerText = "#C4D4EB",
-            Success = "#54C783",
-            Warning = "#D6A34A",
-            Error = "#F38B8B",
-            Info = "#83A9FF",
-            TableHover = "rgba(143, 183, 255, 0.10)"
-        },
-        Typography = new Typography()
-        {
-            Default = new DefaultTypography()
-            {
-                FontFamily = new[] { "Plus Jakarta Sans", "Outfit", "Segoe UI", "sans-serif" }
-            },
-            H1 = new H1Typography() { FontFamily = new[] { "Sora", "Plus Jakarta Sans", "Segoe UI", "sans-serif" } },
-            H2 = new H2Typography() { FontFamily = new[] { "Sora", "Plus Jakarta Sans", "Segoe UI", "sans-serif" } },
-            H3 = new H3Typography() { FontFamily = new[] { "Sora", "Plus Jakarta Sans", "Segoe UI", "sans-serif" } },
-            H4 = new H4Typography() { FontFamily = new[] { "Sora", "Plus Jakarta Sans", "Segoe UI", "sans-serif" } },
-            H5 = new H5Typography() { FontFamily = new[] { "Sora", "Plus Jakarta Sans", "Segoe UI", "sans-serif" } },
-            H6 = new H6Typography() { FontFamily = new[] { "Sora", "Plus Jakarta Sans", "Segoe UI", "sans-serif" } },
-            Button = new ButtonTypography()
-            {
-                FontFamily = new[] { "Plus Jakarta Sans", "Outfit", "Segoe UI", "sans-serif" },
-                FontWeight = "700"
-            }
-        },
-        LayoutProperties = new LayoutProperties()
-        {
-            DefaultBorderRadius = "12px",
-            DrawerWidthLeft = "272px"
-        }
+        PaletteLight = new PaletteLight() { Primary = "#6D4FE8", Secondary = "#B5862A" },
+        LayoutProperties = new LayoutProperties() { DefaultBorderRadius = "10px" }
     };
 
-    protected override async Task OnInitializedAsync()
+    protected override void OnInitialized()
     {
         NotificationService.OnNotificationChanged += HandleNotificationChange;
-        await LoadThemeSetting();
     }
 
     protected override async Task OnParametersSetAsync()
@@ -254,7 +188,7 @@
         if (!_currentUser.Identity?.IsAuthenticated ?? true)
         {
             var uri = Navigation.ToBaseRelativePath(Navigation.Uri);
-            if (!uri.StartsWith("login", StringComparison.OrdinalIgnoreCase) && !uri.StartsWith("register", StringComparison.OrdinalIgnoreCase))
+            if (!uri.StartsWith("login", StringComparison.OrdinalIgnoreCase))
             {
                 Navigation.NavigateTo("/login");
             }
@@ -263,44 +197,23 @@
         {
             await LoadNotifications();
             var uri = Navigation.ToBaseRelativePath(Navigation.Uri);
-            if (uri.StartsWith("login", StringComparison.OrdinalIgnoreCase) || uri.StartsWith("register", StringComparison.OrdinalIgnoreCase))
+            if (uri.StartsWith("login", StringComparison.OrdinalIgnoreCase))
             {
                 Navigation.NavigateTo("/dashboard");
             }
         }
     }
 
-    private async Task LoadThemeSetting()
-    {
-        try
-        {
-            var res = await LocalStorage.GetAsync<bool>("DarkMode");
-            if (res.Success)
-            {
-                _isDarkMode = res.Value;
-            }
-        }
-        catch
-        {
-            // Ignore during pre-rendering
-        }
-    }
-
-    private async Task ToggleTheme()
-    {
-        _isDarkMode = !_isDarkMode;
-        try
-        {
-            await LocalStorage.SetAsync("DarkMode", _isDarkMode);
-        }
-        catch {}
-    }
-
     private void ToggleDrawer() => _drawerOpen = !_drawerOpen;
 
-    private string GetUserRole(ClaimsPrincipal user)
+    private string GetUserRole(ClaimsPrincipal user) =>
+        user.FindFirst(ClaimTypes.Role)?.Value ?? "Guest";
+
+    private string DashboardHref(ClaimsPrincipal? user)
     {
-        return user.FindFirst(ClaimTypes.Role)?.Value ?? "Guest";
+        if (user?.Identity?.IsAuthenticated == true)
+            return $"/{GetUserRole(user).ToLowerInvariant()}/dashboard";
+        return "/dashboard";
     }
 
     private async Task LoadNotifications()
@@ -317,48 +230,41 @@
         }
     }
 
-    private async void HandleNotificationChange()
-    {
-        await InvokeAsync(async () =>
-        {
-            await LoadNotifications();
-        });
-    }
+    private async void HandleNotificationChange() =>
+        await InvokeAsync(async () => await LoadNotifications());
 
-    private async Task MarkRead(int notificationId)
-    {
+    private async Task MarkRead(int notificationId) =>
         await NotificationService.MarkAsReadAsync(notificationId);
-    }
 
     private async Task MarkAllNotificationsAsRead()
     {
-        if (_currentUser != null)
-        {
-            var userId = _currentUser.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (!string.IsNullOrEmpty(userId))
-            {
-                await NotificationService.MarkAllAsReadAsync(userId);
-            }
-        }
+        var userId = _currentUser?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (!string.IsNullOrEmpty(userId))
+            await NotificationService.MarkAllAsReadAsync(userId);
     }
 
-    private void NavigateToDashboard()
+    private void NavigateToDashboard() =>
+        Navigation.NavigateTo(DashboardHref(_currentUser));
+
+    private Task HandleTopSearch()
     {
-        if (_currentUser != null && _currentUser.Identity?.IsAuthenticated == true)
-        {
-            var roleLower = GetUserRole(_currentUser).ToLower();
-            Navigation.NavigateTo($"/{roleLower}/dashboard");
-        }
-        else
-        {
-            Navigation.NavigateTo("/dashboard");
-        }
+        var basePath = _currentUser?.Identity?.IsAuthenticated == true
+            ? $"/{GetUserRole(_currentUser).ToLowerInvariant()}/cases"
+            : "/cases";
+
+        var term = _topSearchQuery?.Trim();
+        var target = string.IsNullOrEmpty(term)
+            ? basePath
+            : $"{basePath}?q={Uri.EscapeDataString(term)}";
+
+        Navigation.NavigateTo(target);
+        return Task.CompletedTask;
     }
 
     private bool IsLoginPage()
     {
         var relative = Navigation.ToBaseRelativePath(Navigation.Uri);
-        return relative.StartsWith("login", StringComparison.OrdinalIgnoreCase) || relative.StartsWith("register", StringComparison.OrdinalIgnoreCase);
+        return relative.StartsWith("login", StringComparison.OrdinalIgnoreCase);
     }
 
     private async Task Logout()

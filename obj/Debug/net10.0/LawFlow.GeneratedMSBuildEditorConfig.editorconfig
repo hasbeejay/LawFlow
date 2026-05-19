@@ -29,6 +29,10 @@ build_property.EnableCodeStyleSeverity =
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9BcHAucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
+[/Users/Raheem/Desktop/Hasbeejay - VP/LawFlow/Components/Layout/SidebarNav.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9MYXlvdXQvU2lkZWJhck5hdi5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
 [/Users/Raheem/Desktop/Hasbeejay - VP/LawFlow/Components/Pages/Admin/Logs.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9BZG1pbi9Mb2dzLnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
@@ -95,6 +99,74 @@ build_metadata.AdditionalFiles.CssScope =
 
 [/Users/Raheem/Desktop/Hasbeejay - VP/LawFlow/Components/Routes.razor]
 build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9Sb3V0ZXMucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/Raheem/Desktop/Hasbeejay - VP/LawFlow/Components/Shared/UI/LfAvatar.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9TaGFyZWQvVUkvTGZBdmF0YXIucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/Raheem/Desktop/Hasbeejay - VP/LawFlow/Components/Shared/UI/LfBrand.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9TaGFyZWQvVUkvTGZCcmFuZC5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/Raheem/Desktop/Hasbeejay - VP/LawFlow/Components/Shared/UI/LfButton.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9TaGFyZWQvVUkvTGZCdXR0b24ucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/Raheem/Desktop/Hasbeejay - VP/LawFlow/Components/Shared/UI/LfCard.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9TaGFyZWQvVUkvTGZDYXJkLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/Raheem/Desktop/Hasbeejay - VP/LawFlow/Components/Shared/UI/LfChip.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9TaGFyZWQvVUkvTGZDaGlwLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/Raheem/Desktop/Hasbeejay - VP/LawFlow/Components/Shared/UI/LfDonutChart.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9TaGFyZWQvVUkvTGZEb251dENoYXJ0LnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/Raheem/Desktop/Hasbeejay - VP/LawFlow/Components/Shared/UI/LfIcon.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9TaGFyZWQvVUkvTGZJY29uLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/Raheem/Desktop/Hasbeejay - VP/LawFlow/Components/Shared/UI/LfInput.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9TaGFyZWQvVUkvTGZJbnB1dC5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/Raheem/Desktop/Hasbeejay - VP/LawFlow/Components/Shared/UI/LfKpi.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9TaGFyZWQvVUkvTGZLcGkucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/Raheem/Desktop/Hasbeejay - VP/LawFlow/Components/Shared/UI/LfLineChart.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9TaGFyZWQvVUkvTGZMaW5lQ2hhcnQucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/Raheem/Desktop/Hasbeejay - VP/LawFlow/Components/Shared/UI/LfMenu.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9TaGFyZWQvVUkvTGZNZW51LnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/Raheem/Desktop/Hasbeejay - VP/LawFlow/Components/Shared/UI/LfMenuItem.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9TaGFyZWQvVUkvTGZNZW51SXRlbS5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/Raheem/Desktop/Hasbeejay - VP/LawFlow/Components/Shared/UI/LfNavLink.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9TaGFyZWQvVUkvTGZOYXZMaW5rLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/Raheem/Desktop/Hasbeejay - VP/LawFlow/Components/Shared/UI/LfStatusChip.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9TaGFyZWQvVUkvTGZTdGF0dXNDaGlwLnJhem9y
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/Raheem/Desktop/Hasbeejay - VP/LawFlow/Components/Shared/UI/LfThemeToggle.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9TaGFyZWQvVUkvTGZUaGVtZVRvZ2dsZS5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/Raheem/Desktop/Hasbeejay - VP/LawFlow/Components/Shared/UI/LfToastHost.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9TaGFyZWQvVUkvTGZUb2FzdEhvc3QucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
+[/Users/Raheem/Desktop/Hasbeejay - VP/LawFlow/Components/Shared/UI/LoadingDot.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9TaGFyZWQvVUkvTG9hZGluZ0RvdC5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
 [/Users/Raheem/Desktop/Hasbeejay - VP/LawFlow/Components/_Imports.razor]

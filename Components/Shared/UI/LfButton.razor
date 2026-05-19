@@ -1,0 +1,51 @@
+@{
+    var sizeCls = Size switch {
+        "sm" => "px-2.5 py-1.5 text-xs",
+        "lg" => "px-4 py-2.5 text-sm",
+        _    => "px-3.5 py-2 text-sm",
+    };
+    var variantCls = Variant switch {
+        "primary" => "lf-btn-primary",
+        "outline" => "lf-btn-outline",
+        "danger"  => "lf-btn-danger",
+        _         => "lf-btn-ghost",
+    };
+    var widthCls = FullWidth ? "w-full" : "";
+    var combined = $"lf-btn {variantCls} {sizeCls} {widthCls} {Class}".Trim();
+}
+
+@if (!string.IsNullOrEmpty(Href))
+{
+    <a href="@Href" class="@combined" @attributes="ExtraAttrs">
+        @if (Loading) { <LoadingDot /> }
+        else if (!string.IsNullOrEmpty(Icon)) { <LfIcon Name="@Icon" Size="@IconSize" /> }
+        @ChildContent
+        @if (!string.IsNullOrEmpty(EndIcon) && !Loading) { <LfIcon Name="@EndIcon" Size="@IconSize" /> }
+    </a>
+}
+else
+{
+    <button type="@Type" class="@combined" @onclick="OnClick" disabled="@(Disabled || Loading)" @attributes="ExtraAttrs">
+        @if (Loading) { <LoadingDot /> }
+        else if (!string.IsNullOrEmpty(Icon)) { <LfIcon Name="@Icon" Size="@IconSize" /> }
+        @ChildContent
+        @if (!string.IsNullOrEmpty(EndIcon) && !Loading) { <LfIcon Name="@EndIcon" Size="@IconSize" /> }
+    </button>
+}
+
+@code {
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+    [Parameter] public string Variant { get; set; } = "primary";     // primary | outline | ghost | danger
+    [Parameter] public string Size { get; set; } = "md";              // sm | md | lg
+    [Parameter] public string? Icon { get; set; }
+    [Parameter] public string? EndIcon { get; set; }
+    [Parameter] public int IconSize { get; set; } = 16;
+    [Parameter] public bool FullWidth { get; set; }
+    [Parameter] public bool Loading { get; set; }
+    [Parameter] public bool Disabled { get; set; }
+    [Parameter] public string Type { get; set; } = "button";
+    [Parameter] public string? Href { get; set; }
+    [Parameter] public string? Class { get; set; }
+    [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
+    [Parameter(CaptureUnmatchedValues = true)] public Dictionary<string, object>? ExtraAttrs { get; set; }
+}

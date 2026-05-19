@@ -1,0 +1,22 @@
+@{
+    var sizeCls = Size switch {
+        "sm" => "w-7 h-7 text-xs",
+        "lg" => "w-12 h-12 text-base",
+        _    => "w-9 h-9 text-sm",
+    };
+    var initials = (Name ?? "?").Split(' ', StringSplitOptions.RemoveEmptyEntries)
+        .Take(2)
+        .Select(p => p[0])
+        .Aggregate("", (a, c) => a + c)
+        .ToUpperInvariant();
+    if (string.IsNullOrEmpty(initials)) initials = "?";
+    var combined = $"{sizeCls} inline-flex items-center justify-center rounded-card font-semibold tracking-tight border border-hairline bg-primary/10 text-primary {Class}".Trim();
+}
+
+<span class="@combined" title="@Name">@initials</span>
+
+@code {
+    [Parameter] public string? Name { get; set; }
+    [Parameter] public string Size { get; set; } = "md";  // sm | md | lg
+    [Parameter] public string? Class { get; set; }
+}

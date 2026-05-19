@@ -17,4 +17,19 @@
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.2" />
   </ItemGroup>
 
+  <!-- Tailwind CSS build: runs npm install once, then compiles Styles/lf.css → wwwroot/css/lf.css -->
+  <ItemGroup>
+    <Watch Include="Styles\**\*.css;Components\**\*.razor;tailwind.config.js" />
+    <UpToDateCheckInput Include="Styles\lf.css" />
+    <UpToDateCheckOutput Include="wwwroot\css\lf.css" />
+  </ItemGroup>
+
+  <Target Name="EnsureNpmInstall" BeforeTargets="BuildTailwind" Inputs="package.json" Outputs="node_modules\.package-lock.json">
+    <Exec Command="npm install --no-audit --no-fund" />
+  </Target>
+
+  <Target Name="BuildTailwind" BeforeTargets="Build" Inputs="Styles\lf.css;tailwind.config.js" Outputs="wwwroot\css\lf.css">
+    <Exec Command="npx tailwindcss -i ./Styles/lf.css -o ./wwwroot/css/lf.css --minify" />
+  </Target>
+
 </Project>

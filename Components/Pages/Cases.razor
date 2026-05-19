@@ -217,6 +217,9 @@
 </div>
 
 @code {
+    [SupplyParameterFromQuery(Name = "q")]
+    public string? QuerySearch { get; set; }
+
     private bool _loading = true;
     private bool _showNewCaseForm = false;
     private bool _submitting = false;
@@ -273,6 +276,8 @@
     {
         _loading = true;
         _allCases = await CaseService.GetCasesForUserAsync(_userId, Enum.Parse<UserRole>(_role));
+        if (!string.IsNullOrWhiteSpace(QuerySearch))
+            _searchQuery = QuerySearch.Trim();
         FilterCases();
         _loading = false;
     }

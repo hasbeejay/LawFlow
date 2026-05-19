@@ -1,0 +1,73 @@
+@* Donut chart from a list of slices. CSS-class-driven stroke colors so theme variables resolve. *@
+
+@{
+    var total = Slices.Sum(s => Math.Max(0, s.Value));
+    var radius = 28.0;
+    var circumference = 2 * Math.PI * radius;
+    double offset = 0;
+    var center = 36.0; // viewBox is 72x72
+    var strokeW = 11.0;
+}
+
+<div class="@Class flex items-center gap-5">
+    <div class="relative shrink-0" style="width:@(Size)px; height:@(Size)px;">
+        <svg viewBox="0 0 72 72" class="w-full h-full -rotate-90">
+            <!-- track -->
+            <circle cx="@center" cy="@center" r="@radius"
+                    fill="none" class="lf-stroke-track" stroke-width="@strokeW.ToString("0.##")"/>
+            @foreach (var slice in Slices)
+            {
+                var v = Math.Max(0, slice.Value);
+                var frac = total > 0 ? v / total : 0;
+                var dash = frac * circumference;
+                var gap = circumference - dash;
+                var thisOffset = offset;
+                offset += dash;
+                <circle cx="@center" cy="@center" r="@radius"
+                        fill="none"
+                        class="@($"lf-stroke-{slice.Tone}")"
+                        stroke-width="@strokeW.ToString("0.##")"
+                        stroke-dasharray="@($"{dash:0.##} {gap:0.##}")"
+                        stroke-dashoffset="@($"{-thisOffset:0.##}")"
+                        stroke-linecap="butt" />
+            }
+        </svg>
+        <div class="absolute inset-0 flex flex-col items-center justify-center text-center">
+            <span class="font-mono text-2xl tabular-nums leading-none text-ink">@total.ToString("0")</span>
+            <span class="font-mono text-2xs text-muted uppercase tracking-wider mt-1">@CenterLabel</span>
+        </div>
+    </div>
+
+    <div class="flex-1 grid grid-cols-1 gap-1.5 min-w-0">
+        @foreach (var slice in Slices)
+        {
+            var pct = total > 0 ? Math.Round(slice.Value * 100.0 / total) : 0;
+            <div class="flex items-center gap-2.5 text-xs">
+                <span class="inline-block w-2.5 h-2.5 rounded-xs @SwatchBg(slice.Tone)"></span>
+                <span class="flex-1 truncate text-ink">@slice.Label</span>
+                <span class="font-mono tabular-nums text-muted">@slice.Value</span>
+                <span class="font-mono tabular-nums text-2xs text-muted/70 w-9 text-right">@pct%</span>
+            </div>
+        }
+    </div>
+</div>
+
+@code {
+    public record Slice(string Label, double Value, string Tone);
+    // Tone: primary | info | success | warning | danger
+
+    [Parameter, EditorRequired] public IReadOnlyList<Slice> Slices { get; set; } = Array.Empty<Slice>();
+    [Parameter] public string CenterLabel { get; set; } = "total";
+    [Parameter] public int Size { get; set; } = 140;
+    [Parameter] public string? Class { get; set; }
+
+    private static string SwatchBg(string tone) => tone switch
+    {
+        "primary" => "bg-primary",
+        "info"    => "bg-info",
+        "success" => "bg-success",
+        "warning" => "bg-warning",
+        "danger"  => "bg-danger",
+        _         => "bg-muted",
+    };
+}

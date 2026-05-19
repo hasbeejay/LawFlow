@@ -1,0 +1,21 @@
+@* Brand mark. Amber is reserved exclusively for the wordmark accent. *@
+
+<a href="@Href" class="inline-flex items-center gap-2.5 group select-none" aria-label="LawFlow home">
+    <span class="inline-flex items-center justify-center w-7 h-7 rounded-card bg-ink/[0.04] dark:bg-ink/[0.06] border border-hairline group-hover:border-primary/40 transition-colors">
+        <LfIcon Name="gavel" Size="16" Class="text-primary" />
+    </span>
+    <span class="lf-brand-mark">
+        Law<span class="accent">Flow</span>
+    </span>
+    @if (ShowMeta)
+    {
+        <span class="hidden md:inline-flex items-center text-2xs font-mono text-muted ml-1 px-1.5 py-0.5 rounded-xs border border-hairline">
+            v11.lifecycle
+        </span>
+    }
+</a>
+
+@code {
+    [Parameter] public string Href { get; set; } = "/dashboard";
+    [Parameter] public bool ShowMeta { get; set; } = true;
+}

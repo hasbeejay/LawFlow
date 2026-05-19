@@ -5,19 +5,77 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <base href="/" />
-    <title>LawFlow – Smart Judicial Case Management System</title>
-    <!-- Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap" rel="stylesheet" />
-    <!-- MudBlazor Styles -->
+    <title>LawFlow — Judicial Operations</title>
+
+    <!-- Fonts: Inter (UI) + JetBrains Mono (numerics, IDs, timestamps) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+
+    <!-- Legacy MudBlazor styles + old app.css (loaded before lf.css so token names don't override new system) -->
     <link href="_content/MudBlazor/MudBlazor.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="app.css" />
+
+    <!-- New design system (Tailwind-compiled, Midnight Gavel) -->
+    <link rel="stylesheet" href="css/lf.css" />
+
     <link rel="stylesheet" href="LawFlow.styles.css" />
+
+    <!-- Apply persisted theme before paint to avoid flash -->
+    <script>
+        (function () {
+            try {
+                var t = localStorage.getItem('lf-theme');
+                if (t === 'dark') document.documentElement.classList.add('dark');
+            } catch (e) {}
+        })();
+    </script>
+
     <HeadOutlet @rendermode="new InteractiveServerRenderMode(prerender: false)" />
 </head>
 
 <body>
     <Routes @rendermode="new InteractiveServerRenderMode(prerender: false)" />
-    <!-- MudBlazor JS -->
+
+    <!-- Theme toggle interop -->
+    <script>
+        window.lfTheme = {
+            set: function (mode) {
+                try {
+                    if (mode === 'dark') document.documentElement.classList.add('dark');
+                    else document.documentElement.classList.remove('dark');
+                    localStorage.setItem('lf-theme', mode);
+                } catch (e) {}
+            },
+            get: function () {
+                try {
+                    return localStorage.getItem('lf-theme') || 'light';
+                } catch (e) { return 'light'; }
+            }
+        };
+    </script>
+
+    <!-- Global quick-focus for top search -->
+    <script>
+        (function () {
+            if (window.__lfSearchHotkeyBound) return;
+            window.__lfSearchHotkeyBound = true;
+
+            document.addEventListener('keydown', function (e) {
+                var isCmdOrCtrl = e.metaKey || e.ctrlKey;
+                if (!isCmdOrCtrl || (e.key || '').toLowerCase() !== 'k') return;
+
+                e.preventDefault();
+                var el = document.getElementById('lf-top-search');
+                if (el) {
+                    el.focus();
+                    if (typeof el.select === 'function') el.select();
+                }
+            });
+        })();
+    </script>
+
+    <!-- Legacy MudBlazor JS — kept during migration -->
     <script src="_content/MudBlazor/MudBlazor.min.js"></script>
     <script src="_framework/blazor.web.js"></script>
 </body>
