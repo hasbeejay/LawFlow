@@ -7,88 +7,109 @@
 
 <PageTitle>Sign In - LawFlow</PageTitle>
 
-<div class="d-flex flex-column align-center justify-center lf-page-transition" style="min-height: 90vh; background: radial-gradient(circle at 10% 20%, rgba(30, 58, 138, 0.05) 0%, rgba(14, 165, 233, 0.05) 90.1%);">
-    
-    <!-- Branding Header -->
-    <div class="d-flex align-center justify-center mb-6">
-        <MudIcon Icon="@Icons.Material.Filled.Gavel" Color="Color.Primary" Size="Size.Large" Style="font-size: 40px;" />
-        <MudText Typo="Typo.h4" Class="ml-2 font-weight-bold" Style="color: var(--lf-primary); font-weight: 800; letter-spacing: -0.5px;">
-            Law<span style="color: #0EA5E9;">Flow</span>
-        </MudText>
-    </div>
+<div class="lf-auth-shell lf-page-transition">
+    <div class="lf-auth-grid">
+        <section class="lf-auth-brand lf-glass-panel">
+            <div class="d-flex align-center">
+                <MudIcon Icon="@Icons.Material.Filled.Gavel" Color="Color.Primary" Size="Size.Large" Style="font-size: 36px;" />
+                <MudText Typo="Typo.h4" Class="ml-2 font-weight-bold lf-brand">
+                    <span class="lf-brand-wordmark">Law<span class="lf-brand-accent">Flow</span></span>
+                </MudText>
+            </div>
 
-    <!-- Login Glassmorphic Panel -->
-    <div class="lf-glass-panel pa-8" style="width: 100%; max-width: 440px; border-radius: 20px;">
-        <MudText Typo="Typo.h5" Class="font-weight-bold mb-1" Align="Align.Center">Welcome Back</MudText>
-        <MudText Typo="Typo.body2" Class="text-muted mb-6" Align="Align.Center">Smart Judicial Case Management Platform</MudText>
+            <div class="lf-auth-kicker mt-8">Judicial Operations Platform</div>
+            <h1 class="lf-auth-title">Secure case intelligence for courts, counsel, and investigators.</h1>
+            <p class="lf-auth-subtitle">
+                Centralized filing, assignment, hearing schedules, and verdict workflows with role-aware controls and a complete audit trail.
+            </p>
 
-        <EditForm Model="@_loginModel" OnValidSubmit="HandleLogin">
-            <DataAnnotationsValidator />
+            <div class="lf-auth-meta">
+                <div class="lf-auth-meta-card">
+                    <div class="lf-auth-meta-label">Workflow</div>
+                    <div class="lf-auth-meta-value">11-stage lifecycle</div>
+                </div>
+                <div class="lf-auth-meta-card">
+                    <div class="lf-auth-meta-label">Roles</div>
+                    <div class="lf-auth-meta-value">Admin to Clerk</div>
+                </div>
+                <div class="lf-auth-meta-card">
+                    <div class="lf-auth-meta-label">Mode</div>
+                    <div class="lf-auth-meta-value">Realtime + audited</div>
+                </div>
+            </div>
+        </section>
 
-            <MudTextField @bind-Value="_loginModel.Username" 
-                          Label="Username" 
-                          Variant="Variant.Outlined" 
-                          Adornment="Adornment.Start" 
-                          AdornmentIcon="@Icons.Material.Filled.Person"
-                          For="@(() => _loginModel.Username)" 
-                          Class="mb-4" />
+        <section class="lf-auth-card lf-glass-panel">
+            <MudText Typo="Typo.h5" Class="font-weight-bold mb-1">Welcome back</MudText>
+            <MudText Typo="Typo.body2" Class="text-muted mb-5">Sign in to continue into your judicial workspace.</MudText>
 
-            <MudTextField @bind-Value="_loginModel.Password" 
-                          Label="Password" 
-                          Variant="Variant.Outlined" 
-                          InputType="@_passwordInput" 
-                          Adornment="Adornment.End" 
-                          AdornmentIcon="@_passwordInputIcon"
-                          OnAdornmentClick="TogglePasswordVisibility"
-                          For="@(() => _loginModel.Password)"
-                          Class="mb-6" />
+            <EditForm Model="@_loginModel" OnValidSubmit="HandleLogin">
+                <DataAnnotationsValidator />
 
-            <MudButton ButtonType="ButtonType.Submit" 
-                       Variant="Variant.Filled" 
-                       Color="Color.Primary" 
-                       FullWidth="true" 
-                       Size="Size.Large"
-                       Style="border-radius: 10px; height: 50px; text-transform: none; font-weight: 600;"
-                       Disabled="@_loading">
-                @if (_loading)
-                {
-                    <MudProgressCircular Color="Color.Secondary" Size="Size.Small" Indeterminate="true" Class="mr-2" />
-                    <span>Signing in...</span>
-                }
-                else
-                {
-                    <span>Sign In</span>
-                }
-            </MudButton>
-        </EditForm>
-    </div>
+                <MudTextField @bind-Value="_loginModel.Username"
+                              Label="Username"
+                              Variant="Variant.Outlined"
+                              Adornment="Adornment.Start"
+                              AdornmentIcon="@Icons.Material.Filled.Person"
+                              For="@(() => _loginModel.Username)"
+                              Class="mb-4" />
 
-    <!-- Quick Demo Accounts Seeding Helper -->
-    <div class="mt-6 pa-6 lf-glass-panel" style="width: 100%; max-width: 700px; border-radius: 16px;">
-        <MudText Typo="Typo.subtitle2" Class="font-weight-bold mb-3" Align="Align.Center">
-            <MudIcon Icon="@Icons.Material.Filled.Bolt" Color="Color.Warning" Size="Size.Small" Class="mr-1" />
-            Quick Demo One-Click Sign In (Password: Password123!)
-        </MudText>
-        <MudGrid Spacing="2" Justify="Justify.Center">
-            <MudItem xs="4" sm="2">
-                <MudButton FullWidth="true" Variant="Variant.Outlined" Size="Size.Small" Color="Color.Primary" Style="border-radius: 8px; text-transform:none;" OnClick='() => AutoFill("admin")'>Admin</MudButton>
-            </MudItem>
-            <MudItem xs="4" sm="2">
-                <MudButton FullWidth="true" Variant="Variant.Outlined" Size="Size.Small" Color="Color.Primary" Style="border-radius: 8px; text-transform:none;" OnClick='() => AutoFill("judge_ali")'>Judge</MudButton>
-            </MudItem>
-            <MudItem xs="4" sm="2">
-                <MudButton FullWidth="true" Variant="Variant.Outlined" Size="Size.Small" Color="Color.Primary" Style="border-radius: 8px; text-transform:none;" OnClick='() => AutoFill("lawyer_faisal")'>Lawyer</MudButton>
-            </MudItem>
-            <MudItem xs="4" sm="2">
-                <MudButton FullWidth="true" Variant="Variant.Outlined" Size="Size.Small" Color="Color.Primary" Style="border-radius: 8px; text-transform:none;" OnClick='() => AutoFill("client_zaheer")'>Client</MudButton>
-            </MudItem>
-            <MudItem xs="4" sm="2">
-                <MudButton FullWidth="true" Variant="Variant.Outlined" Size="Size.Small" Color="Color.Primary" Style="border-radius: 8px; text-transform:none;" OnClick='() => AutoFill("police_rahim")'>Police</MudButton>
-            </MudItem>
-            <MudItem xs="4" sm="2">
-                <MudButton FullWidth="true" Variant="Variant.Outlined" Size="Size.Small" Color="Color.Primary" Style="border-radius: 8px; text-transform:none;" OnClick='() => AutoFill("clerk_ahmad")'>Clerk</MudButton>
-            </MudItem>
-        </MudGrid>
+                <MudTextField @bind-Value="_loginModel.Password"
+                              Label="Password"
+                              Variant="Variant.Outlined"
+                              InputType="@_passwordInput"
+                              Adornment="Adornment.End"
+                              AdornmentIcon="@_passwordInputIcon"
+                              OnAdornmentClick="TogglePasswordVisibility"
+                              For="@(() => _loginModel.Password)"
+                              Class="mb-5" />
+
+                <MudButton ButtonType="ButtonType.Submit"
+                           Variant="Variant.Filled"
+                           Color="Color.Primary"
+                           FullWidth="true"
+                           Size="Size.Large"
+                           Style="height: 50px;"
+                           Disabled="@_loading">
+                    @if (_loading)
+                    {
+                        <MudProgressCircular Color="Color.Secondary" Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                        <span>Signing in...</span>
+                    }
+                    else
+                    {
+                        <span>Sign in to LawFlow</span>
+                    }
+                </MudButton>
+            </EditForm>
+
+            <div class="lf-auth-demo">
+                <MudText Typo="Typo.subtitle2" Class="font-weight-bold mb-3">
+                    <MudIcon Icon="@Icons.Material.Filled.Bolt" Color="Color.Warning" Size="Size.Small" Class="mr-1" />
+                    Quick demo access (Password: Password123!)
+                </MudText>
+                <MudGrid Spacing="1">
+                    <MudItem xs="6" sm="4">
+                        <MudButton FullWidth="true" Variant="Variant.Outlined" Size="Size.Small" Color="Color.Primary" OnClick='() => AutoFill("admin")'>Admin</MudButton>
+                    </MudItem>
+                    <MudItem xs="6" sm="4">
+                        <MudButton FullWidth="true" Variant="Variant.Outlined" Size="Size.Small" Color="Color.Primary" OnClick='() => AutoFill("judge_ali")'>Judge</MudButton>
+                    </MudItem>
+                    <MudItem xs="6" sm="4">
+                        <MudButton FullWidth="true" Variant="Variant.Outlined" Size="Size.Small" Color="Color.Primary" OnClick='() => AutoFill("lawyer_faisal")'>Lawyer</MudButton>
+                    </MudItem>
+                    <MudItem xs="6" sm="4">
+                        <MudButton FullWidth="true" Variant="Variant.Outlined" Size="Size.Small" Color="Color.Primary" OnClick='() => AutoFill("client_zaheer")'>Client</MudButton>
+                    </MudItem>
+                    <MudItem xs="6" sm="4">
+                        <MudButton FullWidth="true" Variant="Variant.Outlined" Size="Size.Small" Color="Color.Primary" OnClick='() => AutoFill("police_rahim")'>Police</MudButton>
+                    </MudItem>
+                    <MudItem xs="6" sm="4">
+                        <MudButton FullWidth="true" Variant="Variant.Outlined" Size="Size.Small" Color="Color.Primary" OnClick='() => AutoFill("clerk_ahmad")'>Clerk</MudButton>
+                    </MudItem>
+                </MudGrid>
+            </div>
+        </section>
     </div>
 </div>
 
@@ -122,7 +143,10 @@
             {
                 await CustomAuth.UpdateAuthenticationState(session);
                 Snackbar.Add($"Logged in successfully as {session.FullName}", Severity.Success);
-                Navigation.NavigateTo("/dashboard");
+                var roleRoute = string.IsNullOrWhiteSpace(session.Role)
+                    ? "client"
+                    : session.Role.ToLowerInvariant();
+                Navigation.NavigateTo($"/{roleRoute}/dashboard", replace: true);
             }
             else
             {

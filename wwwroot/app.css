@@ -1,139 +1,433 @@
-/* Global Custom Styles for LawFlow - Premium SaaS Design System */
+/* LawFlow UI System - 2026 Refresh */
 
 :root {
-    --lf-primary: #1E3A8A;       /* Premium Royal Navy Blue */
-    --lf-accent: #0EA5E9;        /* SaaS Vibrant Cyan */
-    --lf-accent-glow: rgba(14, 165, 233, 0.25);
-    --lf-success: #10B981;       /* Emerald */
-    --lf-success-glow: rgba(16, 185, 129, 0.25);
-    --lf-warning: #F59E0B;       /* Amber */
-    --lf-error: #EF4444;         /* Coral Red */
-    --lf-bg: #F8FAFC;            /* Clean Slate background */
-    --lf-surface: #FFFFFF;
-    --lf-border: rgba(203, 213, 225, 0.6);
-    --lf-glass-bg: rgba(255, 255, 255, 0.75);
-    --lf-shadow: 0 10px 30px -10px rgba(15, 23, 42, 0.08);
+    --lf-primary: #1f3f65;
+    --lf-primary-strong: #153250;
+    --lf-secondary: #2f8f83;
+    --lf-tertiary: #bf8b30;
+    --lf-info: #3b67d6;
+    --lf-success: #1f9d67;
+    --lf-warning: #cb8b2a;
+    --lf-danger: #c84f4f;
+
+    --lf-bg: #f3f6fb;
+    --lf-bg-2: #eef3f9;
+    --lf-surface: #ffffff;
+    --lf-surface-elevated: #ffffff;
+
+    --lf-text: #1a2738;
+    --lf-text-soft: #4e6178;
+    --lf-text-muted: #6d7f95;
+
+    --lf-border: rgba(25, 45, 72, 0.14);
+    --lf-border-strong: rgba(25, 45, 72, 0.26);
+
+    --lf-shadow-sm: 0 2px 8px rgba(16, 31, 53, 0.08);
+    --lf-shadow-md: 0 12px 30px rgba(16, 31, 53, 0.08);
+    --lf-shadow-lg: 0 18px 45px rgba(16, 31, 53, 0.14);
+
+    --lf-appbar-bg: rgba(255, 255, 255, 0.86);
+    --lf-drawer-bg: linear-gradient(180deg, #fbfdff 0%, #f2f6fc 100%);
+    --lf-main-bg: linear-gradient(180deg, #f3f6fb 0%, #edf2f9 100%);
 }
 
-/* Dark mode theme variables applied seamlessly */
 .mud-dark-mode {
-    --lf-primary: #38BDF8;       /* Electric Sky Blue */
-    --lf-accent: #0EA5E9;
-    --lf-accent-glow: rgba(56, 189, 248, 0.3);
-    --lf-bg: #0B0F19;            /* Pitch Dark Slate */
-    --lf-surface: #151D30;       /* Lighter navy cards */
-    --lf-border: rgba(51, 65, 85, 0.5);
-    --lf-glass-bg: rgba(21, 29, 48, 0.75);
-    --lf-shadow: 0 15px 40px -15px rgba(0, 0, 0, 0.5);
+    --lf-primary: #8fb7ff;
+    --lf-primary-strong: #c7dcff;
+    --lf-secondary: #59c1b2;
+    --lf-tertiary: #e0b66d;
+    --lf-info: #83a9ff;
+    --lf-success: #54c783;
+    --lf-warning: #d6a34a;
+    --lf-danger: #f38b8b;
+
+    --lf-bg: #0a121d;
+    --lf-bg-2: #0f1826;
+    --lf-surface: #131f31;
+    --lf-surface-elevated: #18253a;
+
+    --lf-text: #e5ecf7;
+    --lf-text-soft: #c2d2e8;
+    --lf-text-muted: #9cb0cc;
+
+    --lf-border: rgba(145, 173, 215, 0.2);
+    --lf-border-strong: rgba(145, 173, 215, 0.4);
+
+    --lf-shadow-sm: 0 2px 10px rgba(0, 0, 0, 0.35);
+    --lf-shadow-md: 0 12px 30px rgba(0, 0, 0, 0.35);
+    --lf-shadow-lg: 0 20px 50px rgba(0, 0, 0, 0.45);
+
+    --lf-appbar-bg: rgba(13, 24, 40, 0.9);
+    --lf-drawer-bg: linear-gradient(180deg, #0f1b2d 0%, #0b1626 100%);
+    --lf-main-bg: radial-gradient(circle at 20% -20%, rgba(108, 157, 255, 0.12), transparent 45%), linear-gradient(180deg, #0a121d 0%, #0f1826 100%);
+}
+
+html,
+body {
+    margin: 0;
+    padding: 0;
+    min-height: 100%;
 }
 
 body {
-    font-family: 'Outfit', sans-serif !important;
-    background-color: var(--lf-bg) !important;
-    color: var(--mud-palette-text-primary) !important;
-    transition: background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1), color 0.4s ease;
+    font-family: "Plus Jakarta Sans", "Outfit", "Segoe UI", sans-serif !important;
+    background: var(--lf-main-bg) !important;
+    color: var(--lf-text) !important;
+    transition: background-color 180ms ease, color 180ms ease;
 }
 
-/* Glassmorphism & SaaS Panel Design */
-.lf-glass-panel {
-    background: var(--lf-glass-bg) !important;
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border: 1px solid var(--lf-border) !important;
-    box-shadow: var(--lf-shadow) !important;
-    border-radius: 16px;
-    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+.text-muted {
+    color: var(--lf-text-muted) !important;
+    opacity: 1 !important;
 }
 
-.lf-glass-panel:hover {
-    box-shadow: 0 20px 50px -15px var(--lf-accent-glow) !important;
-    transform: translateY(-2px);
-    border-color: var(--lf-accent) !important;
-}
-
-/* Card Glow Effects */
-.lf-glow-card {
-    border-radius: 16px;
-    position: relative;
-    overflow: hidden;
-    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: var(--lf-shadow);
-    border: 1px solid var(--lf-border) !important;
-    background-color: var(--lf-surface) !important;
-}
-
-.lf-glow-card:hover {
-    box-shadow: 0 15px 35px -5px var(--lf-accent-glow) !important;
-    transform: translateY(-4px);
-    border-color: var(--lf-accent) !important;
-}
-
-/* Neon Green Success Glow Card */
-.lf-glow-card-success {
-    border: 1px solid var(--lf-border) !important;
-    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-}
-.lf-glow-card-success:hover {
-    box-shadow: 0 15px 35px -5px var(--lf-success-glow) !important;
-    transform: translateY(-4px);
-    border-color: var(--lf-success) !important;
-}
-
-/* Smooth Navigation Sidebar Highlight */
-.mud-nav-link {
-    border-radius: 8px !important;
-    margin: 2px 8px !important;
-    transition: all 0.25s ease !important;
-}
-
-.mud-nav-link:hover {
-    background-color: rgba(14, 165, 233, 0.06) !important;
-    color: var(--lf-accent) !important;
-}
-
-.mud-nav-link.active {
-    background-color: rgba(14, 165, 233, 0.12) !important;
-    color: var(--lf-accent) !important;
-    font-weight: 600 !important;
-    border-left: 4px solid var(--lf-accent);
-    box-shadow: 0 4px 15px -5px var(--lf-accent-glow);
-}
-
-/* Custom Premium Scrollbar */
-::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
-}
-
-::-webkit-scrollbar-track {
+/* Layout shell */
+.lf-app-layout {
     background: transparent;
 }
 
-::-webkit-scrollbar-thumb {
-    background: rgba(148, 163, 184, 0.3);
-    border-radius: 9999px;
+.lf-appbar {
+    border-bottom: 1px solid var(--lf-border) !important;
+    background: var(--lf-appbar-bg) !important;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
 }
 
-::-webkit-scrollbar-thumb:hover {
-    background: rgba(148, 163, 184, 0.6);
+.lf-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--lf-primary-strong);
+    font-weight: 800;
+    letter-spacing: -0.015em;
 }
 
-/* Timeline Custom Visual Styling */
-.lf-timeline-active {
-    color: var(--lf-accent) !important;
-    font-weight: bold;
-    text-shadow: 0 0 10px var(--lf-accent-glow);
+.lf-brand-wordmark {
+    display: inline-flex;
+    gap: 6px;
+    align-items: baseline;
 }
 
-/* Page Transitions */
+.lf-brand-accent {
+    color: var(--lf-secondary);
+}
+
+.lf-toolbar-icon,
+.lf-toolbar-icon .mud-icon-root,
+.lf-toolbar-icon .mud-badge-root,
+.lf-topbar .mud-icon-button-root,
+.lf-topbar .mud-icon-root {
+    color: var(--lf-text-soft) !important;
+}
+
+.lf-toolbar-icon:hover,
+.lf-topbar .mud-icon-button-root:hover {
+    background: rgba(108, 145, 206, 0.12) !important;
+}
+
+.lf-user-chip {
+    border-radius: 999px !important;
+    font-weight: 700 !important;
+    padding-inline: 8px !important;
+}
+
+.lf-signout-btn {
+    border-radius: 999px !important;
+    text-transform: none !important;
+    font-weight: 700 !important;
+    min-width: 112px;
+}
+
+.lf-drawer {
+    background: var(--lf-drawer-bg) !important;
+    border-right: 1px solid var(--lf-border) !important;
+}
+
+.lf-drawer-profile {
+    border-bottom: 1px solid var(--lf-border);
+}
+
+.lf-main-content {
+    background: transparent;
+    min-height: calc(100vh - 64px);
+}
+
+/* Cards and sections */
+.lf-glass-panel {
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.78) 100%) !important;
+    border: 1px solid var(--lf-border) !important;
+    box-shadow: var(--lf-shadow-md) !important;
+    border-radius: 16px !important;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    transition: transform 160ms ease, box-shadow 180ms ease, border-color 180ms ease;
+}
+
+.mud-dark-mode .lf-glass-panel {
+    background: linear-gradient(180deg, rgba(25, 38, 57, 0.88) 0%, rgba(19, 31, 49, 0.82) 100%) !important;
+}
+
+.lf-glass-panel:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--lf-shadow-lg) !important;
+    border-color: var(--lf-border-strong) !important;
+}
+
+.lf-glow-card {
+    background: var(--lf-surface-elevated) !important;
+    border: 1px solid var(--lf-border) !important;
+    border-radius: 14px !important;
+    box-shadow: var(--lf-shadow-sm) !important;
+    transition: transform 140ms ease, box-shadow 180ms ease;
+}
+
+.lf-glow-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--lf-shadow-md) !important;
+}
+
+.mud-paper {
+    background: var(--lf-surface) !important;
+}
+
+/* Navigation */
+.mud-navmenu {
+    gap: 4px;
+}
+
+.mud-nav-link {
+    border-radius: 10px !important;
+    margin: 2px 8px !important;
+    min-height: 44px;
+    color: var(--lf-text-soft) !important;
+    transition: background-color 140ms ease, color 140ms ease, transform 140ms ease;
+}
+
+.mud-nav-link:hover {
+    background: rgba(90, 126, 182, 0.14) !important;
+    color: var(--lf-primary-strong) !important;
+}
+
+.mud-nav-link.active {
+    color: var(--lf-primary-strong) !important;
+    background: linear-gradient(90deg, rgba(122, 157, 212, 0.2), rgba(122, 157, 212, 0.08)) !important;
+    border-left: 3px solid var(--lf-secondary);
+    font-weight: 700 !important;
+}
+
+.mud-dark-mode .mud-nav-link:hover {
+    color: var(--lf-text) !important;
+}
+
+.mud-dark-mode .mud-nav-link.active {
+    color: var(--lf-text) !important;
+    background: linear-gradient(90deg, rgba(127, 171, 255, 0.24), rgba(127, 171, 255, 0.1)) !important;
+}
+
+/* Forms */
+.mud-input-control,
+.mud-select,
+.mud-input {
+    color: var(--lf-text) !important;
+}
+
+.mud-input-outlined .mud-input-outlined-border {
+    border-color: var(--lf-border) !important;
+}
+
+.mud-input-outlined:hover .mud-input-outlined-border,
+.mud-input.mud-input-outlined.mud-input-focused .mud-input-outlined-border {
+    border-color: var(--lf-primary) !important;
+}
+
+/* Tables */
+.mud-table-root {
+    border-collapse: separate !important;
+    border-spacing: 0 8px !important;
+}
+
+.mud-table-row {
+    background: var(--lf-surface-elevated) !important;
+    box-shadow: var(--lf-shadow-sm) !important;
+}
+
+.mud-table-cell {
+    border-bottom: none !important;
+    color: var(--lf-text) !important;
+}
+
+/* Buttons */
+.mud-button {
+    border-radius: 10px !important;
+    letter-spacing: 0 !important;
+}
+
+.mud-button-filled {
+    box-shadow: 0 6px 16px rgba(22, 46, 81, 0.2) !important;
+}
+
+.mud-dark-mode .mud-button-filled {
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35) !important;
+}
+
+/* Chips and badges */
+.mud-chip {
+    font-weight: 700;
+}
+
+/* Fixes for hardcoded inline whites and low-contrast blocks in existing pages */
+[style*="background: white"],
+[style*="background:white"] {
+    background: var(--lf-surface-elevated) !important;
+}
+
+.mud-dark-mode [style*="rgba(0,0,0,0.02)"],
+.mud-dark-mode [style*="rgba(0, 0, 0, 0.02)"],
+.mud-dark-mode [style*="rgba(0,0,0,0.05)"],
+.mud-dark-mode [style*="rgba(0, 0, 0, 0.05)"] {
+    background: rgba(158, 182, 220, 0.08) !important;
+    border-color: rgba(158, 182, 220, 0.2) !important;
+}
+
+.mud-dark-mode [style*="color:#1E3A8A"],
+.mud-dark-mode [style*="color: #1E3A8A"],
+.mud-dark-mode [style*="color:#3B82F6"],
+.mud-dark-mode [style*="color: #3B82F6"] {
+    color: var(--lf-primary) !important;
+}
+
+/* Login redesign */
+.lf-auth-shell {
+    min-height: 100vh;
+    padding: 32px 16px;
+    background:
+        radial-gradient(1200px 600px at -10% -15%, rgba(79, 133, 212, 0.14), transparent 45%),
+        radial-gradient(800px 520px at 110% 110%, rgba(47, 143, 131, 0.13), transparent 40%),
+        var(--lf-main-bg);
+}
+
+.lf-auth-grid {
+    width: min(1120px, 100%);
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1.1fr 0.9fr;
+    gap: 24px;
+}
+
+.lf-auth-brand {
+    border-radius: 20px;
+    padding: 40px;
+}
+
+.lf-auth-kicker {
+    font-size: 13px;
+    color: var(--lf-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 700;
+}
+
+.lf-auth-title {
+    margin-top: 16px;
+    margin-bottom: 12px;
+    color: var(--lf-primary-strong);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+    font-size: clamp(1.7rem, 2.4vw, 2.5rem);
+}
+
+.lf-auth-subtitle {
+    color: var(--lf-text-soft);
+    max-width: 44ch;
+    line-height: 1.6;
+}
+
+.lf-auth-meta {
+    margin-top: 24px;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.lf-auth-meta-card {
+    border: 1px solid var(--lf-border);
+    border-radius: 12px;
+    background: color-mix(in srgb, var(--lf-surface-elevated) 88%, transparent);
+    padding: 12px;
+}
+
+.lf-auth-meta-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--lf-text-muted);
+}
+
+.lf-auth-meta-value {
+    margin-top: 6px;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--lf-text);
+}
+
+.lf-auth-card {
+    border-radius: 20px;
+    padding: 30px;
+}
+
+.lf-auth-actions {
+    margin-top: 18px;
+}
+
+.lf-auth-demo {
+    margin-top: 18px;
+    border-top: 1px solid var(--lf-border);
+    padding-top: 16px;
+}
+
+.lf-auth-demo .mud-button {
+    border-radius: 999px !important;
+}
+
+@media (max-width: 992px) {
+    .lf-auth-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .lf-auth-brand {
+        padding: 28px;
+    }
+
+    .lf-auth-card {
+        padding: 22px;
+    }
+
+    .lf-main-content {
+        padding: 16px !important;
+    }
+
+    .lf-signout-btn .mud-button-label {
+        display: none;
+    }
+
+    .lf-signout-btn {
+        min-width: 42px;
+        width: 42px;
+        height: 42px;
+        padding: 0 !important;
+    }
+}
+
+/* Motion */
 .lf-page-transition {
-    animation: slideInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    animation: lf-fade-slide 240ms ease-out;
 }
 
-@keyframes slideInUp {
+@keyframes lf-fade-slide {
     from {
         opacity: 0;
-        transform: translateY(12px);
+        transform: translateY(8px);
     }
     to {
         opacity: 1;
@@ -141,79 +435,17 @@ body {
     }
 }
 
-/* Pulse Glow Badge for Pending Actions */
-.lf-pulse-badge {
-    position: relative;
-}
-
-.lf-pulse-badge::after {
-    content: '';
-    position: absolute;
-    width: 10px;
-    height: 10px;
-    background-color: var(--lf-error);
-    border-radius: 50%;
-    top: -3px;
-    right: -3px;
-    border: 2px solid var(--lf-surface);
-    animation: pulseGlow 2s infinite;
-}
-
-@keyframes pulseGlow {
-    0% {
-        transform: scale(0.95);
-        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
-    }
-    70% {
-        transform: scale(1.1);
-        box-shadow: 0 0 0 8px rgba(239, 68, 68, 0);
-    }
-    100% {
-        transform: scale(0.95);
-        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
-    }
-}
-
-/* Neon Glow Indicators for Workspace elements */
-.lf-neon-dot-active {
+/* Scrollbars */
+::-webkit-scrollbar {
     width: 8px;
     height: 8px;
-    background-color: var(--lf-success);
-    border-radius: 50%;
-    box-shadow: 0 0 12px var(--lf-success);
-    display: inline-block;
 }
 
-/* Table Enhancements */
-.mud-table-root {
-    border-collapse: separate !important;
-    border-spacing: 0 6px !important;
+::-webkit-scrollbar-thumb {
+    background: color-mix(in srgb, var(--lf-text-muted) 45%, transparent);
+    border-radius: 999px;
 }
 
-.mud-table-row {
-    background-color: var(--lf-surface) !important;
-    border-radius: 8px !important;
-    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.01) !important;
-    transition: all 0.25s ease;
+::-webkit-scrollbar-thumb:hover {
+    background: color-mix(in srgb, var(--lf-text-muted) 62%, transparent);
 }
-
-.mud-table-row:hover {
-    transform: scale(1.002) translateY(-1px);
-    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.04) !important;
-}
-
-.mud-table-cell {
-    border-bottom: none !important;
-    padding: 12px 16px !important;
-}
-
-.mud-table-cell:first-child {
-    border-top-left-radius: 8px !important;
-    border-bottom-left-radius: 8px !important;
-}
-
-.mud-table-cell:last-child {
-    border-top-right-radius: 8px !important;
-    border-bottom-right-radius: 8px !important;
-}
-

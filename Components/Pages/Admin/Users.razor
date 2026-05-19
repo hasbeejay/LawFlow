@@ -158,7 +158,7 @@
                         <MudSwitch T="bool" Value="@context.IsActive" ValueChanged="() => ToggleUser(context.Id)" Color="Color.Success" />
                     </MudTd>
                     <MudTd DataLabel="Modify">
-                        <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Primary" Size="Size.Small" OnClick="() => EditUser(context)" Title="Edit Judicial Profile" />
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Primary" Size="Size.Small" OnClick="() => EditUser(context)" title="Edit Judicial Profile" />
                     </MudTd>
                     <MudTd Style="text-align: right;">
                         @if (context.IsActive)

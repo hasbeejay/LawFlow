@@ -250,7 +250,7 @@
                         {
                             <MudChart T="double" ChartType="ChartType.Line" 
                                       ChartSeries="@_series" 
-                                      XAxisLabels="@_trends.Months" 
+                                      ChartLabels="@_trends.Months" 
                                       Width="100%" 
                                       Height="300px" 
                                       ChartOptions="@_chartOptions" />
@@ -265,8 +265,8 @@
                         @if (_verdicts != null)
                         {
                             <MudChart T="double" ChartType="ChartType.Donut" 
-                                      InputData="@_donutData" 
-                                      InputLabels="@_donutLabels" 
+                                      ChartSeries="@_donutSeries" 
+                                      ChartLabels="@_donutLabels" 
                                       Width="100%" 
                                       Height="250px" />
                             <div class="d-flex justify-space-around mt-4" style="font-size: 11px;">
@@ -343,7 +343,7 @@
     private CaseCompletionTrends? _trends;
     private VerdictDistribution? _verdicts;
     private List<ChartSeries<double>> _series = new();
-    private double[] _donutData = Array.Empty<double>();
+    private List<ChartSeries<double>> _donutSeries = new();
     private string[] _donutLabels = new[] { "Guilty", "Acquitted", "Dismissed", "Appealed" };
     private ChartOptions _chartOptions = new();
 
@@ -371,8 +371,9 @@
 
             if (mismatch || isGenericDashboardRoute)
             {
-                Navigation.NavigateTo($"/{roleLower}/dashboard");
-                return;
+                // Same component serves multiple routes; avoid early return here
+                // to prevent leaving _loading=true on first-login route redirects.
+                Navigation.NavigateTo($"/{roleLower}/dashboard", replace: true);
             }
 
             try
@@ -412,7 +413,14 @@
                         new ChartSeries<double> { Name = "Cases Closed", Data = _trends.CasesClosed }
                     };
 
-                    _donutData = new double[] { _verdicts.Guilty, _verdicts.Acquitted, _verdicts.Dismissed, _verdicts.Appealed };
+                    _donutSeries = new List<ChartSeries<double>>
+                    {
+                        new ChartSeries<double>
+                        {
+                            Name = "Verdicts",
+                            Data = new double[] { _verdicts.Guilty, _verdicts.Acquitted, _verdicts.Dismissed, _verdicts.Appealed }
+                        }
+                    };
                 }
 
                 // Load recent cases for quick overview
