@@ -7,7 +7,6 @@
 
 <PageTitle>Sign In — LawFlow</PageTitle>
 
-<LfWelcome Visible="_showWelcome" OnFinished="DismissWelcome" />
 
 <div class="min-h-dvh w-full bg-canvas relative overflow-hidden">
     <!-- Decorative grid backdrop (radial-masked, faint) -->
@@ -187,7 +186,6 @@
     private LoginViewModel _loginModel = new();
     private bool _loading = false;
     private bool _showPassword = false;
-    private bool _showWelcome = true;
     private string? _errorMessage;
     private string _now = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm 'UTC'");
 
@@ -206,7 +204,6 @@
     private string StatusDotClass => _loading ? "bg-info animate-pulse-dot" : (!string.IsNullOrEmpty(_errorMessage) ? "bg-danger" : "bg-success animate-pulse-dot");
 
     private void TogglePasswordVisibility() => _showPassword = !_showPassword;
-    private void DismissWelcome() => _showWelcome = false;
 
     private void AutoFill(string username)
     {

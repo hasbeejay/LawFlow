@@ -488,3 +488,36 @@ body {
 ::-webkit-scrollbar-thumb:hover {
     background: color-mix(in srgb, var(--lf-text-muted) 62%, transparent);
 }
+
+/* Custom Global Button & Nav Animations */
+button,
+.mud-button,
+.lf-nav,
+a[class*="btn"],
+.lf-btn,
+.lf-btn-ghost,
+.mud-button-filled {
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease, filter 0.3s ease !important;
+}
+
+button:hover:not(:disabled),
+.mud-button:hover:not(:disabled),
+.lf-nav:hover,
+a[class*="btn"]:hover,
+.lf-btn:hover,
+.lf-btn-ghost:hover,
+.mud-button-filled:hover {
+    transform: scale(1.02) translateY(-1px) !important;
+    box-shadow: 0 8px 20px rgba(91, 60, 222, 0.3) !important;
+    filter: brightness(1.05);
+    z-index: 10;
+}
+
+.mud-dark-mode button:hover:not(:disabled),
+.dark button:hover:not(:disabled),
+.mud-dark-mode .lf-nav:hover,
+.dark .lf-nav:hover,
+.mud-dark-mode .mud-button:hover:not(:disabled),
+.dark .mud-button:hover:not(:disabled) {
+    box-shadow: 0 10px 30px rgba(124, 92, 250, 0.5) !important;
+}

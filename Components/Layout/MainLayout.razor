@@ -132,7 +132,7 @@
                     <!-- DESKTOP SIDEBAR — fixed overlay, liquid glass.
                          Block layout so SidebarNav's `min-h-full + mt-auto` pattern keeps
                          the nav items at the top and the system-status block pinned to bottom. -->
-                    <aside class="hidden lg:block fixed top-14 left-0 bottom-0 w-64 z-20 lf-liquid !rounded-none !border-l-0 !border-t-0 !border-b-0 overflow-y-auto overflow-x-hidden">
+                    <aside class="hidden lg:block fixed top-14 left-0 bottom-0 w-64 z-20 lf-liquid !rounded-none !border-l-0 !border-t-0 !border-b-0 overflow-y-auto">
                         <SidebarNav User="_currentUser" />
                     </aside>
 
@@ -140,7 +140,7 @@
                     @if (_drawerOpen)
                     {
                         <div @onclick="ToggleDrawer" class="lg:hidden fixed inset-0 z-30 bg-black/40 backdrop-blur-sm"></div>
-                        <aside class="lg:hidden fixed top-14 bottom-0 left-0 w-64 z-40 lf-liquid lf-liquid-strong !rounded-none !border-l-0 !border-t-0 !border-b-0 overflow-y-auto overflow-x-hidden animate-fade-in-up">
+                        <aside class="lg:hidden fixed top-14 bottom-0 left-0 w-64 z-40 lf-liquid lf-liquid-strong !rounded-none !border-l-0 !border-t-0 !border-b-0 overflow-y-auto animate-fade-in-up">
                             <SidebarNav User="_currentUser" />
                         </aside>
                     }
@@ -251,7 +251,7 @@
         if (!_currentUser.Identity?.IsAuthenticated ?? true)
         {
             var uri = Navigation.ToBaseRelativePath(Navigation.Uri);
-            if (!uri.StartsWith("login", StringComparison.OrdinalIgnoreCase))
+            if (!uri.StartsWith("login", StringComparison.OrdinalIgnoreCase) && !string.IsNullOrEmpty(uri))
             {
                 Navigation.NavigateTo("/login");
             }
@@ -261,7 +261,7 @@
             await LoadNotifications();
 
             var uri = Navigation.ToBaseRelativePath(Navigation.Uri);
-            if (uri.StartsWith("login", StringComparison.OrdinalIgnoreCase))
+            if (uri.StartsWith("login", StringComparison.OrdinalIgnoreCase) || string.IsNullOrEmpty(uri))
             {
                 Navigation.NavigateTo("/dashboard");
             }

@@ -11,228 +11,225 @@ build_property.ProjectTypeGuids =
 build_property.InvariantGlobalization = 
 build_property.PlatformNeutralAssembly = 
 build_property.EnforceExtendedAnalyzerRules = 
+build_property.EntryPointFilePath = 
 build_property._SupportedPlatformList = Linux,macOS,Windows
 build_property.RootNamespace = LawFlow
 build_property.RootNamespace = LawFlow
-build_property.ProjectDir = /Users/Raheem/Desktop/Hasbeejay - VP/LawFlow/
+build_property.ProjectDir = D:\LawFlow\
 build_property.EnableComHosting = 
 build_property.EnableGeneratedComInterfaceComImportInterop = 
-build_property.RazorLangVersion = 9.0
+build_property.RazorLangVersion = 10.0
 build_property.SupportLocalizedComponentNames = 
 build_property.GenerateRazorMetadataSourceChecksumAttributes = 
-build_property.MSBuildProjectDirectory = /Users/Raheem/Desktop/Hasbeejay - VP/LawFlow
+build_property.MSBuildProjectDirectory = D:\LawFlow
 build_property._RazorSourceGeneratorDebug = 
 build_property.EffectiveAnalysisLevelStyle = 10.0
 build_property.EnableCodeStyleSeverity = 
 
-[/Users/Raheem/Desktop/Hasbeejay - VP/LawFlow/Components/App.razor]
-build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9BcHAucmF6b3I=
+[D:/LawFlow/Components/App.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xBcHAucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
-[/Users/Raheem/Desktop/Hasbeejay - VP/LawFlow/Components/Layout/SidebarNav.razor]
-build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9MYXlvdXQvU2lkZWJhck5hdi5yYXpvcg==
+[D:/LawFlow/Components/Layout/SidebarNav.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xMYXlvdXRcU2lkZWJhck5hdi5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
-[/Users/Raheem/Desktop/Hasbeejay - VP/LawFlow/Components/Pages/Admin/Assignments.razor]
-build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9BZG1pbi9Bc3NpZ25tZW50cy5yYXpvcg==
+[D:/LawFlow/Components/Pages/Admin/Assignments.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xBZG1pblxBc3NpZ25tZW50cy5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
-[/Users/Raheem/Desktop/Hasbeejay - VP/LawFlow/Components/Pages/Admin/Logs.razor]
-build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9BZG1pbi9Mb2dzLnJhem9y
+[D:/LawFlow/Components/Pages/Admin/Logs.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xBZG1pblxMb2dzLnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
 
-[/Users/Raheem/Desktop/Hasbeejay - VP/LawFlow/Components/Pages/Admin/Users.razor]
-build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9BZG1pbi9Vc2Vycy5yYXpvcg==
+[D:/LawFlow/Components/Pages/Admin/Users.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xBZG1pblxVc2Vycy5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
-[/Users/Raheem/Desktop/Hasbeejay - VP/LawFlow/Components/Pages/CaseDetails.razor]
-build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9DYXNlRGV0YWlscy5yYXpvcg==
+[D:/LawFlow/Components/Pages/CaseDetails.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xDYXNlRGV0YWlscy5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
-[/Users/Raheem/Desktop/Hasbeejay - VP/LawFlow/Components/Pages/Cases.razor]
-build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9DYXNlcy5yYXpvcg==
+[D:/LawFlow/Components/Pages/Cases.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xDYXNlcy5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
-[/Users/Raheem/Desktop/Hasbeejay - VP/LawFlow/Components/Pages/Chat/ChatIndex.razor]
-build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9DaGF0L0NoYXRJbmRleC5yYXpvcg==
+[D:/LawFlow/Components/Pages/Chat/ChatIndex.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xDaGF0XENoYXRJbmRleC5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
-[/Users/Raheem/Desktop/Hasbeejay - VP/LawFlow/Components/Pages/Chat/ChatRoom.razor]
-build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9DaGF0L0NoYXRSb29tLnJhem9y
+[D:/LawFlow/Components/Pages/Chat/ChatRoom.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xDaGF0XENoYXRSb29tLnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
 
-[/Users/Raheem/Desktop/Hasbeejay - VP/LawFlow/Components/Pages/Clerk/VerdictRegistry.razor]
-build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9DbGVyay9WZXJkaWN0UmVnaXN0cnkucmF6b3I=
+[D:/LawFlow/Components/Pages/Clerk/VerdictRegistry.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xDbGVya1xWZXJkaWN0UmVnaXN0cnkucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
-[/Users/Raheem/Desktop/Hasbeejay - VP/LawFlow/Components/Pages/Client/BrowseLawyers.razor]
-build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9DbGllbnQvQnJvd3NlTGF3eWVycy5yYXpvcg==
+[D:/LawFlow/Components/Pages/Client/BrowseLawyers.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xDbGllbnRcQnJvd3NlTGF3eWVycy5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
-[/Users/Raheem/Desktop/Hasbeejay - VP/LawFlow/Components/Pages/Client/FIRFiling.razor]
-build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9DbGllbnQvRklSRmlsaW5nLnJhem9y
+[D:/LawFlow/Components/Pages/Client/FIRFiling.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xDbGllbnRcRklSRmlsaW5nLnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
 
-[/Users/Raheem/Desktop/Hasbeejay - VP/LawFlow/Components/Pages/Client/MyJudges.razor]
-build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9DbGllbnQvTXlKdWRnZXMucmF6b3I=
+[D:/LawFlow/Components/Pages/Client/MyJudges.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xDbGllbnRcTXlKdWRnZXMucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
-[/Users/Raheem/Desktop/Hasbeejay - VP/LawFlow/Components/Pages/Dashboard.razor]
-build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9EYXNoYm9hcmQucmF6b3I=
+[D:/LawFlow/Components/Pages/Dashboard.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xEYXNoYm9hcmQucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
-[/Users/Raheem/Desktop/Hasbeejay - VP/LawFlow/Components/Pages/DocumentsByRole.razor]
-build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9Eb2N1bWVudHNCeVJvbGUucmF6b3I=
+[D:/LawFlow/Components/Pages/DocumentsByRole.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xEb2N1bWVudHNCeVJvbGUucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
-[/Users/Raheem/Desktop/Hasbeejay - VP/LawFlow/Components/Pages/Error.razor]
-build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9FcnJvci5yYXpvcg==
+[D:/LawFlow/Components/Pages/Error.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xFcnJvci5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
-[/Users/Raheem/Desktop/Hasbeejay - VP/LawFlow/Components/Pages/Hearings.razor]
-build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9IZWFyaW5ncy5yYXpvcg==
+[D:/LawFlow/Components/Pages/Hearings.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xIZWFyaW5ncy5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
-[/Users/Raheem/Desktop/Hasbeejay - VP/LawFlow/Components/Pages/HearingsByRole.razor]
-build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9IZWFyaW5nc0J5Um9sZS5yYXpvcg==
+[D:/LawFlow/Components/Pages/HearingsByRole.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xIZWFyaW5nc0J5Um9sZS5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
-[/Users/Raheem/Desktop/Hasbeejay - VP/LawFlow/Components/Pages/Home.razor]
-build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9Ib21lLnJhem9y
+[D:/LawFlow/Components/Pages/Home.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xIb21lLnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
 
-[/Users/Raheem/Desktop/Hasbeejay - VP/LawFlow/Components/Pages/Judge/Caseload.razor]
-build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9KdWRnZS9DYXNlbG9hZC5yYXpvcg==
+[D:/LawFlow/Components/Pages/Judge/Caseload.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xKdWRnZVxDYXNlbG9hZC5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
-[/Users/Raheem/Desktop/Hasbeejay - VP/LawFlow/Components/Pages/Judge/VerdictManagement.razor]
-build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9KdWRnZS9WZXJkaWN0TWFuYWdlbWVudC5yYXpvcg==
+[D:/LawFlow/Components/Pages/Judge/VerdictManagement.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xKdWRnZVxWZXJkaWN0TWFuYWdlbWVudC5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
-[/Users/Raheem/Desktop/Hasbeejay - VP/LawFlow/Components/Pages/Lawyer/AssignedJudges.razor]
-build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9MYXd5ZXIvQXNzaWduZWRKdWRnZXMucmF6b3I=
+[D:/LawFlow/Components/Pages/Lawyer/AssignedJudges.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xMYXd5ZXJcQXNzaWduZWRKdWRnZXMucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
-[/Users/Raheem/Desktop/Hasbeejay - VP/LawFlow/Components/Pages/Lawyer/AssignedPolice.razor]
-build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9MYXd5ZXIvQXNzaWduZWRQb2xpY2UucmF6b3I=
+[D:/LawFlow/Components/Pages/Lawyer/AssignedPolice.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xMYXd5ZXJcQXNzaWduZWRQb2xpY2UucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
-[/Users/Raheem/Desktop/Hasbeejay - VP/LawFlow/Components/Pages/Lawyer/Caseload.razor]
-build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9MYXd5ZXIvQ2FzZWxvYWQucmF6b3I=
+[D:/LawFlow/Components/Pages/Lawyer/Caseload.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xMYXd5ZXJcQ2FzZWxvYWQucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
-[/Users/Raheem/Desktop/Hasbeejay - VP/LawFlow/Components/Pages/Lawyer/Offered.razor]
-build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9MYXd5ZXIvT2ZmZXJlZC5yYXpvcg==
+[D:/LawFlow/Components/Pages/Lawyer/Offered.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xMYXd5ZXJcT2ZmZXJlZC5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
-[/Users/Raheem/Desktop/Hasbeejay - VP/LawFlow/Components/Pages/Login.razor]
-build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9Mb2dpbi5yYXpvcg==
+[D:/LawFlow/Components/Pages/Login.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xMb2dpbi5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
-[/Users/Raheem/Desktop/Hasbeejay - VP/LawFlow/Components/Pages/Notifications.razor]
-build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9Ob3RpZmljYXRpb25zLnJhem9y
+[D:/LawFlow/Components/Pages/Notifications.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xOb3RpZmljYXRpb25zLnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
 
-[/Users/Raheem/Desktop/Hasbeejay - VP/LawFlow/Components/Pages/Police/Caseload.razor]
-build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9Qb2xpY2UvQ2FzZWxvYWQucmF6b3I=
+[D:/LawFlow/Components/Pages/Police/Caseload.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xQb2xpY2VcQ2FzZWxvYWQucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
-[/Users/Raheem/Desktop/Hasbeejay - VP/LawFlow/Components/Pages/Police/CriminalRegistry.razor]
-build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9Qb2xpY2UvQ3JpbWluYWxSZWdpc3RyeS5yYXpvcg==
+[D:/LawFlow/Components/Pages/Police/CriminalRegistry.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xQb2xpY2VcQ3JpbWluYWxSZWdpc3RyeS5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
-[/Users/Raheem/Desktop/Hasbeejay - VP/LawFlow/Components/Pages/VerdictsByRole.razor]
-build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9QYWdlcy9WZXJkaWN0c0J5Um9sZS5yYXpvcg==
+[D:/LawFlow/Components/Pages/VerdictsByRole.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xQYWdlc1xWZXJkaWN0c0J5Um9sZS5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
-[/Users/Raheem/Desktop/Hasbeejay - VP/LawFlow/Components/RedirectToLogin.razor]
-build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9SZWRpcmVjdFRvTG9naW4ucmF6b3I=
+[D:/LawFlow/Components/RedirectToLogin.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xSZWRpcmVjdFRvTG9naW4ucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
-[/Users/Raheem/Desktop/Hasbeejay - VP/LawFlow/Components/Routes.razor]
-build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9Sb3V0ZXMucmF6b3I=
+[D:/LawFlow/Components/Routes.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xSb3V0ZXMucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
-[/Users/Raheem/Desktop/Hasbeejay - VP/LawFlow/Components/Shared/UI/LfAvatar.razor]
-build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9TaGFyZWQvVUkvTGZBdmF0YXIucmF6b3I=
+[D:/LawFlow/Components/Shared/UI/LfAvatar.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xTaGFyZWRcVUlcTGZBdmF0YXIucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
-[/Users/Raheem/Desktop/Hasbeejay - VP/LawFlow/Components/Shared/UI/LfBrand.razor]
-build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9TaGFyZWQvVUkvTGZCcmFuZC5yYXpvcg==
+[D:/LawFlow/Components/Shared/UI/LfBrand.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xTaGFyZWRcVUlcTGZCcmFuZC5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
-[/Users/Raheem/Desktop/Hasbeejay - VP/LawFlow/Components/Shared/UI/LfButton.razor]
-build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9TaGFyZWQvVUkvTGZCdXR0b24ucmF6b3I=
+[D:/LawFlow/Components/Shared/UI/LfButton.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xTaGFyZWRcVUlcTGZCdXR0b24ucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
-[/Users/Raheem/Desktop/Hasbeejay - VP/LawFlow/Components/Shared/UI/LfCard.razor]
-build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9TaGFyZWQvVUkvTGZDYXJkLnJhem9y
+[D:/LawFlow/Components/Shared/UI/LfCard.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xTaGFyZWRcVUlcTGZDYXJkLnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
 
-[/Users/Raheem/Desktop/Hasbeejay - VP/LawFlow/Components/Shared/UI/LfChip.razor]
-build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9TaGFyZWQvVUkvTGZDaGlwLnJhem9y
+[D:/LawFlow/Components/Shared/UI/LfChip.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xTaGFyZWRcVUlcTGZDaGlwLnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
 
-[/Users/Raheem/Desktop/Hasbeejay - VP/LawFlow/Components/Shared/UI/LfComingSoon.razor]
-build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9TaGFyZWQvVUkvTGZDb21pbmdTb29uLnJhem9y
+[D:/LawFlow/Components/Shared/UI/LfComingSoon.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xTaGFyZWRcVUlcTGZDb21pbmdTb29uLnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
 
-[/Users/Raheem/Desktop/Hasbeejay - VP/LawFlow/Components/Shared/UI/LfDonutChart.razor]
-build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9TaGFyZWQvVUkvTGZEb251dENoYXJ0LnJhem9y
+[D:/LawFlow/Components/Shared/UI/LfDonutChart.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xTaGFyZWRcVUlcTGZEb251dENoYXJ0LnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
 
-[/Users/Raheem/Desktop/Hasbeejay - VP/LawFlow/Components/Shared/UI/LfIcon.razor]
-build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9TaGFyZWQvVUkvTGZJY29uLnJhem9y
+[D:/LawFlow/Components/Shared/UI/LfIcon.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xTaGFyZWRcVUlcTGZJY29uLnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
 
-[/Users/Raheem/Desktop/Hasbeejay - VP/LawFlow/Components/Shared/UI/LfInput.razor]
-build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9TaGFyZWQvVUkvTGZJbnB1dC5yYXpvcg==
+[D:/LawFlow/Components/Shared/UI/LfInput.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xTaGFyZWRcVUlcTGZJbnB1dC5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
-[/Users/Raheem/Desktop/Hasbeejay - VP/LawFlow/Components/Shared/UI/LfKpi.razor]
-build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9TaGFyZWQvVUkvTGZLcGkucmF6b3I=
+[D:/LawFlow/Components/Shared/UI/LfKpi.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xTaGFyZWRcVUlcTGZLcGkucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
-[/Users/Raheem/Desktop/Hasbeejay - VP/LawFlow/Components/Shared/UI/LfLineChart.razor]
-build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9TaGFyZWQvVUkvTGZMaW5lQ2hhcnQucmF6b3I=
+[D:/LawFlow/Components/Shared/UI/LfLineChart.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xTaGFyZWRcVUlcTGZMaW5lQ2hhcnQucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
-[/Users/Raheem/Desktop/Hasbeejay - VP/LawFlow/Components/Shared/UI/LfMenu.razor]
-build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9TaGFyZWQvVUkvTGZNZW51LnJhem9y
+[D:/LawFlow/Components/Shared/UI/LfMenu.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xTaGFyZWRcVUlcTGZNZW51LnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
 
-[/Users/Raheem/Desktop/Hasbeejay - VP/LawFlow/Components/Shared/UI/LfMenuItem.razor]
-build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9TaGFyZWQvVUkvTGZNZW51SXRlbS5yYXpvcg==
+[D:/LawFlow/Components/Shared/UI/LfMenuItem.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xTaGFyZWRcVUlcTGZNZW51SXRlbS5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
-[/Users/Raheem/Desktop/Hasbeejay - VP/LawFlow/Components/Shared/UI/LfNavLink.razor]
-build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9TaGFyZWQvVUkvTGZOYXZMaW5rLnJhem9y
+[D:/LawFlow/Components/Shared/UI/LfNavLink.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xTaGFyZWRcVUlcTGZOYXZMaW5rLnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
 
-[/Users/Raheem/Desktop/Hasbeejay - VP/LawFlow/Components/Shared/UI/LfStatusChip.razor]
-build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9TaGFyZWQvVUkvTGZTdGF0dXNDaGlwLnJhem9y
+[D:/LawFlow/Components/Shared/UI/LfStatusChip.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xTaGFyZWRcVUlcTGZTdGF0dXNDaGlwLnJhem9y
 build_metadata.AdditionalFiles.CssScope = 
 
-[/Users/Raheem/Desktop/Hasbeejay - VP/LawFlow/Components/Shared/UI/LfThemeToggle.razor]
-build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9TaGFyZWQvVUkvTGZUaGVtZVRvZ2dsZS5yYXpvcg==
+[D:/LawFlow/Components/Shared/UI/LfThemeToggle.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xTaGFyZWRcVUlcTGZUaGVtZVRvZ2dsZS5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
-[/Users/Raheem/Desktop/Hasbeejay - VP/LawFlow/Components/Shared/UI/LfToastHost.razor]
-build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9TaGFyZWQvVUkvTGZUb2FzdEhvc3QucmF6b3I=
+[D:/LawFlow/Components/Shared/UI/LfToastHost.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xTaGFyZWRcVUlcTGZUb2FzdEhvc3QucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
-[/Users/Raheem/Desktop/Hasbeejay - VP/LawFlow/Components/Shared/UI/LfWelcome.razor]
-build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9TaGFyZWQvVUkvTGZXZWxjb21lLnJhem9y
+[D:/LawFlow/Components/Shared/UI/LoadingDot.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xTaGFyZWRcVUlcTG9hZGluZ0RvdC5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
-[/Users/Raheem/Desktop/Hasbeejay - VP/LawFlow/Components/Shared/UI/LoadingDot.razor]
-build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9TaGFyZWQvVUkvTG9hZGluZ0RvdC5yYXpvcg==
+[D:/LawFlow/Components/_Imports.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xfSW1wb3J0cy5yYXpvcg==
 build_metadata.AdditionalFiles.CssScope = 
 
-[/Users/Raheem/Desktop/Hasbeejay - VP/LawFlow/Components/_Imports.razor]
-build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9fSW1wb3J0cy5yYXpvcg==
-build_metadata.AdditionalFiles.CssScope = 
-
-[/Users/Raheem/Desktop/Hasbeejay - VP/LawFlow/Components/Layout/MainLayout.razor]
-build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50cy9MYXlvdXQvTWFpbkxheW91dC5yYXpvcg==
-build_metadata.AdditionalFiles.CssScope = b-rnyhcr319a
+[D:/LawFlow/Components/Layout/MainLayout.razor]
+build_metadata.AdditionalFiles.TargetPath = Q29tcG9uZW50c1xMYXlvdXRcTWFpbkxheW91dC5yYXpvcg==
+build_metadata.AdditionalFiles.CssScope = b-dsotne1wvf
