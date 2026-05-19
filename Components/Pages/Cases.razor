@@ -244,23 +244,29 @@
         }
 
         // Role sub-routing correction
-        var currentUri = Navigation.Uri.ToLower();
-        bool mismatch = false;
-        if (currentUri.Contains("/admin/") && _role != "Admin") mismatch = true;
-        if (currentUri.Contains("/lawyer/") && _role != "Lawyer") mismatch = true;
-        if (currentUri.Contains("/client/") && _role != "Client") mismatch = true;
-        if (currentUri.Contains("/judge/") && _role != "Judge") mismatch = true;
-        if (currentUri.Contains("/police/") && _role != "Police") mismatch = true;
-        if (currentUri.Contains("/clerk/") && _role != "Clerk") mismatch = true;
+        var roleLower = _role.ToLowerInvariant();
+        var route = Navigation.ToBaseRelativePath(Navigation.Uri).Trim('/').ToLowerInvariant();
+        var firstSegment = route.Split('/', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
+        var knownRoles = new[] { "admin", "lawyer", "client", "judge", "police", "clerk" };
+        var hasRoleSegment = !string.IsNullOrEmpty(firstSegment) && knownRoles.Contains(firstSegment);
+        var mismatch = hasRoleSegment && firstSegment != roleLower;
+        var isGenericCasesRoute = route == "cases";
 
-        if (mismatch || currentUri.EndsWith("/cases") || currentUri.EndsWith("/cases/"))
+        if (mismatch || isGenericCasesRoute)
         {
-            var correctRole = _role.ToLower();
-            Navigation.NavigateTo($"/{correctRole}/cases");
+            Navigation.NavigateTo($"/{roleLower}/cases");
             return;
         }
 
-        await LoadCases();
+        try
+        {
+            await LoadCases();
+        }
+        catch (Exception ex)
+        {
+            _loading = false;
+            Snackbar.Add($"Case records failed to load: {ex.Message}", Severity.Error);
+        }
     }
 
     private async Task LoadCases()

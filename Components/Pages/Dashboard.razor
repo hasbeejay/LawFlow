@@ -359,65 +359,70 @@
             _fullName = user.FindFirst(ClaimTypes.GivenName)?.Value ?? user.Identity.Name ?? "User";
             _role = user.FindFirst(ClaimTypes.Role)?.Value ?? "Client";
             _userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "";
+            var roleLower = _role.ToLowerInvariant();
 
             // Role sub-routing correction
-            var currentUri = Navigation.Uri.ToLower();
-            bool mismatch = false;
-            if (currentUri.Contains("/admin/") && _role != "Admin") mismatch = true;
-            if (currentUri.Contains("/lawyer/") && _role != "Lawyer") mismatch = true;
-            if (currentUri.Contains("/client/") && _role != "Client") mismatch = true;
-            if (currentUri.Contains("/judge/") && _role != "Judge") mismatch = true;
-            if (currentUri.Contains("/police/") && _role != "Police") mismatch = true;
-            if (currentUri.Contains("/clerk/") && _role != "Clerk") mismatch = true;
+            var route = Navigation.ToBaseRelativePath(Navigation.Uri).Trim('/').ToLowerInvariant();
+            var firstSegment = route.Split('/', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
+            var knownRoles = new[] { "admin", "lawyer", "client", "judge", "police", "clerk" };
+            var hasRoleSegment = !string.IsNullOrEmpty(firstSegment) && knownRoles.Contains(firstSegment);
+            var mismatch = hasRoleSegment && firstSegment != roleLower;
+            var isGenericDashboardRoute = string.IsNullOrEmpty(route) || route == "dashboard";
 
-            if (mismatch || currentUri.EndsWith("/dashboard") || currentUri.EndsWith("/dashboard/") || currentUri.EndsWith("/") || currentUri.EndsWith("/#/"))
+            if (mismatch || isGenericDashboardRoute)
             {
-                var correctRole = _role.ToLower();
-                Navigation.NavigateTo($"/{correctRole}/dashboard");
+                Navigation.NavigateTo($"/{roleLower}/dashboard");
                 return;
             }
 
-            // Load metrics based on Role
-            switch (_role)
+            try
             {
-                case "Admin":
-                    _adminStats = await DashboardService.GetAdminStatsAsync();
-                    break;
-                case "Judge":
-                    _judgeStats = await DashboardService.GetJudgeStatsAsync(_userId);
-                    break;
-                case "Lawyer":
-                    _lawyerStats = await DashboardService.GetLawyerStatsAsync(_userId);
-                    break;
-                case "Client":
-                    _clientStats = await DashboardService.GetClientStatsAsync(_userId);
-                    break;
-                case "Police":
-                    _policeStats = await DashboardService.GetPoliceStatsAsync(_userId);
-                    break;
-                case "Clerk":
-                    _clerkStats = await DashboardService.GetClerkStatsAsync(_userId);
-                    break;
-            }
-
-            // Load charts data (common for Admins/Judges/Lawyers)
-            if (_role == "Admin" || _role == "Judge" || _role == "Lawyer")
-            {
-                _trends = await DashboardService.GetCaseCompletionTrendsAsync();
-                _verdicts = await DashboardService.GetVerdictDistributionAsync();
-
-                _series = new List<ChartSeries<double>>
+                // Load metrics based on Role
+                switch (_role)
                 {
-                    new ChartSeries<double> { Name = "Cases Filed", Data = _trends.CasesFiled },
-                    new ChartSeries<double> { Name = "Cases Closed", Data = _trends.CasesClosed }
-                };
+                    case "Admin":
+                        _adminStats = await DashboardService.GetAdminStatsAsync();
+                        break;
+                    case "Judge":
+                        _judgeStats = await DashboardService.GetJudgeStatsAsync(_userId);
+                        break;
+                    case "Lawyer":
+                        _lawyerStats = await DashboardService.GetLawyerStatsAsync(_userId);
+                        break;
+                    case "Client":
+                        _clientStats = await DashboardService.GetClientStatsAsync(_userId);
+                        break;
+                    case "Police":
+                        _policeStats = await DashboardService.GetPoliceStatsAsync(_userId);
+                        break;
+                    case "Clerk":
+                        _clerkStats = await DashboardService.GetClerkStatsAsync(_userId);
+                        break;
+                }
 
-                _donutData = new double[] { _verdicts.Guilty, _verdicts.Acquitted, _verdicts.Dismissed, _verdicts.Appealed };
+                // Load charts data (common for Admins/Judges/Lawyers)
+                if (_role == "Admin" || _role == "Judge" || _role == "Lawyer")
+                {
+                    _trends = await DashboardService.GetCaseCompletionTrendsAsync();
+                    _verdicts = await DashboardService.GetVerdictDistributionAsync();
+
+                    _series = new List<ChartSeries<double>>
+                    {
+                        new ChartSeries<double> { Name = "Cases Filed", Data = _trends.CasesFiled },
+                        new ChartSeries<double> { Name = "Cases Closed", Data = _trends.CasesClosed }
+                    };
+
+                    _donutData = new double[] { _verdicts.Guilty, _verdicts.Acquitted, _verdicts.Dismissed, _verdicts.Appealed };
+                }
+
+                // Load recent cases for quick overview
+                var cases = await CaseService.GetCasesForUserAsync(_userId, Enum.Parse<UserRole>(_role));
+                _recentCases = cases.Take(5).ToList();
             }
-
-            // Load recent cases for quick overview
-            var cases = await CaseService.GetCasesForUserAsync(_userId, Enum.Parse<UserRole>(_role));
-            _recentCases = cases.Take(5).ToList();
+            catch (Exception ex)
+            {
+                Snackbar.Add($"Dashboard failed to load: {ex.Message}", Severity.Error);
+            }
         }
 
         _loading = false;

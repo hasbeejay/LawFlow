@@ -122,11 +122,16 @@ using (var scope = app.Services.CreateScope())
         var context = services.GetRequiredService<ApplicationDbContext>();
         context.Database.Migrate();
 
-        var authService = services.GetRequiredService<AuthService>();
-        await authService.SeedDemoDataAsync();
+        // Important for real databases (e.g., Supabase): keep demo seeding opt-in only.
+        var shouldSeedDemoData = builder.Configuration.GetValue<bool>("SeedDemoData");
+        if (shouldSeedDemoData)
+        {
+            var authService = services.GetRequiredService<AuthService>();
+            await authService.SeedDemoDataAsync();
 
-        var caseService = services.GetRequiredService<CaseService>();
-        await caseService.SeedDemoCasesAsync();
+            var caseService = services.GetRequiredService<CaseService>();
+            await caseService.SeedDemoCasesAsync();
+        }
     }
     catch (Exception ex)
     {
