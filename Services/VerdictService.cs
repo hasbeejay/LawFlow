@@ -90,6 +90,12 @@ namespace LawFlow.Services
                 .FirstOrDefaultAsync(c => c.Id == caseId);
 
             if (c?.Verdict == null) return false;
+            if (string.IsNullOrWhiteSpace(c.ClerkId) || !string.Equals(c.ClerkId, clerkId, StringComparison.Ordinal))
+                return false;
+            if (c.Status != CaseStatus.VerdictIssued)
+                return false;
+            if (c.Verdict.IsPublished)
+                return false;
 
             c.Verdict.IsPublished = true;
             c.Verdict.PublishedAt = DateTime.UtcNow;

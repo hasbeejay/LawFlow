@@ -77,8 +77,11 @@ namespace LawFlow.Services
                 .Include(c => c.Clerk)
                 .Include(c => c.Hearings)
                 .Include(c => c.Documents)
+                    .ThenInclude(d => d.UploadedBy)
                 .Include(c => c.PoliceReports)
+                    .ThenInclude(p => p.Officer)
                 .Include(c => c.Verdict)
+                    .ThenInclude(v => v!.Judge)
                 .FirstOrDefaultAsync(c => c.Id == id);
         }
 

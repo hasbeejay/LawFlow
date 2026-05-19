@@ -5,10 +5,12 @@
 @attribute [Authorize]
 @inject CaseService CaseService
 @inject AuthService AuthService
+@inject DocumentService DocumentService
 @inject AuthenticationStateProvider AuthStateProvider
 @inject NavigationManager Navigation
 @inject ISnackbar Snackbar
 @using System.Security.Claims
+@using Microsoft.AspNetCore.Components.Forms
 
 <PageTitle>Judicial Records - LawFlow</PageTitle>
 
@@ -59,12 +61,56 @@
                               Placeholder="State details of event, timeline of occurrence, suspects and damages..."
                               Class="mb-4" />
 
+                <MudGrid Class="mb-4">
+                    <MudItem xs="12" sm="6">
+                        <MudDatePicker @bind-Date="_newCaseModel.IncidentDate" Label="Incident Date" Variant="Variant.Outlined" />
+                    </MudItem>
+                    <MudItem xs="12" sm="6">
+                        <MudTimePicker @bind-Time="_newCaseModel.IncidentTime" Label="Incident Time" Variant="Variant.Outlined" />
+                    </MudItem>
+                    <MudItem xs="12" sm="6">
+                        <MudTextField @bind-Value="_newCaseModel.IncidentLocation"
+                                      Label="Incident Location"
+                                      Variant="Variant.Outlined"
+                                      Placeholder="Street / district / city" />
+                    </MudItem>
+                    <MudItem xs="12" sm="6">
+                        <MudTextField @bind-Value="_newCaseModel.RespondentName"
+                                      Label="Respondent / Accused (if known)"
+                                      Variant="Variant.Outlined"
+                                      Placeholder="Name(s) of accused party" />
+                    </MudItem>
+                </MudGrid>
+
+                <MudTextField @bind-Value="_newCaseModel.WitnessDetails"
+                              Label="Witness Information (optional)"
+                              Variant="Variant.Outlined"
+                              Lines="2"
+                              Placeholder="Witness names and contact details"
+                              Class="mb-4" />
+
+                <MudTextField @bind-Value="_newCaseModel.RequestedRelief"
+                              Label="Requested Relief / Action (optional)"
+                              Variant="Variant.Outlined"
+                              Lines="2"
+                              Placeholder="State what you request from court"
+                              Class="mb-4" />
+
                 <div class="d-flex flex-column gap-2 mb-6">
-                    <MudText Typo="Typo.subtitle2" Class="font-weight-bold">Primary Supporting Document (FIR Draft / Initial Evidence)</MudText>
+                    <MudText Typo="Typo.subtitle2" Class="font-weight-bold">Primary Supporting Document (required)</MudText>
                     <div style="border: 2px dashed #0EA5E9; border-radius: 8px; padding: 20px; text-align:center; background: rgba(14,165,233,0.03);">
                         <MudIcon Icon="@Icons.Material.Filled.CloudUpload" Color="Color.Secondary" Size="Size.Large" Class="mb-2" />
-                        <MudText Typo="Typo.body2" Class="font-weight-bold">Mock FIR file auto-appended</MudText>
-                        <MudText Typo="Typo.caption" Class="text-muted">FIR_Draft_Filing_Package.pdf (1.2 MB)</MudText>
+                        <InputFile OnChange="HandleFirFileSelected" class="d-block mx-auto mb-2" />
+                        @if (_selectedFirFile is not null)
+                        {
+                            <MudText Typo="Typo.body2" Class="font-weight-bold">@_selectedFirFile.Name</MudText>
+                            <MudText Typo="Typo.caption" Class="text-muted">@((_selectedFirFile.Size / 1024d / 1024d).ToString("0.00")) MB</MudText>
+                        }
+                        else
+                        {
+                            <MudText Typo="Typo.body2" Class="font-weight-bold">Select FIR PDF / evidence file</MudText>
+                            <MudText Typo="Typo.caption" Class="text-muted">Allowed size: up to 25 MB</MudText>
+                        }
                     </div>
                 </div>
 
@@ -225,6 +271,8 @@
     private bool _submitting = false;
     private string _role = string.Empty;
     private string _userId = string.Empty;
+    private IBrowserFile? _selectedFirFile;
+    private const long MaxUploadBytes = 25L * 1024L * 1024L;
 
     // Filters
     private string _searchQuery = string.Empty;
@@ -307,23 +355,59 @@
     {
         _showNewCaseForm = !_showNewCaseForm;
         _newCaseModel = new();
+        _selectedFirFile = null;
+    }
+
+    private void HandleFirFileSelected(InputFileChangeEventArgs e)
+    {
+        _selectedFirFile = e.File;
     }
 
     private async Task HandleSubmitFIR()
     {
+        if (_selectedFirFile is null)
+        {
+            Snackbar.Add("Please attach the FIR supporting document before submitting.", Severity.Warning);
+            return;
+        }
+        if (_selectedFirFile.Size > MaxUploadBytes)
+        {
+            Snackbar.Add("Selected document is too large. Maximum allowed size is 25 MB.", Severity.Warning);
+            return;
+        }
+
         _submitting = true;
         try
         {
-            await CaseService.SubmitFIRAsync(
+            var compiledDescription = BuildFirNarrative();
+            var createdCase = await CaseService.SubmitFIRAsync(
                 _newCaseModel.Title,
-                _newCaseModel.Description,
+                compiledDescription,
                 _userId,
-                "FIR_Draft_Filing_Package.pdf",
-                "/uploads/FIR_Mock.pdf"
+                string.Empty,
+                string.Empty
             );
+
+            await using (var readStream = _selectedFirFile.OpenReadStream(MaxUploadBytes))
+            {
+                using var ms = new MemoryStream();
+                await readStream.CopyToAsync(ms);
+                var savedDoc = await DocumentService.UploadDocumentAsync(
+                    createdCase.Id,
+                    _selectedFirFile.Name,
+                    ms.ToArray(),
+                    "FIR",
+                    _userId
+                );
+                if (savedDoc == null)
+                {
+                    Snackbar.Add("Case created, but FIR document upload failed.", Severity.Warning);
+                }
+            }
 
             Snackbar.Add("Your FIR has been successfully registered and sent for Judicial Review.", Severity.Success);
             _showNewCaseForm = false;
+            _selectedFirFile = null;
             await LoadCases();
         }
         catch (Exception ex)
@@ -334,6 +418,28 @@
         {
             _submitting = false;
         }
+    }
+
+    private string BuildFirNarrative()
+    {
+        var incidentDate = _newCaseModel.IncidentDate?.ToString("yyyy-MM-dd") ?? "Not provided";
+        var incidentTime = _newCaseModel.IncidentTime?.ToString(@"hh\:mm") ?? "Not provided";
+        var location = string.IsNullOrWhiteSpace(_newCaseModel.IncidentLocation) ? "Not provided" : _newCaseModel.IncidentLocation.Trim();
+        var respondent = string.IsNullOrWhiteSpace(_newCaseModel.RespondentName) ? "Unknown / not identified" : _newCaseModel.RespondentName.Trim();
+        var witnesses = string.IsNullOrWhiteSpace(_newCaseModel.WitnessDetails) ? "None provided" : _newCaseModel.WitnessDetails.Trim();
+        var relief = string.IsNullOrWhiteSpace(_newCaseModel.RequestedRelief) ? "No specific relief requested" : _newCaseModel.RequestedRelief.Trim();
+
+        return $"""
+        {_newCaseModel.Description}
+
+        FIR Intake Details:
+        - Incident Date: {incidentDate}
+        - Incident Time: {incidentTime}
+        - Incident Location: {location}
+        - Respondent / Accused: {respondent}
+        - Witness Information: {witnesses}
+        - Requested Relief: {relief}
+        """;
     }
 
     private async Task HandleLawyerAction(int caseId, bool accept)
@@ -398,5 +504,24 @@
         [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Description is required")]
         [System.ComponentModel.DataAnnotations.MinLength(20, ErrorMessage = "Provide a meaningful description (min 20 characters)")]
         public string Description { get; set; } = string.Empty;
+
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Incident date is required")]
+        public DateTime? IncidentDate { get; set; }
+
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Incident time is required")]
+        public TimeSpan? IncidentTime { get; set; }
+
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Incident location is required")]
+        [System.ComponentModel.DataAnnotations.StringLength(180, ErrorMessage = "Location cannot exceed 180 characters")]
+        public string IncidentLocation { get; set; } = string.Empty;
+
+        [System.ComponentModel.DataAnnotations.StringLength(120, ErrorMessage = "Respondent name cannot exceed 120 characters")]
+        public string? RespondentName { get; set; }
+
+        [System.ComponentModel.DataAnnotations.StringLength(500, ErrorMessage = "Witness details cannot exceed 500 characters")]
+        public string? WitnessDetails { get; set; }
+
+        [System.ComponentModel.DataAnnotations.StringLength(500, ErrorMessage = "Requested relief cannot exceed 500 characters")]
+        public string? RequestedRelief { get; set; }
     }
 }

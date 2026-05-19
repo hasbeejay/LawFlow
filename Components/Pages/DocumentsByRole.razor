@@ -74,24 +74,33 @@ else
                     <div class="mt-5 lf-rule"></div>
 
                     <!-- Upload form -->
-                    <div class="mt-4">
-                        <div class="font-mono text-2xs uppercase tracking-wider text-muted mb-2">Upload</div>
-                        <div class="flex flex-col sm:flex-row gap-2">
-                            <select class="bg-transparent border border-hairline rounded-card px-2 py-2 text-sm" @bind="_docType">
-                                @foreach (var t in _docTypesForRole)
-                                {
-                                    <option value="@t">@t</option>
-                                }
-                            </select>
-                            <InputFile OnChange="HandleFileSelected"
-                                       class="flex-1 text-sm file:mr-2 file:px-3 file:py-1.5 file:rounded-card file:border file:border-hairline file:bg-canvas file:text-ink file:cursor-pointer file:hover:border-primary/40"
-                                       disabled="@_uploading" />
+                    @if (CanUploadDocuments)
+                    {
+                        <div class="mt-4">
+                            <div class="font-mono text-2xs uppercase tracking-wider text-muted mb-2">Upload</div>
+                            <div class="flex flex-col sm:flex-row gap-2">
+                                <select class="bg-transparent border border-hairline rounded-card px-2 py-2 text-sm" @bind="_docType">
+                                    @foreach (var t in _docTypesForRole)
+                                    {
+                                        <option value="@t">@t</option>
+                                    }
+                                </select>
+                                <InputFile OnChange="HandleFileSelected"
+                                           class="flex-1 text-sm file:mr-2 file:px-3 file:py-1.5 file:rounded-card file:border file:border-hairline file:bg-canvas file:text-ink file:cursor-pointer file:hover:border-primary/40"
+                                           disabled="@_uploading" />
+                            </div>
+                            @if (_uploading)
+                            {
+                                <div class="mt-2 text-xs text-muted">Uploading…</div>
+                            }
                         </div>
-                        @if (_uploading)
-                        {
-                            <div class="mt-2 text-xs text-muted">Uploading…</div>
-                        }
-                    </div>
+                    }
+                    else
+                    {
+                        <div class="mt-4 text-xs text-muted">
+                            Uploading is disabled for judges. You can review and view all case documents here.
+                        </div>
+                    }
 
                     <div class="mt-5 lf-rule"></div>
 
@@ -142,6 +151,7 @@ else
     private List<Document> _documents = new();
     private string _docType = "Evidence";
     private string[] _docTypesForRole = Array.Empty<string>();
+    private bool CanUploadDocuments => _role is not "Judge";
 
     protected override async Task OnInitializedAsync()
     {
@@ -155,11 +165,11 @@ else
             {
                 "Client" => new[] { "Evidence", "Proof", "Statement" },
                 "Lawyer" => new[] { "Evidence", "Filing", "Motion" },
-                "Judge"  => new[] { "Order", "Notice" },
+                "Judge"  => Array.Empty<string>(),
                 "Clerk"  => new[] { "Notice", "Hearing", "VerdictPDF" },
                 _ => new[] { "Evidence" }
             };
-            _docType = _docTypesForRole.First();
+            _docType = _docTypesForRole.FirstOrDefault() ?? "Evidence";
 
             if (Enum.TryParse<UserRole>(_role, true, out var role))
             {

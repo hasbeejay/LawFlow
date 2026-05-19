@@ -6,20 +6,18 @@
 @page "/police/cases/{Id:int}"
 @page "/clerk/cases/{Id:int}"
 @attribute [Authorize]
-@implements IDisposable
 @inject CaseService CaseService
 @inject AuthService AuthService
 @inject DocumentService DocumentService
 @inject PoliceReportService PoliceReportService
 @inject VerdictService VerdictService
 @inject HearingService HearingService
-@inject MessageService MessageService
 @inject NotificationService NotificationService
 @inject AuthenticationStateProvider AuthStateProvider
 @inject ISnackbar Snackbar
 @inject NavigationManager NavigationManager
 @using System.Security.Claims
-@using Microsoft.AspNetCore.SignalR.Client
+@using Microsoft.AspNetCore.Components.Forms
 
 <PageTitle>Case Workspace - LawFlow</PageTitle>
 
@@ -320,8 +318,8 @@ else
                     <div class="d-flex justify-space-between align-center mb-4">
                         <MudText Typo="Typo.h6" Class="font-weight-bold">Filing Records & Evidence Bags</MudText>
                         
-                        <!-- Upload Button (For active roles during active investigation/cases) -->
-                        @if (_case.Status != CaseStatus.Closed && (_role == "Client" || _role == "Lawyer" || _role == "Police"))
+                        <!-- Upload Button -->
+                        @if (_case.Status != CaseStatus.Closed && (_role == "Client" || _role == "Lawyer" || _role == "Police" || _role == "Clerk"))
                         {
                             <MudButton Variant="Variant.Filled" Color="Color.Secondary" Size="Size.Small" StartIcon="@Icons.Material.Filled.CloudUpload" OnClick="OpenUploadDialog" Style="border-radius: 8px;">
                                 Upload Document
@@ -335,18 +333,26 @@ else
                             <MudText Typo="Typo.subtitle2" Class="font-weight-bold mb-3">Upload Legal File</MudText>
                             <MudGrid Class="mb-3">
                                 <MudItem xs="12" sm="6">
-                                    <MudTextField @bind-Value="_uploadFileName" Label="File Name" Variant="Variant.Outlined" Margin="Margin.Dense" Placeholder="e.g. DNA_Report_Case.pdf" />
+                                    <MudTextField @bind-Value="_uploadFileName" Label="Document Title (optional)" Variant="Variant.Outlined" Margin="Margin.Dense" Placeholder="Defaults to selected file name" />
                                 </MudItem>
                                 <MudItem xs="12" sm="6">
                                     <MudSelect T="string" Label="Document Category" Variant="Variant.Outlined" @bind-Value="_uploadDocType" Margin="Margin.Dense">
                                         <MudSelectItem Value="@("Evidence")">Supporting Evidence</MudSelectItem>
                                         <MudSelectItem Value="@("LegalBrief")">Legal Brief / Statement</MudSelectItem>
                                         <MudSelectItem Value="@("PoliceReport")">Police / Investigation PDF</MudSelectItem>
+                                        <MudSelectItem Value="@("VerdictPDF")">Verdict / Court Order PDF</MudSelectItem>
                                     </MudSelect>
                                 </MudItem>
                             </MudGrid>
+                            <InputFile OnChange="HandleUploadFileSelected" class="d-block mb-3" />
+                            @if (_selectedUploadFile is not null)
+                            {
+                                <MudText Typo="Typo.caption" Class="text-muted d-block mb-2">
+                                    Selected: @_selectedUploadFile.Name (@((_selectedUploadFile.Size / 1024d / 1024d).ToString("0.00")) MB)
+                                </MudText>
+                            }
                             <div class="d-flex gap-2">
-                                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="HandleUpload" Size="Size.Small">Upload Mock Data</MudButton>
+                                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="HandleUpload" Size="Size.Small">Upload File</MudButton>
                                 <MudButton Variant="Variant.Outlined" Color="Color.Secondary" OnClick="() => _showUploadPanel = false" Size="Size.Small">Cancel</MudButton>
                             </div>
                         </div>
@@ -402,79 +408,6 @@ else
                         </RowTemplate>
                     </MudTable>
                 </MudPaper>
-
-                <!-- 6. SECURE CASE-BASED CHAT ROOM -->
-                @if (IsCaseParticipant())
-                {
-                    <MudPaper Class="pa-6 lf-glass-panel mb-6" Style="border-radius: 16px; border: 1px solid rgba(14, 165, 233, 0.15);">
-                        <div class="d-flex flex-column flex-sm-row justify-space-between align-start align-sm-center mb-4 gap-2">
-                            <div class="d-flex align-center gap-2">
-                                <MudIcon Icon="@Icons.Material.Filled.Security" Color="Color.Primary" />
-                                <MudText Typo="Typo.h6" Class="font-weight-bold" Style="color: var(--lf-primary);">Secure Consultation Room</MudText>
-                            </div>
-                            
-                            <MudChip T="string" Color="Color.Primary" Variant="Variant.Filled" Size="Size.Small" Style="font-weight: 700; border-radius: 6px;">
-                                @(_activeChatChannel switch {
-                                    "ClientLawyer" => "Client ↔ Lawyer Channel",
-                                    "JudgeClerk" => "Judge ↔ Clerk Channel",
-                                    "AdminPolice" => "Admin ↔ Police Channel",
-                                    _ => "Secure Channel"
-                                })
-                            </MudChip>
-                        </div>
-                        <MudText Typo="Typo.body2" Class="text-muted mb-4">Encrypted channel restricted strictly to official courtroom officers and the assigned client.</MudText>
-
-                        <!-- Scrollable Message List -->
-                        <div id="secureChatChamber" style="height: 350px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; padding: 16px; background: rgba(15, 23, 42, 0.02); border-radius: 12px; border: 1px solid rgba(0,0,0,0.04);" class="mb-4">
-                            @{
-                                var filteredMsgs = GetFilteredMessages();
-                            }
-                            @if (filteredMsgs.Count == 0)
-                            {
-                                <div class="d-flex flex-column align-center justify-center h-full text-muted py-10">
-                                    <MudIcon Icon="@Icons.Material.Filled.ChatBubbleOutline" Size="Size.Large" Class="mb-2" />
-                                    <MudText Typo="Typo.body2">Chamber is silent. Start a secure consultation below.</MudText>
-                                </div>
-                            }
-                            else
-                            {
-                                @foreach (var msg in filteredMsgs)
-                                {
-                                    bool isMe = msg.SenderId == _userId;
-                                    <div style="align-self: @(isMe ? "flex-end" : "flex-start"); max-width: 75%; background: @(isMe ? "var(--lf-primary)" : "var(--lf-surface)"); color: @(isMe ? "white" : "var(--lf-text)"); border-radius: 12px; padding: 12px; box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04); border: 1px solid var(--lf-border);">
-                                        <div class="d-flex justify-space-between align-center gap-4 mb-1">
-                                            <span style="font-weight: 700; font-size: 11px; color: @(isMe ? "rgba(255,255,255,0.9)" : "var(--lf-accent)")">
-                                                @msg.SenderName
-                                                <span style="font-size: 9px; opacity: 0.8; margin-left: 4px; padding: 1px 4px; border-radius: 4px; background: @(isMe ? "rgba(255,255,255,0.2)" : "rgba(14, 165, 233, 0.1)"); color: @(isMe ? "white" : "var(--lf-accent)")">
-                                                    @msg.SenderRole
-                                                </span>
-                                            </span>
-                                            <span style="font-size: 9px; opacity: 0.6;">@msg.CreatedAt.ToLocalTime().ToString("t")</span>
-                                        </div>
-                                        <div style="font-size: 13.5px; line-height: 1.4; word-break: break-word; white-space: pre-wrap;">@msg.Content</div>
-                                    </div>
-                                }
-                            }
-                        </div>
-
-                        <!-- Chat Send Message Input Row -->
-                        <div class="d-flex gap-2 align-center">
-                            <MudTextField @bind-Value="_newMessageContent" 
-                                          Placeholder="Type encrypted message..." 
-                                          Variant="Variant.Outlined" 
-                                          Margin="Margin.Dense"
-                                          Immediate="true"
-                                          OnKeyDown="HandleChatKeyDown" />
-                            <MudButton Variant="Variant.Filled" 
-                                       Color="Color.Primary" 
-                                       OnClick="SendSecureMessage" 
-                                       StartIcon="@Icons.Material.Filled.Send" 
-                                       Style="border-radius: 8px; height: 40px; text-transform:none; font-weight:600;">
-                                Send
-                            </MudButton>
-                        </div>
-                    </MudPaper>
-                }
             </MudItem>
 
             <!-- RIGHT PANEL: HEARINGS, POLICE LOGS, ACTIVITY FEED -->
@@ -605,19 +538,14 @@ else
     private bool _showUploadPanel = false;
     private string _uploadFileName = string.Empty;
     private string _uploadDocType = "Evidence";
-
-    // Secure Case Chat fields
-    private List<Message> _chatMessages = new();
-    private string _newMessageContent = string.Empty;
-    private string _activeChatChannel = "ClientLawyer";
+    private IBrowserFile? _selectedUploadFile;
+    private const long MaxUploadBytes = 25L * 1024L * 1024L;
 
     // Judge draft announcements
     private string _judgeAnnouncementText = string.Empty;
 
     // Clerk pending announcements
     private List<Notification> _pendingDraftAnnouncements = new();
-
-    private HubConnection? _hubConnection;
 
     protected override async Task OnInitializedAsync()
     {
@@ -656,59 +584,6 @@ else
             NavigationManager.NavigateTo("/dashboard");
             return;
         }
-
-        // Set the active secure consultation channel based on role
-        if (_role == "Client" || _role == "Lawyer")
-        {
-            _activeChatChannel = "ClientLawyer";
-        }
-        else if (_role == "Judge" || _role == "Clerk")
-        {
-            _activeChatChannel = "JudgeClerk";
-        }
-        else if (_role == "Admin" || _role == "Police")
-        {
-            _activeChatChannel = "AdminPolice";
-        }
-
-        // Fetch secure case chat history — server filters by user's allowed channel.
-        _chatMessages = await MessageService.GetMessagesForCaseAsync(Id, _userId, _role);
-
-        // Initialize SignalR connection for case chat
-        var baseUri = NavigationManager.BaseUri;
-        _hubConnection = new HubConnectionBuilder()
-            .WithUrl(NavigationManager.ToAbsoluteUri("/casechathub"))
-            .Build();
-
-        _hubConnection.On<dynamic>("ReceiveMessage", message =>
-        {
-            // dynamic fallback
-        });
-        
-        // Typed handler
-        _hubConnection.On<int, string, string, string, string, DateTime>("ReceiveMessage", (caseId, senderId, senderName, senderRole, content, timestamp) =>
-        {
-            if (caseId == Id)
-            {
-                var msg = new Message
-                {
-                    CaseId = caseId,
-                    SenderId = senderId,
-                    SenderName = senderName,
-                    SenderRole = senderRole,
-                    Content = content,
-                    CreatedAt = timestamp
-                };
-                InvokeAsync(() =>
-                {
-                    _chatMessages.Add(msg);
-                    StateHasChanged();
-                });
-            }
-        });
-
-        await _hubConnection.StartAsync();
-        await _hubConnection.SendAsync("JoinCaseChannel", Id, _userId, _role);
 
         // Load pending announcements for clerk review
         if (_role == "Clerk")
@@ -831,24 +706,51 @@ else
         _showUploadPanel = true;
         _uploadFileName = string.Empty;
         _uploadDocType = "Evidence";
+        _selectedUploadFile = null;
+    }
+
+    private void HandleUploadFileSelected(InputFileChangeEventArgs e)
+    {
+        _selectedUploadFile = e.File;
+        if (_selectedUploadFile is not null && string.IsNullOrWhiteSpace(_uploadFileName))
+            _uploadFileName = _selectedUploadFile.Name;
     }
 
     private async Task HandleUpload()
     {
-        if (string.IsNullOrEmpty(_uploadFileName))
+        if (_selectedUploadFile is null)
         {
-            Snackbar.Add("Please enter a file name.", Severity.Warning);
+            Snackbar.Add("Please select a file first.", Severity.Warning);
             return;
         }
 
-        // Simulate file uploading by generating mock byte array
-        var mockBytes = System.Text.Encoding.UTF8.GetBytes("Mock file contents for " + _uploadFileName);
-        
-        var doc = await DocumentService.UploadDocumentAsync(Id, _uploadFileName, mockBytes, _uploadDocType, _userId);
+        if (_selectedUploadFile.Size > MaxUploadBytes)
+        {
+            Snackbar.Add("File is too large. Maximum allowed size is 25 MB.", Severity.Warning);
+            return;
+        }
+
+        var resolvedFileName = string.IsNullOrWhiteSpace(_uploadFileName) ? _selectedUploadFile.Name : _uploadFileName.Trim();
+        if (string.IsNullOrWhiteSpace(resolvedFileName))
+        {
+            Snackbar.Add("Please provide a valid file name.", Severity.Warning);
+            return;
+        }
+
+        byte[] fileBytes;
+        await using (var stream = _selectedUploadFile.OpenReadStream(MaxUploadBytes))
+        {
+            using var ms = new MemoryStream();
+            await stream.CopyToAsync(ms);
+            fileBytes = ms.ToArray();
+        }
+
+        var doc = await DocumentService.UploadDocumentAsync(Id, resolvedFileName, fileBytes, _uploadDocType, _userId);
         if (doc != null)
         {
-            Snackbar.Add($"Document '{_uploadFileName}' uploaded successfully.", Severity.Success);
+            Snackbar.Add($"Document '{resolvedFileName}' uploaded successfully.", Severity.Success);
             _showUploadPanel = false;
+            _selectedUploadFile = null;
             await LoadWorkspace();
         }
         else
@@ -869,22 +771,6 @@ else
         {
             Snackbar.Add("Review evaluation failed.", Severity.Error);
         }
-    }
-
-    private List<Message> GetFilteredMessages()
-    {
-        return _chatMessages.Where(m =>
-        {
-            if (m.SenderRole == "System Order" || m.SenderRole == "Court Clerk Announcement") return true;
-
-            return _activeChatChannel switch
-            {
-                "ClientLawyer" => m.SenderRole == "Client" || m.SenderRole == "Lawyer",
-                "JudgeClerk" => m.SenderRole == "Judge" || m.SenderRole == "Clerk",
-                "AdminPolice" => m.SenderRole == "Admin" || m.SenderRole == "Police",
-                _ => false
-            };
-        }).ToList();
     }
 
     private Color GetStatusColor(CaseStatus status)
@@ -934,45 +820,6 @@ else
                _userId == _case.JudgeId || 
                _userId == _case.PoliceId || 
                _userId == _case.ClerkId;
-    }
-
-    private async Task SendSecureMessage()
-    {
-        if (string.IsNullOrWhiteSpace(_newMessageContent)) return;
-
-        var senderName = "Official Participant";
-        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
-        var user = authState.User;
-        if (user.Identity?.IsAuthenticated ?? false)
-        {
-            senderName = user.Identity.Name ?? _role;
-            var fullUser = await AuthService.GetUserByIdAsync(_userId);
-            if (fullUser != null)
-            {
-                senderName = fullUser.FullName;
-            }
-        }
-
-        // Hub now handles save + broadcast atomically — no double-save from the client.
-        if (_hubConnection is not null && _hubConnection.State == HubConnectionState.Connected)
-        {
-            await _hubConnection.SendAsync("SendMessage", Id, _userId, senderName, _role, _newMessageContent.Trim());
-        }
-        else
-        {
-            // Fallback: hub not connected. Save directly so the message isn't lost.
-            await MessageService.SaveMessageAsync(Id, _userId, senderName, _role, _newMessageContent.Trim());
-        }
-
-        _newMessageContent = string.Empty;
-    }
-
-    private async Task HandleChatKeyDown(KeyboardEventArgs e)
-    {
-        if (e.Key == "Enter")
-        {
-            await SendSecureMessage();
-        }
     }
 
     private async Task HandleDraftAnnouncement()
@@ -1040,16 +887,4 @@ else
             .ToList();
     }
 
-    public async void Dispose()
-    {
-        if (_hubConnection is null) return;
-        
-        try 
-        {
-            await _hubConnection.SendAsync("LeaveCaseChannel", Id, _userId, _role);
-            await _hubConnection.DisposeAsync();
-        } 
-        catch { }
-    }
 }
-

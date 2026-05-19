@@ -144,6 +144,7 @@
   .lf-liquid {
     position: relative;
     isolation: isolate;
+    color: rgb(var(--lf-ink));
     background-color: rgb(var(--lf-surface) / 0.55);
     -webkit-backdrop-filter: blur(20px) saturate(180%);
     backdrop-filter: blur(20px) saturate(180%);
