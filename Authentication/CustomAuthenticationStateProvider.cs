@@ -17,6 +17,17 @@ namespace LawFlow.Authentication
         private ClaimsPrincipal? _current;
         private bool _hydratedFromStorage;
 
+        // One-shot flag the post-login flow uses to surface a welcome modal.
+        // Set when login succeeds; cleared the first time MainLayout consumes it,
+        // so refresh/back-nav doesn't keep replaying the modal.
+        private bool _welcomePending;
+        public bool ConsumeWelcomeFlag()
+        {
+            if (!_welcomePending) return false;
+            _welcomePending = false;
+            return true;
+        }
+
         public CustomAuthenticationStateProvider(ProtectedLocalStorage localStorage)
         {
             _localStorage = localStorage;
@@ -72,6 +83,8 @@ namespace LawFlow.Authentication
 
             _current = claimsPrincipal;
             _hydratedFromStorage = true;
+            // Only flag the welcome on a real sign-in (not on sign-out).
+            if (userSession != null) _welcomePending = true;
             NotifyAuthenticationStateChanged(Task.FromResult(new AuthenticationState(claimsPrincipal)));
         }
 

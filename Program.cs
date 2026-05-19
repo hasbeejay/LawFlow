@@ -124,6 +124,23 @@ using (var scope = app.Services.CreateScope())
         var context = services.GetRequiredService<ApplicationDbContext>();
         context.Database.Migrate();
 
+        // Safety net: an earlier `AddMessageChannel` migration was generated empty
+        // (the EF tooling ran against a stale build), so existing databases have
+        // the migration row recorded but are missing the column. Add it idempotently
+        // so chat queries don't break. Safe on fresh DBs because the migration's
+        // own Up() also uses IF NOT EXISTS.
+        try
+        {
+            context.Database.ExecuteSqlRaw(
+                @"ALTER TABLE ""Messages"" ADD COLUMN IF NOT EXISTS ""Channel"" integer NOT NULL DEFAULT 0;"
+            );
+        }
+        catch (Exception ex)
+        {
+            var logger = services.GetRequiredService<ILogger<Program>>();
+            logger.LogWarning(ex, "Could not ensure Messages.Channel column exists.");
+        }
+
         // Important for real databases (e.g., Supabase): keep demo seeding opt-in only.
         var shouldSeedDemoData = builder.Configuration.GetValue<bool>("SeedDemoData");
         if (shouldSeedDemoData)

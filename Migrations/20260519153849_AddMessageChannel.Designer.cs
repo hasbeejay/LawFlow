@@ -326,6 +326,9 @@ namespace LawFlow.Migrations
                     b.Property<int>("CaseId")
                         .HasColumnType("integer");
 
+                    b.Property<int>("Channel")
+                        .HasColumnType("integer");
+
                     b.Property<string>("Content")
                         .IsRequired()
                         .HasColumnType("text");

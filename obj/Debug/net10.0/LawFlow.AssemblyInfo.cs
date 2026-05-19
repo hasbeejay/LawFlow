@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("LawFlow")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+9c6bd0b9c090bdd8bb2b2815ce49d4e77b54c36e")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+243caedfe351d0a2dfaa7eee745543ca9bac2f4d")]
 [assembly: System.Reflection.AssemblyProductAttribute("LawFlow")]
 [assembly: System.Reflection.AssemblyTitleAttribute("LawFlow")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

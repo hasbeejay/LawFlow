@@ -1,0 +1,333 @@
+@* Full-screen welcome modal that fires once after login. Three-step flow:
+   1) Introduction to LawFlow
+   2) Judicial workflow stages
+   3) Credits + GitHub link
+   The backdrop applies a blur and clicking it does NOT dismiss — only the
+   in-modal buttons can advance/finish so users can't accidentally bypass it. *@
+
+@if (Visible)
+{
+    <div class="lf-welcome-backdrop" @onclick:stopPropagation>
+        <div class="lf-welcome-card">
+            <!-- progress dots -->
+            <div class="lf-welcome-progress">
+                @for (int i = 0; i < _totalSteps; i++)
+                {
+                    var active = i == _step;
+                    var done = i < _step;
+                    <span class="lf-welcome-dot @(active ? "active" : done ? "done" : "")"></span>
+                }
+            </div>
+
+            <!-- Step bodies -->
+            @if (_step == 0)
+            {
+                <div class="lf-welcome-hero">
+                    <div class="lf-welcome-eyebrow">
+                        <span class="lf-welcome-line"></span>
+                        <span>Welcome aboard</span>
+                    </div>
+                    <h2 class="lf-welcome-title">
+                        LawFlow.
+                        <span class="lf-welcome-title-accent">A complete judicial operating system.</span>
+                    </h2>
+                    <p class="lf-welcome-lede">
+                        Filings, case assignments, evidence, hearings, verdicts, and audit-trailed
+                        communication — all under one roof, with strict role boundaries so each
+                        participant sees only what they are entitled to.
+                    </p>
+                    <div class="lf-welcome-pills">
+                        <span class="lf-welcome-pill">Role-aware</span>
+                        <span class="lf-welcome-pill">End-to-end audit trail</span>
+                        <span class="lf-welcome-pill">Real-time chat</span>
+                        <span class="lf-welcome-pill">Verdict workflow</span>
+                    </div>
+                </div>
+            }
+            else if (_step == 1)
+            {
+                <div class="lf-welcome-hero">
+                    <div class="lf-welcome-eyebrow">
+                        <span class="lf-welcome-line"></span>
+                        <span>How a case flows</span>
+                    </div>
+                    <h2 class="lf-welcome-title">From filing to final verdict.</h2>
+                    <ol class="lf-welcome-steps">
+                        <li><b>Client</b> lodges an FIR / case.</li>
+                        <li><b>Admin</b> reviews, assigns Judge + Police + Clerk, and publishes.</li>
+                        <li><b>Client</b> forwards the case to a chosen lawyer.</li>
+                        <li><b>Lawyer</b> accepts or declines from Offered Cases.</li>
+                        <li><b>Police</b> investigates and uploads reports.</li>
+                        <li><b>Clerk</b> schedules hearings; <b>Judge</b> presides.</li>
+                        <li><b>Judge</b> issues a verdict; <b>Clerk</b> publishes it.</li>
+                        <li><b>Police</b> updates the criminal log or clears the record.</li>
+                    </ol>
+                    <p class="lf-welcome-foot">
+                        Every chat is partitioned by pair — Client↔Lawyer, Judge↔Clerk, Admin↔Police —
+                        and only participants on a case can see its files.
+                    </p>
+                </div>
+            }
+            else
+            {
+                <div class="lf-welcome-hero">
+                    <div class="lf-welcome-eyebrow">
+                        <span class="lf-welcome-line"></span>
+                        <span>Credits</span>
+                    </div>
+                    <h2 class="lf-welcome-title">Built by Hasbeejay.</h2>
+                    <p class="lf-welcome-lede">
+                        LawFlow is an independent project demonstrating a modern, role-secure judicial
+                        portal built on Blazor Server, Postgres, and SignalR.
+                    </p>
+
+                    <a class="lf-welcome-author" href="https://github.com/hasbeejay" target="_blank" rel="noopener noreferrer">
+                        <span class="lf-welcome-author-avatar">H</span>
+                        <span class="lf-welcome-author-meta">
+                            <span class="lf-welcome-author-name">Hasbeejay</span>
+                            <span class="lf-welcome-author-handle">github.com/hasbeejay</span>
+                        </span>
+                        <span class="lf-welcome-author-cta">Visit GitHub →</span>
+                    </a>
+
+                    <div class="lf-welcome-foot">
+                        Thanks for using LawFlow. Click <b>Get started</b> to open your dashboard.
+                    </div>
+                </div>
+            }
+
+            <!-- Actions -->
+            <div class="lf-welcome-actions">
+                @if (_step > 0)
+                {
+                    <button type="button" class="lf-welcome-btn lf-welcome-btn-ghost" @onclick="Back">Back</button>
+                }
+                else
+                {
+                    <span></span>
+                }
+
+                @if (_step < _totalSteps - 1)
+                {
+                    <button type="button" class="lf-welcome-btn lf-welcome-btn-primary" @onclick="Next">
+                        @(_step == 0 ? "Proceed" : "Next") →
+                    </button>
+                }
+                else
+                {
+                    <button type="button" class="lf-welcome-btn lf-welcome-btn-primary" @onclick="Finish">
+                        Get started →
+                    </button>
+                }
+            </div>
+        </div>
+    </div>
+
+    <style>
+        .lf-welcome-backdrop {
+            position: fixed; inset: 0; z-index: 200;
+            display: flex; align-items: center; justify-content: center;
+            background: rgba(8, 8, 18, 0.55);
+            backdrop-filter: blur(14px) saturate(140%);
+            -webkit-backdrop-filter: blur(14px) saturate(140%);
+            animation: lfWelcomeFade .25s ease both;
+            padding: 16px;
+        }
+        @@keyframes lfWelcomeFade {
+            from { opacity: 0; }
+            to   { opacity: 1; }
+        }
+        @@keyframes lfWelcomeRise {
+            from { opacity: 0; transform: translateY(12px) scale(.985); }
+            to   { opacity: 1; transform: translateY(0)    scale(1); }
+        }
+        .lf-welcome-card {
+            position: relative;
+            width: min(640px, 100%);
+            background: var(--lf-surface, #ffffff);
+            color: var(--lf-text, #0a0a0f);
+            border: 1px solid var(--lf-border, rgba(0,0,0,.08));
+            border-radius: 18px;
+            box-shadow:
+                0 28px 80px -32px rgba(91,60,222,.25),
+                0 12px 40px -20px rgba(0,0,0,.4);
+            overflow: hidden;
+            animation: lfWelcomeRise .32s cubic-bezier(.2,.7,.2,1) both;
+        }
+        .lf-welcome-card::before {
+            content: "";
+            position: absolute; inset: -1px;
+            background: linear-gradient(135deg, rgba(91,60,222,.6), rgba(181,134,42,.35) 70%, transparent 100%);
+            -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+                    mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+            -webkit-mask-composite: xor; mask-composite: exclude;
+            border-radius: 18px; padding: 1px;
+            pointer-events: none;
+        }
+        .lf-welcome-progress {
+            display: flex; gap: 6px;
+            padding: 16px 24px 0;
+        }
+        .lf-welcome-dot {
+            flex: 1; height: 3px; border-radius: 2px;
+            background: rgba(0,0,0,.08);
+            transition: background .25s ease;
+        }
+        :root.dark .lf-welcome-dot { background: rgba(255,255,255,.08); }
+        .lf-welcome-dot.done   { background: rgba(91,60,222,.45); }
+        .lf-welcome-dot.active { background: linear-gradient(90deg, #5B3CDE, #B5862A); }
+
+        .lf-welcome-hero { padding: 28px 28px 8px; }
+        .lf-welcome-eyebrow {
+            display: inline-flex; align-items: center; gap: 10px;
+            font-family: ui-monospace, 'JetBrains Mono', monospace;
+            font-size: 10px; letter-spacing: .18em; text-transform: uppercase;
+            color: var(--lf-text-muted, #585864);
+        }
+        .lf-welcome-line { display:inline-block; width: 22px; height: 1px; background: currentColor; opacity: .6; }
+        .lf-welcome-title {
+            margin: 14px 0 0;
+            font-size: 28px; line-height: 1.1; letter-spacing: -.02em; font-weight: 600;
+            color: var(--lf-text, #0a0a0f);
+        }
+        .lf-welcome-title-accent {
+            display: block; margin-top: 4px;
+            background: linear-gradient(90deg, #5B3CDE, #B5862A);
+            -webkit-background-clip: text; background-clip: text;
+            color: transparent;
+        }
+        .lf-welcome-lede {
+            margin-top: 14px;
+            font-size: 14.5px; line-height: 1.55;
+            color: var(--lf-text-muted, #4a4a55);
+        }
+        .lf-welcome-pills {
+            display: flex; flex-wrap: wrap; gap: 8px;
+            margin-top: 18px;
+        }
+        .lf-welcome-pill {
+            display: inline-flex; align-items: center;
+            padding: 5px 10px;
+            font-family: ui-monospace, 'JetBrains Mono', monospace;
+            font-size: 10.5px; text-transform: uppercase; letter-spacing: .12em;
+            border-radius: 999px;
+            border: 1px solid rgba(91,60,222,.25);
+            background: rgba(91,60,222,.06);
+            color: rgba(91,60,222,.95);
+        }
+        :root.dark .lf-welcome-pill {
+            background: rgba(124,92,250,.10);
+            border-color: rgba(124,92,250,.35);
+            color: rgba(220,210,255,.95);
+        }
+
+        .lf-welcome-steps {
+            margin: 16px 0 0; padding: 0; list-style: none;
+            display: grid; gap: 8px;
+            counter-reset: lfstep;
+        }
+        .lf-welcome-steps li {
+            counter-increment: lfstep;
+            position: relative;
+            padding: 10px 12px 10px 44px;
+            font-size: 13.5px; line-height: 1.4;
+            border-radius: 10px;
+            background: rgba(0,0,0,.025);
+            border: 1px solid var(--lf-border, rgba(0,0,0,.06));
+        }
+        :root.dark .lf-welcome-steps li { background: rgba(255,255,255,.02); }
+        .lf-welcome-steps li::before {
+            content: counter(lfstep);
+            position: absolute; left: 10px; top: 9px;
+            width: 24px; height: 24px;
+            display: inline-flex; align-items: center; justify-content: center;
+            font-family: ui-monospace, 'JetBrains Mono', monospace;
+            font-size: 11px; font-weight: 600;
+            color: #fff;
+            background: linear-gradient(135deg, #5B3CDE, #B5862A);
+            border-radius: 7px;
+        }
+        .lf-welcome-foot {
+            margin-top: 18px;
+            font-size: 12.5px; color: var(--lf-text-muted, #585864);
+            border-top: 1px dashed var(--lf-border, rgba(0,0,0,.08));
+            padding-top: 12px;
+        }
+
+        .lf-welcome-author {
+            display: flex; align-items: center; gap: 14px;
+            margin-top: 18px;
+            padding: 14px 16px;
+            border-radius: 14px;
+            text-decoration: none;
+            background: linear-gradient(135deg, rgba(91,60,222,.08), rgba(181,134,42,.06));
+            border: 1px solid var(--lf-border, rgba(0,0,0,.08));
+            color: inherit;
+            transition: transform .15s ease, border-color .15s ease;
+        }
+        .lf-welcome-author:hover { transform: translateY(-1px); border-color: rgba(91,60,222,.45); }
+        .lf-welcome-author-avatar {
+            width: 44px; height: 44px;
+            display: inline-flex; align-items: center; justify-content: center;
+            font-weight: 700; font-size: 18px; color: #fff;
+            background: linear-gradient(135deg, #5B3CDE, #B5862A);
+            border-radius: 12px;
+        }
+        .lf-welcome-author-meta { display: flex; flex-direction: column; line-height: 1.2; }
+        .lf-welcome-author-name { font-weight: 600; }
+        .lf-welcome-author-handle {
+            font-family: ui-monospace, 'JetBrains Mono', monospace;
+            font-size: 11.5px; color: var(--lf-text-muted, #585864);
+        }
+        .lf-welcome-author-cta {
+            margin-left: auto;
+            font-family: ui-monospace, 'JetBrains Mono', monospace;
+            font-size: 11px; letter-spacing: .12em; text-transform: uppercase;
+            color: #5B3CDE; white-space: nowrap;
+        }
+
+        .lf-welcome-actions {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 18px 24px 22px;
+            gap: 12px;
+            border-top: 1px solid var(--lf-border, rgba(0,0,0,.06));
+            margin-top: 22px;
+        }
+        .lf-welcome-btn {
+            font: inherit; cursor: pointer;
+            padding: 10px 16px; border-radius: 10px;
+            font-weight: 600; font-size: 13.5px;
+            transition: transform .12s ease, background .15s ease, border-color .15s ease;
+        }
+        .lf-welcome-btn-ghost {
+            background: transparent;
+            border: 1px solid var(--lf-border, rgba(0,0,0,.1));
+            color: var(--lf-text, #0a0a0f);
+        }
+        .lf-welcome-btn-ghost:hover { border-color: rgba(91,60,222,.35); }
+        .lf-welcome-btn-primary {
+            border: 1px solid transparent;
+            background: linear-gradient(135deg, #5B3CDE, #7C5CFA);
+            color: #fff;
+            box-shadow: 0 12px 28px -16px rgba(91,60,222,.85);
+        }
+        .lf-welcome-btn-primary:hover { transform: translateY(-1px); }
+    </style>
+}
+
+@code {
+    [Parameter] public bool Visible { get; set; }
+    [Parameter] public EventCallback OnFinished { get; set; }
+
+    private const int _totalSteps = 3;
+    private int _step = 0;
+
+    protected override void OnParametersSet()
+    {
+        if (Visible) _step = 0;
+    }
+
+    private void Next() => _step = Math.Min(_step + 1, _totalSteps - 1);
+    private void Back() => _step = Math.Max(_step - 1, 0);
+    private Task Finish() => OnFinished.InvokeAsync();
+}

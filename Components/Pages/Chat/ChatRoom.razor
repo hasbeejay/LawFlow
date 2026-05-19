@@ -5,6 +5,7 @@
 @inject CaseService CaseService
 @inject AuthenticationStateProvider AuthStateProvider
 @inject NavigationManager Navigation
+@inject ToastService Toast
 @using Microsoft.AspNetCore.SignalR.Client
 @implements IAsyncDisposable
 
@@ -31,6 +32,10 @@ else
                 <span class="lf-tag-num">@_case.CaseNumber</span>
                 <span>·</span>
                 <span>@_channelLabel</span>
+                @if (!_hubReady)
+                {
+                    <span class="text-warning">· offline (your sends still save, peer won't see live)</span>
+                }
             </div>
             <h1 class="mt-1.5 text-xl md:text-2xl font-semibold tracking-tight text-balance">@_case.Title</h1>
         </div>
@@ -80,6 +85,8 @@ else
 
     private bool _loading = true;
     private bool _denied = false;
+    private bool _hubReady = false;
+    private bool _hubStartScheduled = false;
     private string _userId = "";
     private string _role = "";
     private string _senderName = "";
@@ -91,6 +98,9 @@ else
 
     protected override async Task OnInitializedAsync()
     {
+        // Phase 1: identity + data only. Anything that can fail networking-wise
+        // (SignalR) is deferred to OnAfterRenderAsync so a hub failure can never
+        // strand the page on "Loading chat…".
         try
         {
             var auth = await AuthStateProvider.GetAuthenticationStateAsync();
@@ -118,7 +128,25 @@ else
                 ChatChannel.AdminPolice  => "Admin ↔ Police",
                 _ => "Secure channel"
             };
+        }
+        catch (Exception ex)
+        {
+            Toast.Error($"Chat failed to load: {ex.Message}");
+            _denied = true;
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
 
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || _denied || _case == null || _hubStartScheduled) return;
+        _hubStartScheduled = true;
+
+        try
+        {
             _hub = new HubConnectionBuilder()
                 .WithUrl(Navigation.ToAbsoluteUri("/casechathub"))
                 .WithAutomaticReconnect()
@@ -145,10 +173,17 @@ else
 
             await _hub.StartAsync();
             await _hub.SendAsync("JoinCaseChannel", CaseId, _userId, _role);
+            _hubReady = true;
+            await InvokeAsync(StateHasChanged);
         }
-        finally
+        catch (Exception ex)
         {
-            _loading = false;
+            // Hub failed to connect. Chat history still works; sends will fall
+            // back to direct DB save. Surface the issue but don't kill the page.
+            Toast.Warn($"Live chat offline: {ex.Message}");
+            _hubReady = false;
+            try { if (_hub != null) await _hub.DisposeAsync(); } catch { }
+            _hub = null;
         }
     }
 
@@ -160,14 +195,19 @@ else
 
         if (_hub is not null && _hub.State == HubConnectionState.Connected)
         {
-            await _hub.SendAsync("SendMessage", CaseId, _userId, _senderName, _role, content);
+            try
+            {
+                await _hub.SendAsync("SendMessage", CaseId, _userId, _senderName, _role, content);
+                return;
+            }
+            catch
+            {
+                // Fall through to direct DB save
+            }
         }
-        else
-        {
-            // Hub offline → persist directly so the message survives, even if peers don't see it live.
-            var saved = await MessageService.SaveMessageAsync(CaseId, _userId, _senderName, _role, content);
-            if (saved != null) _messages.Add(saved);
-        }
+
+        var saved = await MessageService.SaveMessageAsync(CaseId, _userId, _senderName, _role, content);
+        if (saved != null) _messages.Add(saved);
     }
 
     private async Task HandleKeyDown(KeyboardEventArgs e)
