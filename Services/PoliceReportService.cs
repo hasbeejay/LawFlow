@@ -26,6 +26,37 @@ namespace LawFlow.Services
                 .ToListAsync();
         }
 
+        // Clear the criminal record for a case (e.g., on acquittal/dismissal).
+        // Records a fresh PoliceReport entry with CriminalRecordUpdated=false so
+        // there is an audit trail of the purge.
+        public async Task<bool> ClearCriminalRecordAsync(int caseId, string officerId)
+        {
+            var c = await _context.Cases.FindAsync(caseId);
+            if (c == null) return false;
+            if (c.PoliceId != officerId) return false;
+
+            var entry = new PoliceReport
+            {
+                CaseId = caseId,
+                OfficerId = officerId,
+                Summary = $"Criminal record cleared for case {c.CaseNumber}.",
+                CriminalRecordUpdated = false,
+                CreatedAt = DateTime.UtcNow
+            };
+            _context.PoliceReports.Add(entry);
+
+            _context.ActivityLogs.Add(new ActivityLog
+            {
+                UserId = officerId,
+                Action = "Criminal Record Cleared",
+                Details = $"Officer cleared criminal record for case {c.CaseNumber}",
+                CreatedAt = DateTime.UtcNow
+            });
+
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
         public async Task<bool> SubmitReportAsync(int caseId, string officerId, string summary, bool updateCriminalLog)
         {
             var c = await _context.Cases.FindAsync(caseId);

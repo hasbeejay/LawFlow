@@ -1,8 +1,7 @@
-@page "/judge/verdicts"
 @page "/lawyer/verdicts"
 @page "/client/verdicts"
 @page "/police/verdicts"
-@attribute [Authorize(Roles = "Judge,Lawyer,Client,Police")]
+@attribute [Authorize(Roles = "Lawyer,Client,Police")]
 @inject CaseService CaseService
 @inject VerdictService VerdictService
 @inject AuthenticationStateProvider AuthStateProvider

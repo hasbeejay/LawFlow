@@ -3,23 +3,215 @@
 @page "/client/documents"
 @page "/clerk/documents"
 @attribute [Authorize(Roles = "Judge,Lawyer,Client,Clerk")]
+@inject CaseService CaseService
+@inject DocumentService DocumentService
+@inject AuthenticationStateProvider AuthStateProvider
+@inject NavigationManager Navigation
+@inject ToastService Toast
 
-<LfComingSoon Section="@($"{_role} · Documents")"
-              Title="Case documents"
-              Subtitle="Upload, view, and verify evidence and filings tied to your cases."
-              Icon="file-text"
-              BackHref="@($"/{_role.ToLowerInvariant()}/dashboard")" />
+<PageTitle>Documents — LawFlow</PageTitle>
+
+<div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-6">
+    <div>
+        <div class="font-mono text-2xs uppercase tracking-[0.18em] text-muted flex items-center gap-2">
+            <span class="w-6 h-px bg-muted/60"></span>
+            <span>@_role · Documents</span>
+        </div>
+        <h1 class="mt-1.5 text-2xl md:text-3xl font-semibold tracking-tight text-balance">Case documents</h1>
+        <p class="mt-1 text-sm text-muted">Upload evidence, filings, and notices. Only participants on each case can read its documents.</p>
+    </div>
+</div>
+
+@if (_loading)
+{
+    <div class="lf-card p-10 text-center text-sm text-muted">Loading…</div>
+}
+else if (_cases.Count == 0)
+{
+    <div class="lf-card p-10 text-center text-sm text-muted">You have no cases yet.</div>
+}
+else
+{
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+        <!-- Case picker -->
+        <div class="lg:col-span-4">
+            <div class="lf-card p-3">
+                <div class="px-2 py-1 font-mono text-2xs uppercase tracking-wider text-muted">Your cases</div>
+                <div class="mt-1 space-y-1 max-h-[60vh] overflow-y-auto">
+                    @foreach (var c in _cases)
+                    {
+                        var active = c.Id == _selectedCaseId;
+                        <button type="button" @onclick="@(() => Select(c.Id))"
+                                class="w-full text-left px-3 py-2 rounded-card border transition-colors @(active ? "border-primary/40 bg-primary/5" : "border-transparent hover:border-hairline")">
+                            <div class="flex items-center justify-between gap-2">
+                                <span class="lf-tag-num">@c.CaseNumber</span>
+                                <LfStatusChip Status="@c.Status" />
+                            </div>
+                            <div class="mt-1 text-sm font-medium text-ink truncate">@c.Title</div>
+                        </button>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Documents panel -->
+        <div class="lg:col-span-8">
+            @if (_selectedCase == null)
+            {
+                <div class="lf-card p-10 text-center text-sm text-muted">Pick a case on the left.</div>
+            }
+            else
+            {
+                <div class="lf-card p-5">
+                    <div class="flex items-start justify-between gap-3">
+                        <div>
+                            <div class="font-mono text-2xs uppercase tracking-wider text-muted">@_selectedCase.CaseNumber</div>
+                            <div class="mt-0.5 font-semibold text-ink">@_selectedCase.Title</div>
+                        </div>
+                        <LfStatusChip Status="@_selectedCase.Status" />
+                    </div>
+
+                    <div class="mt-5 lf-rule"></div>
+
+                    <!-- Upload form -->
+                    <div class="mt-4">
+                        <div class="font-mono text-2xs uppercase tracking-wider text-muted mb-2">Upload</div>
+                        <div class="flex flex-col sm:flex-row gap-2">
+                            <select class="bg-transparent border border-hairline rounded-card px-2 py-2 text-sm" @bind="_docType">
+                                @foreach (var t in _docTypesForRole)
+                                {
+                                    <option value="@t">@t</option>
+                                }
+                            </select>
+                            <InputFile OnChange="HandleFileSelected"
+                                       class="flex-1 text-sm file:mr-2 file:px-3 file:py-1.5 file:rounded-card file:border file:border-hairline file:bg-canvas file:text-ink file:cursor-pointer file:hover:border-primary/40"
+                                       disabled="@_uploading" />
+                        </div>
+                        @if (_uploading)
+                        {
+                            <div class="mt-2 text-xs text-muted">Uploading…</div>
+                        }
+                    </div>
+
+                    <div class="mt-5 lf-rule"></div>
+
+                    <!-- Document list -->
+                    <div class="mt-4">
+                        <div class="font-mono text-2xs uppercase tracking-wider text-muted mb-2">Files on this case · @_documents.Count</div>
+                        @if (_documents.Count == 0)
+                        {
+                            <div class="text-sm text-muted py-4">No documents yet.</div>
+                        }
+                        else
+                        {
+                            <div class="space-y-2">
+                                @foreach (var d in _documents)
+                                {
+                                    <div class="flex items-center gap-3 px-3 py-2 rounded-card border border-hairline">
+                                        <LfIcon Name="file-text" Size="16" />
+                                        <div class="flex-1 min-w-0">
+                                            <div class="text-sm font-medium text-ink truncate">@d.FileName</div>
+                                            <div class="font-mono text-2xs text-muted">
+                                                @d.DocumentType · uploaded by @(d.UploadedBy?.FullName ?? "—") · @d.UploadedAt.ToLocalTime().ToString("yyyy-MM-dd HH:mm")
+                                                @if (d.IsApproved == true) { <span class="text-success">· approved</span> }
+                                                else if (d.IsApproved == false) { <span class="text-danger">· rejected</span> }
+                                                else if (d.DocumentType == "Evidence") { <span class="text-warning">· pending review</span> }
+                                            </div>
+                                        </div>
+                                        <a href="@d.FilePath" target="_blank" rel="noopener noreferrer"
+                                           class="lf-btn-outline px-3 py-1 text-xs">Open</a>
+                                    </div>
+                                }
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+}
 
 @code {
-    [CascadingParameter] private Task<AuthenticationState>? AuthState { get; set; }
+    private bool _loading = true;
+    private bool _uploading = false;
     private string _role = "";
+    private string _userId = "";
+    private List<Case> _cases = new();
+    private int? _selectedCaseId;
+    private Case? _selectedCase;
+    private List<Document> _documents = new();
+    private string _docType = "Evidence";
+    private string[] _docTypesForRole = Array.Empty<string>();
 
     protected override async Task OnInitializedAsync()
     {
-        if (AuthState != null)
+        try
         {
-            var s = await AuthState;
-            _role = s.User.FindFirst(ClaimTypes.Role)?.Value ?? "";
+            var auth = await AuthStateProvider.GetAuthenticationStateAsync();
+            _role = auth.User.FindFirst(ClaimTypes.Role)?.Value ?? "";
+            _userId = auth.User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "";
+
+            _docTypesForRole = _role switch
+            {
+                "Client" => new[] { "Evidence", "Proof", "Statement" },
+                "Lawyer" => new[] { "Evidence", "Filing", "Motion" },
+                "Judge"  => new[] { "Order", "Notice" },
+                "Clerk"  => new[] { "Notice", "Hearing", "VerdictPDF" },
+                _ => new[] { "Evidence" }
+            };
+            _docType = _docTypesForRole.First();
+
+            if (Enum.TryParse<UserRole>(_role, true, out var role))
+            {
+                _cases = await CaseService.GetCasesForUserAsync(_userId, role);
+            }
+        }
+        finally { _loading = false; }
+    }
+
+    private async Task Select(int caseId)
+    {
+        _selectedCaseId = caseId;
+        _selectedCase = _cases.FirstOrDefault(c => c.Id == caseId);
+        await ReloadDocs();
+    }
+
+    private async Task ReloadDocs()
+    {
+        if (_selectedCaseId is null) { _documents = new(); return; }
+        _documents = await DocumentService.GetDocumentsForCaseAsync(_selectedCaseId.Value);
+    }
+
+    private async Task HandleFileSelected(InputFileChangeEventArgs e)
+    {
+        if (_selectedCaseId is null) { Toast.Warn("Pick a case first."); return; }
+        var file = e.File;
+        if (file is null) return;
+        if (file.Size > 25 * 1024 * 1024) { Toast.Error("Max upload size is 25 MB."); return; }
+
+        _uploading = true;
+        try
+        {
+            using var ms = new MemoryStream();
+            await file.OpenReadStream(25 * 1024 * 1024).CopyToAsync(ms);
+            var saved = await DocumentService.UploadDocumentAsync(_selectedCaseId.Value, file.Name, ms.ToArray(), _docType, _userId);
+            if (saved != null)
+            {
+                Toast.Success($"Uploaded {file.Name}.");
+                await ReloadDocs();
+            }
+            else
+            {
+                Toast.Error("Upload failed.");
+            }
+        }
+        catch (Exception ex)
+        {
+            Toast.Error($"Upload failed: {ex.Message}");
+        }
+        finally
+        {
+            _uploading = false;
         }
     }
 }

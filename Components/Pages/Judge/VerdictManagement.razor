@@ -1,0 +1,150 @@
+@page "/judge/verdicts"
+@attribute [Authorize(Roles = "Judge")]
+@inject CaseService CaseService
+@inject VerdictService VerdictService
+@inject AuthenticationStateProvider AuthStateProvider
+@inject ToastService Toast
+
+<PageTitle>Verdict Management — LawFlow</PageTitle>
+
+<div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-6">
+    <div>
+        <div class="font-mono text-2xs uppercase tracking-[0.18em] text-muted flex items-center gap-2">
+            <span class="w-6 h-px bg-muted/60"></span>
+            <span>Judge · Verdicts</span>
+        </div>
+        <h1 class="mt-1.5 text-2xl md:text-3xl font-semibold tracking-tight text-balance">Issue and review verdicts</h1>
+        <p class="mt-1 text-sm text-muted">Cases in hearing are ready for verdict. After you issue, the clerk publishes.</p>
+    </div>
+</div>
+
+@if (_loading)
+{
+    <div class="lf-card p-10 text-center text-sm text-muted">Loading…</div>
+}
+else if (_cases.Count == 0)
+{
+    <div class="lf-card p-10 text-center text-sm text-muted">No cases awaiting your verdict.</div>
+}
+else
+{
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        @foreach (var c in _cases)
+        {
+            var hasVerdict = c.Verdict != null;
+            <div class="lf-card p-5">
+                <div class="flex items-start justify-between gap-3">
+                    <span class="lf-tag-num">@c.CaseNumber</span>
+                    <LfStatusChip Status="@c.Status" />
+                </div>
+                <div class="mt-2 font-semibold text-ink">@c.Title</div>
+                <div class="mt-1 text-xs text-muted line-clamp-2">@c.Description</div>
+
+                @if (hasVerdict)
+                {
+                    <div class="mt-4 p-3 rounded-card border border-hairline bg-canvas">
+                        <div class="font-mono text-2xs uppercase tracking-wider text-muted">Current verdict</div>
+                        <div class="mt-1 flex items-center gap-2">
+                            <LfChip Tone="@VerdictTone(c.Verdict!.Type)" ShowDot="true">@c.Verdict!.Type</LfChip>
+                            <span class="text-xs text-muted">@(c.Verdict.IsPublished ? "Published" : "Awaiting clerk publication")</span>
+                        </div>
+                        <div class="mt-2 text-sm text-muted whitespace-pre-wrap">@c.Verdict.Details</div>
+                    </div>
+                }
+
+                @if (!c.Verdict?.IsPublished ?? true)
+                {
+                    <div class="mt-4">
+                        <label class="font-mono text-2xs uppercase tracking-wider text-muted">@(hasVerdict ? "Amend verdict" : "Issue verdict")</label>
+                        <div class="mt-1 flex flex-col sm:flex-row gap-2">
+                            <select class="bg-transparent border border-hairline rounded-card px-2 py-1.5 text-sm"
+                                    @bind="_typeSel[c.Id]">
+                                <option value="@VerdictType.Guilty">Guilty</option>
+                                <option value="@VerdictType.Acquitted">Acquitted</option>
+                                <option value="@VerdictType.Dismissed">Dismissed</option>
+                                <option value="@VerdictType.Appealed">Appealed</option>
+                            </select>
+                            <input type="text"
+                                   class="flex-1 bg-transparent border border-hairline rounded-card px-3 py-1.5 text-sm outline-none focus:border-primary/40"
+                                   placeholder="Details / reasoning"
+                                   @bind="_detailsSel[c.Id]" />
+                            <LfButton OnClick="@(() => Issue(c.Id))" Variant="primary" Icon="gavel">@(hasVerdict ? "Update" : "Issue")</LfButton>
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+}
+
+@code {
+    private bool _loading = true;
+    private string _userId = "";
+    private List<Case> _cases = new();
+    private Dictionary<int, VerdictType> _typeSel = new();
+    private Dictionary<int, string> _detailsSel = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var auth = await AuthStateProvider.GetAuthenticationStateAsync();
+            _userId = auth.User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "";
+            await Reload();
+        }
+        finally { _loading = false; }
+    }
+
+    private async Task Reload()
+    {
+        var all = await CaseService.GetCasesForUserAsync(_userId, UserRole.Judge);
+        var candidates = all
+            .Where(c => c.Status == CaseStatus.Hearing || c.Status == CaseStatus.VerdictIssued)
+            .ToList();
+
+        // GetCasesForUserAsync doesn't .Include(Verdict). Hydrate it ourselves
+        // for just this short list so we can show "current verdict" + amend UI.
+        var verdicts = (await VerdictService.GetAllVerdictsAsync())
+            .GroupBy(v => v.CaseId)
+            .ToDictionary(g => g.Key, g => g.First());
+        foreach (var c in candidates)
+        {
+            if (verdicts.TryGetValue(c.Id, out var v)) c.Verdict = v;
+        }
+        _cases = candidates;
+
+        foreach (var c in _cases)
+        {
+            if (!_typeSel.ContainsKey(c.Id))    _typeSel[c.Id]    = c.Verdict?.Type ?? VerdictType.Guilty;
+            if (!_detailsSel.ContainsKey(c.Id)) _detailsSel[c.Id] = c.Verdict?.Details ?? "";
+        }
+    }
+
+    private async Task Issue(int caseId)
+    {
+        if (string.IsNullOrWhiteSpace(_detailsSel.GetValueOrDefault(caseId, "")))
+        {
+            Toast.Warn("Add a brief reasoning before issuing.");
+            return;
+        }
+        var ok = await VerdictService.IssueVerdictAsync(caseId, _userId, _typeSel[caseId], _detailsSel[caseId]);
+        if (ok)
+        {
+            Toast.Success("Verdict issued. The clerk has been notified to publish.");
+            await Reload();
+        }
+        else
+        {
+            Toast.Error("Could not issue verdict.");
+        }
+    }
+
+    private static string VerdictTone(VerdictType t) => t switch
+    {
+        VerdictType.Guilty    => "danger",
+        VerdictType.Acquitted => "success",
+        VerdictType.Dismissed => "neutral",
+        VerdictType.Appealed  => "warning",
+        _ => "neutral"
+    };
+}
