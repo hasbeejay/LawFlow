@@ -1,0 +1,204 @@
+@page "/lawyer/cases"
+@attribute [Authorize(Roles = "Lawyer")]
+@inject CaseService CaseService
+@inject AuthenticationStateProvider AuthStateProvider
+@inject ISnackbar Snackbar
+@using System.Security.Claims
+@using LawFlow.Models
+
+<PageTitle>Lawyer Workspace - LawFlow</PageTitle>
+
+<div class="lf-page-transition">
+    <div class="d-flex flex-column flex-sm-row justify-space-between align-start align-sm-center mb-6">
+        <div>
+            <MudText Typo="Typo.h4" Class="font-weight-bold" Style="color: var(--lf-primary); font-weight: 700;">
+                Caseload Cabinet
+            </MudText>
+            <MudText Typo="Typo.body2" Class="text-muted mt-1">Accept case offers, represent clients, and manage case dockets.</MudText>
+        </div>
+    </div>
+
+    @if (_loading)
+    {
+        <div class="d-flex justify-center py-10">
+            <MudProgressCircular Color="Color.Primary" Size="Size.Large" Indeterminate="true" />
+        </div>
+    }
+    else
+    {
+        <MudGrid>
+            <!-- Lawyer Telemetry Stats -->
+            <MudItem xs="12" sm="4">
+                <MudPaper Class="pa-4 lf-glow-card" Style="background: linear-gradient(135deg, #0EA5E9 0%, #1E3A8A 100%); color: white;">
+                    <MudText Typo="Typo.subtitle2" Class="font-weight-bold opacity-75">Active Clients</MudText>
+                    <MudText Typo="Typo.h3" Class="font-weight-bold mt-1">@_cases.Count(c => c.Status != CaseStatus.Closed && c.LawyerId == _userId)</MudText>
+                </MudPaper>
+            </MudItem>
+            <MudItem xs="12" sm="4">
+                <MudPaper Class="pa-4 lf-glow-card lf-pulse-badge" Style="background: white; border-left: 5px solid #EF4444;">
+                    <MudText Typo="Typo.subtitle2" Class="text-muted font-weight-bold">Representation Requests Offered</MudText>
+                    <MudText Typo="Typo.h3" Class="font-weight-bold mt-1 text-danger">@_cases.Count(c => c.Status == CaseStatus.AvailableForLawyers && c.LawyerId == null)</MudText>
+                </MudPaper>
+            </MudItem>
+            <MudItem xs="12" sm="4">
+                <MudPaper Class="pa-4 lf-glow-card" Style="background: white; border-left: 5px solid #10B981;">
+                    <MudText Typo="Typo.subtitle2" Class="text-muted font-weight-bold">Resolved Caseloads</MudText>
+                    <MudText Typo="Typo.h3" Class="font-weight-bold mt-1 text-success">@_cases.Count(c => c.Status == CaseStatus.Closed)</MudText>
+                </MudPaper>
+            </MudItem>
+
+            <!-- Case Records Table -->
+            <MudItem xs="12">
+                <MudPaper Class="pa-6 lf-glass-panel" Style="border-radius: 16px;">
+                    <div class="d-flex justify-space-between align-center mb-4">
+                        <MudText Typo="Typo.h6" Class="font-weight-bold">Defense Caseload Cabinet</MudText>
+                        <MudTextField @bind-Value="_searchQuery" 
+                                      Label="Search by Case Number or Title..." 
+                                      Variant="Variant.Outlined" 
+                                      Adornment="Adornment.Start" 
+                                      AdornmentIcon="@Icons.Material.Filled.Search"
+                                      Immediate="true"
+                                      OnKeyUp="FilterCases"
+                                      Margin="Margin.Dense"
+                                      Style="max-width: 300px; background: white;" />
+                    </div>
+
+                    <MudTable Items="@_filteredCases" Hover="true" Breakpoint="Breakpoint.Sm" Elevation="0" Style="background:transparent;">
+                        <HeaderContent>
+                            <MudTh>Case Number</MudTh>
+                            <MudTh>Case Title</MudTh>
+                            <MudTh>Client</MudTh>
+                            <MudTh>Status</MudTh>
+                            <MudTh>Filing Date</MudTh>
+                            <MudTh Style="text-align: right;">Action</MudTh>
+                        </HeaderContent>
+                        <RowTemplate>
+                            <MudTd DataLabel="Case Number">
+                                <MudChip T="string" Color="Color.Primary" Variant="Variant.Outlined" Size="Size.Small" Style="font-weight:600; border-radius:6px;">
+                                    @context.CaseNumber
+                                </MudChip>
+                            </MudTd>
+                            <MudTd DataLabel="Case Title" Style="font-weight:600;">@context.Title</MudTd>
+                            <MudTd DataLabel="Client">@context.Client?.FullName</MudTd>
+                             <MudTd DataLabel="Status">
+                                 <MudChip T="string" Color="@GetStatusColor(context.Status)" Size="Size.Small" Style="font-weight:600; border-radius:6px;">
+                                     @GetStatusLabel(context.Status)
+                                 </MudChip>
+                             </MudTd>
+                             <MudTd DataLabel="Filing Date">@context.CreatedAt.ToLocalTime().ToString("d")</MudTd>
+                             <MudTd Style="text-align: right;">
+                                 <div class="d-flex justify-end gap-2">
+                                     @if (context.Status == CaseStatus.AvailableForLawyers && context.LawyerId == null)
+                                     {
+                                         <MudButton Variant="Variant.Filled" Color="Color.Success" Size="Size.Small" OnClick="() => HandleLawyerAction(context.Id, true)" Style="border-radius:6px; text-transform:none;">
+                                             Accept Case
+                                         </MudButton>
+                                     }
+                                     <MudButton Href="@($"/lawyer/cases/{context.Id}")" Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small" Style="border-radius:6px; text-transform:none;">
+                                         Open Client Portal
+                                     </MudButton>
+                                 </div>
+                             </MudTd>
+                        </RowTemplate>
+                        <PagerContent>
+                            <MudTablePager PageSizeOptions="new int[]{10, 25, 50}" />
+                        </PagerContent>
+                    </MudTable>
+                </MudPaper>
+            </MudItem>
+        </MudGrid>
+    }
+</div>
+
+@code {
+    private bool _loading = true;
+    private string _userId = string.Empty;
+    private string _searchQuery = string.Empty;
+    private List<Case> _cases = new();
+    private List<Case> _filteredCases = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        _userId = authState.User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "";
+        await LoadCases();
+    }
+
+    private async Task LoadCases()
+    {
+        _loading = true;
+        _cases = await CaseService.GetCasesForUserAsync(_userId, UserRole.Lawyer);
+        FilterCases();
+        _loading = false;
+    }
+
+    private void FilterCases()
+    {
+        if (string.IsNullOrEmpty(_searchQuery))
+        {
+            _filteredCases = _cases;
+        }
+        else
+        {
+            var txt = _searchQuery.ToLower();
+            _filteredCases = _cases.Where(c => 
+                c.CaseNumber.ToLower().Contains(txt) || 
+                c.Title.ToLower().Contains(txt) ||
+                (c.Client != null && c.Client.FullName.ToLower().Contains(txt))
+            ).ToList();
+        }
+    }
+
+    private async Task HandleLawyerAction(int caseId, bool accept)
+    {
+        var action = accept ? "accept" : "decline";
+        var res = await CaseService.UpdateLawyerAssignmentAsync(caseId, _userId, accept);
+        if (res)
+        {
+            Snackbar.Add($"Successfully updated case assignment: {action}ed.", Severity.Success);
+            await LoadCases();
+        }
+        else
+        {
+            Snackbar.Add("Could not update assignment.", Severity.Error);
+        }
+    }
+
+    private Color GetStatusColor(CaseStatus status)
+    {
+        return status switch
+        {
+            CaseStatus.Created => Color.Default,
+            CaseStatus.ReviewedByAdmin => Color.Primary,
+            CaseStatus.AssignedToJudgeAndPolice => Color.Info,
+            CaseStatus.AvailableForLawyers => Color.Warning,
+            CaseStatus.LawyerAccepted => Color.Warning,
+            CaseStatus.AssignedToLawyer => Color.Info,
+            CaseStatus.ClerkAssignedByJudge => Color.Info,
+            CaseStatus.Investigation => Color.Warning,
+            CaseStatus.Hearing => Color.Primary,
+            CaseStatus.VerdictIssued => Color.Secondary,
+            CaseStatus.Closed => Color.Success,
+            _ => Color.Default
+        };
+    }
+
+    private string GetStatusLabel(CaseStatus status)
+    {
+        return status switch
+        {
+            CaseStatus.Created => "Complaint Lodged",
+            CaseStatus.ReviewedByAdmin => "Reviewed By Admin",
+            CaseStatus.AssignedToJudgeAndPolice => "Officials Appointed",
+            CaseStatus.AvailableForLawyers => "Open for Defense",
+            CaseStatus.LawyerAccepted => "Lawyer Accepting",
+            CaseStatus.AssignedToLawyer => "Defense Retained",
+            CaseStatus.ClerkAssignedByJudge => "Clerk Assigned",
+            CaseStatus.Investigation => "Under Investigation",
+            CaseStatus.Hearing => "Court Hearings",
+            CaseStatus.VerdictIssued => "Verdict Issued",
+            CaseStatus.Closed => "Closed / Archived",
+            _ => "Unknown"
+        };
+    }
+}

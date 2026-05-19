@@ -1,0 +1,339 @@
+@page "/admin/users"
+@attribute [Authorize(Roles = "Admin")]
+@inject AuthService AuthService
+@inject ISnackbar Snackbar
+
+<PageTitle>User Management - LawFlow</PageTitle>
+
+<div class="lf-page-transition">
+    <div class="d-flex flex-column flex-sm-row justify-space-between align-start align-sm-center mb-6">
+        <div>
+            <MudText Typo="Typo.h4" Class="font-weight-bold" Style="color: var(--lf-primary); font-weight: 700;">
+                Judicial Account Registrar
+            </MudText>
+            <MudText Typo="Typo.body2" Class="text-muted mt-1">Onboard staff, edit permissions, and toggle system access keys.</MudText>
+        </div>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@(_showForm ? Icons.Material.Filled.List : Icons.Material.Filled.PersonAdd)" OnClick="ToggleRegisterForm" Style="border-radius: 8px;">
+            @(_showForm ? "View Registrar List" : "Register New Account")
+        </MudButton>
+    </div>
+
+    <!-- ONBOARD / EDIT FORM -->
+    @if (_showForm)
+    {
+        <MudPaper Class="pa-6 lf-glass-panel mb-6" Style="max-width: 800px; border-radius: 16px;">
+            <MudText Typo="Typo.h5" Class="font-weight-bold mb-4">@(_isEditing ? "Edit Judicial Profile" : "Register Judicial Profile")</MudText>
+
+            <EditForm Model="@_regModel" OnValidSubmit="HandleRegisterUser">
+                <DataAnnotationsValidator />
+
+                <MudGrid Class="mb-4">
+                    <MudItem xs="12" sm="6">
+                        <MudTextField @bind-Value="_regModel.Username" Label="Username" Variant="Variant.Outlined" For="@(() => _regModel.Username)" Placeholder="e.g. j_gordon" Margin="Margin.Dense" Disabled="@_isEditing" />
+                    </MudItem>
+                    <MudItem xs="12" sm="6">
+                        <MudTextField @bind-Value="_regModel.Email" Label="Email Address" Variant="Variant.Outlined" For="@(() => _regModel.Email)" Placeholder="e.g. gordon@lawflow.gov" Margin="Margin.Dense" />
+                    </MudItem>
+                </MudGrid>
+
+                <MudGrid Class="mb-4">
+                    <MudItem xs="12" sm="6">
+                        <MudTextField @bind-Value="_regModel.FullName" Label="Full Name" Variant="Variant.Outlined" For="@(() => _regModel.FullName)" Placeholder="e.g. Comm. James Gordon" Margin="Margin.Dense" />
+                    </MudItem>
+                    <MudItem xs="12" sm="6">
+                        <MudSelect T="UserRole" Label="System Role" Variant="Variant.Outlined" @bind-Value="_regModel.Role" Margin="Margin.Dense">
+                            <MudSelectItem Value="UserRole.Admin">Administrator</MudSelectItem>
+                            <MudSelectItem Value="UserRole.Judge">Presiding Judge</MudSelectItem>
+                            <MudSelectItem Value="UserRole.Lawyer">Defense Lawyer</MudSelectItem>
+                            <MudSelectItem Value="UserRole.Client">Client (Filer)</MudSelectItem>
+                            <MudSelectItem Value="UserRole.Police">Police Investigator</MudSelectItem>
+                            <MudSelectItem Value="UserRole.Clerk">Court Clerk</MudSelectItem>
+                        </MudSelect>
+                    </MudItem>
+                </MudGrid>
+
+                <MudGrid Class="mb-4">
+                    @if (!_isEditing)
+                    {
+                        <MudItem xs="12" sm="6">
+                            <MudTextField @bind-Value="_regModel.Password" Label="Access Password" InputType="InputType.Password" Variant="Variant.Outlined" For="@(() => _regModel.Password)" Margin="Margin.Dense" />
+                        </MudItem>
+                    }
+                    
+                    <!-- DYNAMIC ROLE DEPENDENT FIELDS -->
+                    @if (_regModel.Role == UserRole.Judge || _regModel.Role == UserRole.Lawyer)
+                    {
+                        <MudItem xs="12" sm="6">
+                            <MudTextField @bind-Value="_regModel.Specialization" Label="Area of Specialization" Variant="Variant.Outlined" Placeholder="e.g. Constitutional Law, Criminal Defense" Margin="Margin.Dense" />
+                        </MudItem>
+                    }
+                    else if (_regModel.Role == UserRole.Police)
+                    {
+                        <MudItem xs="12" sm="6">
+                            <MudTextField @bind-Value="_regModel.BadgeNumber" Label="Police Badge Number" Variant="Variant.Outlined" Placeholder="e.g. GCPD-8842" Margin="Margin.Dense" />
+                        </MudItem>
+                    }
+                    else if (_regModel.Role == UserRole.Clerk)
+                    {
+                        <MudItem xs="12" sm="6">
+                            <MudTextField @bind-Value="_regModel.Department" Label="Courtroom Department" Variant="Variant.Outlined" Placeholder="e.g. Supreme Docket Division" Margin="Margin.Dense" />
+                        </MudItem>
+                    }
+                </MudGrid>
+
+                <div class="d-flex gap-4 mt-6">
+                    <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Style="border-radius: 8px; font-weight:600; text-transform:none;" Disabled="@_submitting">
+                        @if (_submitting)
+                        {
+                            <MudProgressCircular Color="Color.Secondary" Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                            <span>@(_isEditing ? "Saving Changes..." : "Creating Account...")</span>
+                        }
+                        else
+                        {
+                            <span>@(_isEditing ? "Save Profile Changes" : "Create System Credentials")</span>
+                        }
+                    </MudButton>
+                    <MudButton Variant="Variant.Outlined" Color="Color.Secondary" OnClick="ToggleRegisterForm" Style="border-radius: 8px; text-transform:none;">
+                        Cancel
+                    </MudButton>
+                </div>
+            </EditForm>
+        </MudPaper>
+    }
+
+    <!-- USERS GRID LIST -->
+    <MudPaper Class="pa-6 lf-glass-panel" Style="border-radius: 16px;">
+        <div class="d-flex justify-space-between align-center mb-4">
+            <MudText Typo="Typo.h6" Class="font-weight-bold">Registered Core Credentials</MudText>
+            <MudChip T="string" Color="Color.Primary" Variant="Variant.Outlined" Size="Size.Small">Total: @_users.Count</MudChip>
+        </div>
+
+        @if (_loading)
+        {
+            <div class="d-flex justify-center py-10">
+                <MudProgressCircular Color="Color.Primary" Size="Size.Large" Indeterminate="true" />
+            </div>
+        }
+        else
+        {
+            <MudTable Items="@_users" Hover="true" Breakpoint="Breakpoint.Sm" Elevation="0" Style="background:transparent;">
+                <HeaderContent>
+                    <MudTh>Full Name</MudTh>
+                    <MudTh>Username</MudTh>
+                    <MudTh>Email</MudTh>
+                    <MudTh>Role</MudTh>
+                    <MudTh>Metadata Specifics</MudTh>
+                    <MudTh>System Active</MudTh>
+                    <MudTh>Modify</MudTh>
+                    <MudTh Style="text-align: right;">Access Status</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd DataLabel="Full Name" Style="font-weight:600;">@context.FullName</MudTd>
+                    <MudTd DataLabel="Username">@context.UserName</MudTd>
+                    <MudTd DataLabel="Email">@context.Email</MudTd>
+                    <MudTd DataLabel="Role">
+                        <MudChip T="string" Color="@GetRoleColor(context.Role)" Size="Size.Small" Style="border-radius:6px; font-weight:600;">
+                            @context.Role.ToString()
+                        </MudChip>
+                    </MudTd>
+                    <MudTd DataLabel="Metadata Specifics">
+                        @if (context.Role == UserRole.Judge || context.Role == UserRole.Lawyer)
+                        {
+                            <span class="text-muted" style="font-size:12px;">Spec: @context.Specialization</span>
+                        }
+                        else if (context.Role == UserRole.Police)
+                        {
+                            <span class="text-muted" style="font-size:12px;">Badge: @context.BadgeNumber</span>
+                        }
+                        else if (context.Role == UserRole.Clerk)
+                        {
+                            <span class="text-muted" style="font-size:12px;">Dept: @context.Department</span>
+                        }
+                        else
+                        {
+                            <span class="text-muted">—</span>
+                        }
+                    </MudTd>
+                    <MudTd DataLabel="System Active">
+                        <MudSwitch T="bool" Value="@context.IsActive" ValueChanged="() => ToggleUser(context.Id)" Color="Color.Success" />
+                    </MudTd>
+                    <MudTd DataLabel="Modify">
+                        <MudIconButton Icon="@Icons.Material.Filled.Edit" Color="Color.Primary" Size="Size.Small" OnClick="() => EditUser(context)" Title="Edit Judicial Profile" />
+                    </MudTd>
+                    <MudTd Style="text-align: right;">
+                        @if (context.IsActive)
+                        {
+                            <MudText Typo="Typo.caption" Color="Color.Success" Class="font-weight-bold">Active Keys</MudText>
+                        }
+                        else
+                        {
+                            <MudText Typo="Typo.caption" Color="Color.Error" Class="font-weight-bold">Locked Out</MudText>
+                        }
+                    </MudTd>
+                </RowTemplate>
+                <PagerContent>
+                    <MudTablePager PageSizeOptions="new int[]{10, 25, 50}" />
+                </PagerContent>
+            </MudTable>
+        }
+    </MudPaper>
+</div>
+
+@code {
+    private bool _loading = true;
+    private bool _showForm = false;
+    private bool _submitting = false;
+    private bool _isEditing = false;
+    private string _editingUserId = string.Empty;
+
+    private List<ApplicationUser> _users = new();
+    private RegisterViewModel _regModel = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadUsers();
+    }
+
+    private async Task LoadUsers()
+    {
+        _loading = true;
+        _users = await AuthService.GetAllUsersAsync();
+        _loading = false;
+    }
+
+    private void ToggleRegisterForm()
+    {
+        _showForm = !_showForm;
+        _isEditing = false;
+        _regModel = new();
+    }
+
+    private void EditUser(ApplicationUser user)
+    {
+        _isEditing = true;
+        _editingUserId = user.Id;
+        _regModel = new RegisterViewModel
+        {
+            Username = user.UserName ?? "",
+            Email = user.Email ?? "",
+            FullName = user.FullName,
+            Password = "PlaceholderPassword123!", // Bypass Validator for Edit
+            Role = user.Role,
+            Specialization = user.Specialization,
+            BadgeNumber = user.BadgeNumber,
+            Department = user.Department
+        };
+        _showForm = true;
+    }
+
+    private async Task HandleRegisterUser()
+    {
+        _submitting = true;
+        try
+        {
+            if (_isEditing)
+            {
+                var res = await AuthService.UpdateUserAsync(
+                    _editingUserId,
+                    _regModel.Email,
+                    _regModel.FullName,
+                    _regModel.Role,
+                    _regModel.Specialization,
+                    _regModel.BadgeNumber,
+                    _regModel.Department
+                );
+
+                if (res)
+                {
+                    Snackbar.Add($"User {_regModel.FullName} profile details updated successfully.", Severity.Success);
+                    _showForm = false;
+                    _isEditing = false;
+                    await LoadUsers();
+                }
+                else
+                {
+                    Snackbar.Add("Could not update user (email address may be in use).", Severity.Error);
+                }
+            }
+            else
+            {
+                var res = await AuthService.RegisterAsync(
+                    _regModel.Username,
+                    _regModel.Email,
+                    _regModel.Password,
+                    _regModel.FullName,
+                    _regModel.Role,
+                    _regModel.Specialization,
+                    _regModel.BadgeNumber,
+                    _regModel.Department
+                );
+
+                if (res)
+                {
+                    Snackbar.Add($"User {_regModel.FullName} onboarded successfully.", Severity.Success);
+                    _showForm = false;
+                    await LoadUsers();
+                }
+                else
+                {
+                    Snackbar.Add("Username or Email already in use.", Severity.Error);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Operation error: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _submitting = false;
+        }
+    }
+
+    private async Task ToggleUser(string id)
+    {
+        var res = await AuthService.ToggleUserStatusAsync(id);
+        if (res)
+        {
+            Snackbar.Add("User active state modified.", Severity.Info);
+            await LoadUsers();
+        }
+    }
+
+    private Color GetRoleColor(UserRole role)
+    {
+        return role switch
+        {
+            UserRole.Admin => Color.Dark,
+            UserRole.Judge => Color.Primary,
+            UserRole.Lawyer => Color.Info,
+            UserRole.Client => Color.Secondary,
+            UserRole.Police => Color.Warning,
+            UserRole.Clerk => Color.Success,
+            _ => Color.Default
+        };
+    }
+
+    public class RegisterViewModel
+    {
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Username is required")]
+        public string Username { get; set; } = string.Empty;
+
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Email is required")]
+        [System.ComponentModel.DataAnnotations.EmailAddress(ErrorMessage = "Invalid Email Address")]
+        public string Email { get; set; } = string.Empty;
+
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Full name is required")]
+        public string FullName { get; set; } = string.Empty;
+
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Password is required")]
+        [System.ComponentModel.DataAnnotations.MinLength(6, ErrorMessage = "Password must be at least 6 characters")]
+        public string Password { get; set; } = string.Empty;
+
+        public UserRole Role { get; set; } = UserRole.Client;
+
+        public string? Specialization { get; set; }
+        public string? BadgeNumber { get; set; }
+        public string? Department { get; set; }
+    }
+}

@@ -1,0 +1,316 @@
+@page "/hearings"
+@attribute [Authorize(Roles = "Clerk,Admin")]
+@inject HearingService HearingService
+@inject CaseService CaseService
+@inject NotificationService NotificationService
+@inject AuthenticationStateProvider AuthStateProvider
+@inject ISnackbar Snackbar
+@using System.Security.Claims
+
+<PageTitle>Schedule Hearings - LawFlow</PageTitle>
+
+<div class="lf-page-transition">
+    <div class="d-flex flex-column flex-sm-row justify-space-between align-start align-sm-center mb-6">
+        <div>
+            <MudText Typo="Typo.h4" Class="font-weight-bold" Style="color: var(--lf-primary); font-weight: 700;">
+                Schedule & Court Rooms
+            </MudText>
+            <MudText Typo="Typo.body2" Class="text-muted mt-1">Book hearing dates, assign courtrooms, and manage scheduled dockets.</MudText>
+        </div>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@(_showForm ? Icons.Material.Filled.List : Icons.Material.Filled.Add)" OnClick="ToggleScheduleForm" Style="border-radius: 8px;">
+            @(_showForm ? "View Schedule Table" : "Schedule New Hearing")
+        </MudButton>
+    </div>
+
+    <!-- SCHEDULE FORM CARD -->
+    @if (_showForm)
+    {
+        <MudPaper Class="pa-6 lf-glass-panel mb-6" Style="max-width: 800px; border-radius: 16px;">
+            <MudText Typo="Typo.h5" Class="font-weight-bold mb-4">Book New Hearing Session</MudText>
+
+            <EditForm Model="@_scheduleModel" OnValidSubmit="HandleScheduleHearing">
+                <DataAnnotationsValidator />
+
+                <MudSelect T="int" Label="Select Active Case File" Variant="Variant.Outlined" Value="_scheduleModel.CaseId" ValueChanged="OnCaseChanged" Class="mb-4">
+                    <MudSelectItem Value="0">-- Select Case --</MudSelectItem>
+                    @foreach (var c in _activeCases)
+                    {
+                        <MudSelectItem Value="@c.Id">@c.CaseNumber - @c.Title</MudSelectItem>
+                    }
+                </MudSelect>
+
+                @if (_selectedCaseDetails != null)
+                {
+                    <div class="pa-4 mb-4" style="background: rgba(14, 165, 233, 0.03); border-radius: 12px; border: 1px solid rgba(14, 165, 233, 0.15);">
+                        <MudText Typo="Typo.subtitle2" Class="font-weight-bold mb-2 text-info">Clerk Coordination Desk</MudText>
+                        <MudText Typo="Typo.body2" Class="mb-3 text-muted">Verify active court officers assigned to this case file before scheduling courtroom slots.</MudText>
+                        
+                        <MudGrid Class="mb-3">
+                            <MudItem xs="12" sm="6">
+                                <div class="d-flex align-center gap-2">
+                                    <MudAvatar Color="Color.Primary" Size="Size.Small">J</MudAvatar>
+                                    <div>
+                                        <MudText Typo="Typo.caption" Class="text-muted d-block">Presiding Judge</MudText>
+                                        <MudText Typo="Typo.body2" Class="font-weight-bold">@(_selectedCaseDetails.Judge?.FullName ?? "Unassigned")</MudText>
+                                    </div>
+                                </div>
+                            </MudItem>
+                            <MudItem xs="12" sm="6">
+                                <div class="d-flex align-center gap-2">
+                                    <MudAvatar Color="Color.Info" Size="Size.Small">L</MudAvatar>
+                                    <div>
+                                        <MudText Typo="Typo.caption" Class="text-muted d-block">Defense Counsel</MudText>
+                                        <MudText Typo="Typo.body2" Class="font-weight-bold">@(_selectedCaseDetails.Lawyer?.FullName ?? "Awaiting Legal Counsel")</MudText>
+                                    </div>
+                                </div>
+                            </MudItem>
+                        </MudGrid>
+
+                        @if (_selectedCaseDetails.JudgeId != null || _selectedCaseDetails.LawyerId != null)
+                        {
+                            <MudButton Variant="Variant.Outlined" 
+                                       Color="Color.Info" 
+                                       Size="Size.Small" 
+                                       StartIcon="@Icons.Material.Filled.Sensors" 
+                                       OnClick="SendCoordinationPing" 
+                                       Disabled="@_pinging"
+                                       Style="border-radius:6px; text-transform:none;">
+                                @(_pinging ? "Dispatching Coordination Ping..." : "Ping Judge & Lawyer for Schedule Availability")
+                            </MudButton>
+                        }
+                    </div>
+                }
+
+                <MudGrid Class="mb-4">
+                    <MudItem xs="12" sm="6">
+                        <MudTextField T="DateTime?" Format="yyyy-MM-ddTHH:mm" InputType="InputType.DateTimeLocal" Label="Date & Time" Variant="Variant.Outlined" @bind-Value="_scheduleModel.HearingDate" />
+                    </MudItem>
+                    <MudItem xs="12" sm="6">
+                        <MudTextField @bind-Value="_scheduleModel.Location" Label="Court Room / Location" Variant="Variant.Outlined" Placeholder="e.g. Supreme Courtroom 3B" For="@(() => _scheduleModel.Location)" />
+                    </MudItem>
+                </MudGrid>
+
+                <MudTextField @bind-Value="_scheduleModel.Notes" Label="Prescription / Specific Notes" Variant="Variant.Outlined" Lines="3" Class="mb-6" Placeholder="Instructions for witnesses, lawyers, and required evidence packages..." />
+
+                <div class="d-flex gap-4">
+                    <MudButton ButtonType="ButtonType.Submit" Variant="Variant.Filled" Color="Color.Primary" Style="border-radius: 8px;">
+                        Book Courtroom & Schedule
+                    </MudButton>
+                    <MudButton Variant="Variant.Outlined" Color="Color.Secondary" OnClick="ToggleScheduleForm" Style="border-radius: 8px;">
+                        Cancel
+                    </MudButton>
+                </div>
+            </EditForm>
+        </MudPaper>
+    }
+
+    <!-- SCHEDULE LIST TABLE -->
+    <MudPaper Class="pa-6 lf-glass-panel" Style="border-radius: 16px;">
+        <MudText Typo="Typo.h6" Class="font-weight-bold mb-4">Active Scheduled Dockets</MudText>
+
+        @if (_loading)
+        {
+            <div class="d-flex justify-center py-10">
+                <MudProgressCircular Color="Color.Primary" Size="Size.Large" Indeterminate="true" />
+            </div>
+        }
+        else
+        {
+            <MudTable Items="@_hearings" Hover="true" Breakpoint="Breakpoint.Sm" Elevation="0" Style="background:transparent;">
+                <HeaderContent>
+                    <MudTh>Case ID</MudTh>
+                    <MudTh>Case Title</MudTh>
+                    <MudTh>Hearing Date & Time</MudTh>
+                    <MudTh>Court Room</MudTh>
+                    <MudTh>Status</MudTh>
+                    <MudTh Style="text-align: right;">Action</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd DataLabel="Case ID">
+                        <MudChip T="string" Color="Color.Primary" Variant="Variant.Outlined" Size="Size.Small" Style="border-radius:6px; font-weight:600;">
+                            @context.Case?.CaseNumber
+                        </MudChip>
+                    </MudTd>
+                    <MudTd DataLabel="Case Title" Style="font-weight: 500;">@context.Case?.Title</MudTd>
+                    <MudTd DataLabel="Hearing Date">@context.HearingDate.ToLocalTime().ToString("f")</MudTd>
+                    <MudTd DataLabel="Court Room">@context.Location</MudTd>
+                    <MudTd DataLabel="Status">
+                        <MudChip T="string" Color="@GetStatusColor(context.Status)" Size="Size.Small" Style="border-radius: 6px; font-weight: 600;">
+                            @context.Status
+                        </MudChip>
+                    </MudTd>
+                    <MudTd Style="text-align: right;">
+                        <div class="d-flex justify-end gap-2">
+                            @if (context.Status == "Scheduled")
+                            {
+                                <MudButton Variant="Variant.Filled" Color="Color.Success" Size="Size.Small" OnClick='() => HandleUpdateStatus(context.Id, "Completed")' Style="border-radius: 6px; text-transform:none;">
+                                    Conclude
+                                </MudButton>
+                                <MudButton Variant="Variant.Outlined" Color="Color.Error" Size="Size.Small" OnClick='() => HandleUpdateStatus(context.Id, "Adjourned")' Style="border-radius: 6px; text-transform:none;">
+                                    Adjourn
+                                </MudButton>
+                            }
+                            <MudButton Href="@($"/cases/view/{context.CaseId}")" Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small" Style="border-radius:6px; text-transform:none;">
+                                Open Case
+                            </MudButton>
+                        </div>
+                    </MudTd>
+                </RowTemplate>
+                <PagerContent>
+                    <MudTablePager PageSizeOptions="new int[]{10, 25, 50}" />
+                </PagerContent>
+            </MudTable>
+        }
+    </MudPaper>
+</div>
+
+@code {
+    private bool _loading = true;
+    private bool _showForm = false;
+    private string _userId = string.Empty;
+
+    private List<Hearing> _hearings = new();
+    private List<Case> _activeCases = new();
+
+    private ScheduleViewModel _scheduleModel = new();
+    private Case? _selectedCaseDetails;
+    private bool _pinging = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        _userId = authState.User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "";
+
+        await LoadHearings();
+
+        // Load active cases for scheduler dropdown (UnderInvestigation or InHearing)
+        var all = await CaseService.GetAllCasesAsync();
+        _activeCases = all.Where(c => c.Status == CaseStatus.Investigation || c.Status == CaseStatus.Hearing).ToList();
+    }
+
+    private async Task LoadHearings()
+    {
+        _loading = true;
+        _hearings = await HearingService.GetAllHearingsAsync();
+        _loading = false;
+    }
+
+    private void ToggleScheduleForm()
+    {
+        _showForm = !_showForm;
+        _scheduleModel = new() { HearingDate = DateTime.UtcNow.AddDays(1) };
+        _selectedCaseDetails = null;
+    }
+
+    private async Task OnCaseChanged(int caseId)
+    {
+        _scheduleModel.CaseId = caseId;
+        if (caseId > 0)
+        {
+            _selectedCaseDetails = await CaseService.GetCaseByIdAsync(caseId);
+        }
+        else
+        {
+            _selectedCaseDetails = null;
+        }
+    }
+
+    private async Task SendCoordinationPing()
+    {
+        if (_selectedCaseDetails == null) return;
+        _pinging = true;
+
+        var title = "Schedule Coordination Request";
+        var msg = $"Clerk is requesting availability to schedule a new hearing for Case {_selectedCaseDetails.CaseNumber} ({_selectedCaseDetails.Title}). Please review calendar room slots.";
+
+        int count = 0;
+        if (!string.IsNullOrEmpty(_selectedCaseDetails.JudgeId))
+        {
+            await NotificationService.SendNotificationAsync(_selectedCaseDetails.JudgeId, title, msg);
+            count++;
+        }
+        if (!string.IsNullOrEmpty(_selectedCaseDetails.LawyerId))
+        {
+            await NotificationService.SendNotificationAsync(_selectedCaseDetails.LawyerId, title, msg);
+            count++;
+        }
+
+        if (count > 0)
+        {
+            Snackbar.Add($"Coordination pings successfully dispatched to assigned Judge & Defense Lawyer.", Severity.Success);
+        }
+        else
+        {
+            Snackbar.Add("No active officers are assigned to ping.", Severity.Warning);
+        }
+        _pinging = false;
+    }
+
+    private async Task HandleScheduleHearing()
+    {
+        if (_scheduleModel.CaseId == 0)
+        {
+            Snackbar.Add("Please select a case file.", Severity.Warning);
+            return;
+        }
+
+        if (!_scheduleModel.HearingDate.HasValue)
+        {
+            Snackbar.Add("Please select a date and time.", Severity.Warning);
+            return;
+        }
+
+        var res = await HearingService.ScheduleHearingAsync(
+            _scheduleModel.CaseId,
+            _scheduleModel.HearingDate.Value,
+            _scheduleModel.Location,
+            _scheduleModel.Notes,
+            _userId
+        );
+
+        if (res)
+        {
+            Snackbar.Add("Judicial Hearing scheduled successfully. All parties notified.", Severity.Success);
+            _showForm = false;
+            await LoadHearings();
+        }
+        else
+        {
+            Snackbar.Add("Could not book courtroom.", Severity.Error);
+        }
+    }
+
+    private async Task HandleUpdateStatus(int id, string status)
+    {
+        var res = await HearingService.UpdateHearingStatusAsync(id, status, string.Empty, _userId);
+        if (res)
+        {
+            Snackbar.Add($"Hearing status Concluded / Adjourned successfully.", Severity.Success);
+            await LoadHearings();
+        }
+    }
+
+    private Color GetStatusColor(string status)
+    {
+        return status switch
+        {
+            "Scheduled" => Color.Primary,
+            "Completed" => Color.Success,
+            "Adjourned" => Color.Warning,
+            "Cancelled" => Color.Error,
+            _ => Color.Default
+        };
+    }
+
+    public class ScheduleViewModel
+    {
+        public int CaseId { get; set; }
+
+        public DateTime? HearingDate { get; set; }
+
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Location is required")]
+        public string Location { get; set; } = string.Empty;
+
+        public string Notes { get; set; } = string.Empty;
+    }
+}

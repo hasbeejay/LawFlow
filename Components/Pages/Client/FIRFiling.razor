@@ -1,0 +1,156 @@
+@page "/client/submit"
+@attribute [Authorize(Roles = "Client")]
+@inject CaseService CaseService
+@inject AuthenticationStateProvider AuthStateProvider
+@inject ISnackbar Snackbar
+@inject NavigationManager Navigation
+@using System.Security.Claims
+@using LawFlow.Models
+
+<PageTitle>Lodge Complaint FIR - LawFlow</PageTitle>
+
+<div class="lf-page-transition">
+    <div class="d-flex flex-column flex-sm-row justify-space-between align-start align-sm-center mb-6">
+        <div>
+            <MudText Typo="Typo.h4" Class="font-weight-bold" Style="color: var(--lf-primary); font-weight: 700;">
+                Lodge Judicial FIR / Complaint
+            </MudText>
+            <MudText Typo="Typo.body2" Class="text-muted mt-1">Register a new First Information Report. Filed reports are immediately queued for Judicial Admin review.</MudText>
+        </div>
+    </div>
+
+    <MudGrid>
+        <MudItem xs="12" md="8">
+            <MudPaper Class="pa-6 lf-glass-panel" Style="border-radius: 16px;">
+                <MudText Typo="Typo.h5" Class="font-weight-bold mb-1">New Incident Registration</MudText>
+                <MudText Typo="Typo.body2" Class="text-muted mb-6">Provide details of your grievance with supporting information.</MudText>
+
+                <EditForm Model="@_newCaseModel" OnValidSubmit="HandleSubmitFIR">
+                    <DataAnnotationsValidator />
+
+                    <MudTextField @bind-Value="_newCaseModel.Title" 
+                                  Label="Grievance / Incident Title" 
+                                  Variant="Variant.Outlined" 
+                                  For="@(() => _newCaseModel.Title)" 
+                                  Placeholder="e.g. Theft of Corporate Intellectual Property"
+                                  Class="mb-4" />
+
+                    <MudTextField @bind-Value="_newCaseModel.Description" 
+                                  Label="Accurate Incident Description" 
+                                  Variant="Variant.Outlined" 
+                                  Lines="6" 
+                                  For="@(() => _newCaseModel.Description)" 
+                                  Placeholder="Describe the timeline, names of any suspects, damages, and exact events..."
+                                  Class="mb-4" />
+
+                    <div class="d-flex flex-column gap-2 mb-6">
+                        <MudText Typo="Typo.subtitle2" Class="font-weight-bold">Primary Supporting Document Package</MudText>
+                        <div style="border: 2px dashed #0EA5E9; border-radius: 8px; padding: 24px; text-align:center; background: rgba(14,165,233,0.03);">
+                            <MudIcon Icon="@Icons.Material.Filled.CloudUpload" Color="Color.Secondary" Size="Size.Large" Class="mb-2" />
+                            <MudText Typo="Typo.body2" Class="font-weight-bold">Auto-attached grievance draft</MudText>
+                            <MudText Typo="Typo.caption" Class="text-muted">FIR_Draft_Filing_Package.pdf (1.2 MB)</MudText>
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-4">
+                        <MudButton ButtonType="ButtonType.Submit" 
+                                   Variant="Variant.Filled" 
+                                   Color="Color.Primary" 
+                                   Size="Size.Large"
+                                   Style="border-radius: 8px; font-weight:600; text-transform:none;"
+                                   Disabled="@_submitting">
+                            @if (_submitting)
+                            {
+                                <MudProgressCircular Color="Color.Secondary" Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                                <span>Registering Incident...</span>
+                            }
+                            else
+                            {
+                                <span>Submit Complaint Filing</span>
+                            }
+                        </MudButton>
+                        <MudButton Variant="Variant.Outlined" 
+                                   Color="Color.Secondary" 
+                                   OnClick="Cancel" 
+                                   Style="border-radius: 8px; text-transform:none;">
+                            Cancel
+                        </MudButton>
+                    </div>
+                </EditForm>
+            </MudPaper>
+        </MudItem>
+
+        <!-- Right Side Helpful Guidelines -->
+        <MudItem xs="12" md="4">
+            <MudPaper Class="pa-6 lf-glass-panel" Style="border-radius: 16px; height: 100%;">
+                <MudText Typo="Typo.h6" Class="font-weight-bold mb-3">
+                    <MudIcon Icon="@Icons.Material.Filled.Info" Color="Color.Info" Class="mr-1" />
+                    Filing Guidelines
+                </MudText>
+                <MudText Typo="Typo.body2" Style="line-height:1.6;" Class="mb-4">
+                    1. <strong>Accuracy:</strong> Ensure that all dates, times, and described events are completely accurate to prevent judicial delays.
+                </MudText>
+                <MudText Typo="Typo.body2" Style="line-height:1.6;" Class="mb-4">
+                    2. <strong>Lawyer Offered:</strong> After an Admin reviews and approves the lodging, a qualified lawyer from our system will automatically be offered representation on your case.
+                </MudText>
+                <MudText Typo="Typo.body2" Style="line-height:1.6;">
+                    3. <strong>Court Schedule:</strong> Hearings, trials, and clerk announcements will reflect directly on your personal case workspace portal.
+                </MudText>
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
+</div>
+
+@code {
+    private bool _submitting = false;
+    private string _userId = string.Empty;
+    private NewCaseViewModel _newCaseModel = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        _userId = authState.User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "";
+    }
+
+    private async Task HandleSubmitFIR()
+    {
+        _submitting = true;
+        try
+        {
+            await CaseService.SubmitFIRAsync(
+                _newCaseModel.Title,
+                _newCaseModel.Description,
+                _userId,
+                "FIR_Draft_Filing_Package.pdf",
+                "/uploads/FIR_Mock.pdf"
+            );
+
+            Snackbar.Add("Your FIR has been registered and sent for Admin Review successfully.", Severity.Success);
+            Navigation.NavigateTo("/cases");
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Filing failed: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _submitting = false;
+        }
+    }
+
+    private void Cancel()
+    {
+        Navigation.NavigateTo("/cases");
+    }
+
+    public class NewCaseViewModel
+    {
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Title is required")]
+        [System.ComponentModel.DataAnnotations.StringLength(100, ErrorMessage = "Title cannot exceed 100 characters")]
+        public string Title { get; set; } = string.Empty;
+
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Description is required")]
+        [System.ComponentModel.DataAnnotations.MinLength(20, ErrorMessage = "Provide a meaningful description (min 20 characters)")]
+        public string Description { get; set; } = string.Empty;
+    }
+}

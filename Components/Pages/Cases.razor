@@ -1,0 +1,391 @@
+@page "/cases"
+@page "/admin/cases"
+@page "/client/cases"
+@page "/clerk/cases"
+@attribute [Authorize]
+@inject CaseService CaseService
+@inject AuthService AuthService
+@inject AuthenticationStateProvider AuthStateProvider
+@inject NavigationManager Navigation
+@inject ISnackbar Snackbar
+@using System.Security.Claims
+
+<PageTitle>Judicial Records - LawFlow</PageTitle>
+
+<div class="lf-page-transition">
+    <!-- Breadcrumbs / Header -->
+    <div class="d-flex flex-column flex-sm-row justify-space-between align-start align-sm-center mb-6">
+        <div>
+            <MudText Typo="Typo.h4" Class="font-weight-bold" Style="color: var(--lf-primary); font-weight: 700;">
+                Judicial Case Files
+            </MudText>
+            <MudText Typo="Typo.body2" Class="text-muted mt-1">Review, search, and manage judicial records.</MudText>
+        </div>
+        @if (_role == "Client")
+        {
+            <MudButton Variant="Variant.Filled" 
+                       Color="Color.Primary" 
+                       StartIcon="@Icons.Material.Filled.Add" 
+                       OnClick="ToggleNewCaseForm" 
+                       Class="mt-4 mt-sm-0" 
+                       Style="border-radius: 8px;">
+                @( _showNewCaseForm ? "Back to Records" : "Lodge New FIR / Case" )
+            </MudButton>
+        }
+    </div>
+
+    <!-- CLIENT: NEW FIR LOBBY FORM -->
+    @if (_showNewCaseForm && _role == "Client")
+    {
+        <MudPaper Class="pa-6 lf-glass-panel mb-6" Style="max-width: 800px; border-radius: 16px;">
+            <MudText Typo="Typo.h5" Class="font-weight-bold mb-1">Filing of First Information Report (FIR)</MudText>
+            <MudText Typo="Typo.body2" Class="text-muted mb-6">Enter legal specifics. Lodging acts as an immediate request for Judicial Review.</MudText>
+
+            <EditForm Model="@_newCaseModel" OnValidSubmit="HandleSubmitFIR">
+                <DataAnnotationsValidator />
+
+                <MudTextField @bind-Value="_newCaseModel.Title" 
+                              Label="Case / Complaint Title" 
+                              Variant="Variant.Outlined" 
+                              For="@(() => _newCaseModel.Title)" 
+                              Placeholder="e.g. Theft of Corporate Intellectual Property"
+                              Class="mb-4" />
+
+                <MudTextField @bind-Value="_newCaseModel.Description" 
+                              Label="Description of Incident" 
+                              Variant="Variant.Outlined" 
+                              Lines="5" 
+                              For="@(() => _newCaseModel.Description)" 
+                              Placeholder="State details of event, timeline of occurrence, suspects and damages..."
+                              Class="mb-4" />
+
+                <div class="d-flex flex-column gap-2 mb-6">
+                    <MudText Typo="Typo.subtitle2" Class="font-weight-bold">Primary Supporting Document (FIR Draft / Initial Evidence)</MudText>
+                    <div style="border: 2px dashed #0EA5E9; border-radius: 8px; padding: 20px; text-align:center; background: rgba(14,165,233,0.03);">
+                        <MudIcon Icon="@Icons.Material.Filled.CloudUpload" Color="Color.Secondary" Size="Size.Large" Class="mb-2" />
+                        <MudText Typo="Typo.body2" Class="font-weight-bold">Mock FIR file auto-appended</MudText>
+                        <MudText Typo="Typo.caption" Class="text-muted">FIR_Draft_Filing_Package.pdf (1.2 MB)</MudText>
+                    </div>
+                </div>
+
+                <div class="d-flex gap-4">
+                    <MudButton ButtonType="ButtonType.Submit" 
+                               Variant="Variant.Filled" 
+                               Color="Color.Primary" 
+                               Size="Size.Large"
+                               Style="border-radius: 8px; font-weight:600; text-transform:none;"
+                               Disabled="@_submitting">
+                        @if (_submitting)
+                        {
+                            <MudProgressCircular Color="Color.Secondary" Size="Size.Small" Indeterminate="true" Class="mr-2" />
+                            <span>Lodging Case...</span>
+                        }
+                        else
+                        {
+                            <span>Lodge Case File</span>
+                        }
+                    </MudButton>
+                    <MudButton Variant="Variant.Outlined" 
+                               Color="Color.Secondary" 
+                               OnClick="ToggleNewCaseForm" 
+                               Style="border-radius: 8px; text-transform:none;">
+                        Cancel
+                    </MudButton>
+                </div>
+            </EditForm>
+        </MudPaper>
+    }
+
+    <!-- CASE LIST RECORDS SECTION -->
+    <MudPaper Class="pa-6 lf-glass-panel" Style="border-radius: 16px;">
+        <!-- Advanced Filtering Header -->
+        <div class="d-flex flex-column flex-md-row gap-4 align-md-center mb-6">
+            <MudTextField @bind-Value="_searchQuery" 
+                          Label="Search case title, description, or number..." 
+                          Variant="Variant.Outlined" 
+                          Adornment="Adornment.Start" 
+                          AdornmentIcon="@Icons.Material.Filled.Search" 
+                          AdornmentColor="Color.Primary"
+                          Immediate="true"
+                          OnKeyUp="FilterCases"
+                          Margin="Margin.Dense"
+                          Style="border-radius: 8px; background: white;" />
+
+            <MudSelect T="CaseStatus?" 
+                       Label="Status Filter" 
+                       Variant="Variant.Outlined" 
+                       @bind-Value="_selectedStatus" 
+                       SelectedValuesChanged="FilterCases"
+                       Margin="Margin.Dense"
+                       Style="border-radius: 8px; background: white; max-width: 250px;">
+                <MudSelectItem T="CaseStatus?" Value="@((CaseStatus?)null)">All Case Statuses</MudSelectItem>
+                <MudSelectItem T="CaseStatus?" Value="@(CaseStatus.Created)">Complaint Lodged</MudSelectItem>
+                <MudSelectItem T="CaseStatus?" Value="@(CaseStatus.ReviewedByAdmin)">Reviewed By Admin</MudSelectItem>
+                <MudSelectItem T="CaseStatus?" Value="@(CaseStatus.AssignedToJudgeAndPolice)">Officials Appointed</MudSelectItem>
+                <MudSelectItem T="CaseStatus?" Value="@(CaseStatus.AvailableForLawyers)">Open for Defense</MudSelectItem>
+                <MudSelectItem T="CaseStatus?" Value="@(CaseStatus.LawyerAccepted)">Lawyer Accepting</MudSelectItem>
+                <MudSelectItem T="CaseStatus?" Value="@(CaseStatus.AssignedToLawyer)">Defense Retained</MudSelectItem>
+                <MudSelectItem T="CaseStatus?" Value="@(CaseStatus.ClerkAssignedByJudge)">Clerk Assigned</MudSelectItem>
+                <MudSelectItem T="CaseStatus?" Value="@(CaseStatus.Investigation)">Under Investigation</MudSelectItem>
+                <MudSelectItem T="CaseStatus?" Value="@(CaseStatus.Hearing)">Court Hearings</MudSelectItem>
+                <MudSelectItem T="CaseStatus?" Value="@(CaseStatus.VerdictIssued)">Verdict Issued</MudSelectItem>
+                <MudSelectItem T="CaseStatus?" Value="@(CaseStatus.Closed)">Closed / Archived</MudSelectItem>
+            </MudSelect>
+        </div>
+
+        @if (_loading)
+        {
+            <div class="d-flex justify-center py-10">
+                <MudProgressCircular Color="Color.Primary" Size="Size.Large" Indeterminate="true" />
+            </div>
+        }
+        else
+        {
+            <MudTable Items="@_filteredCases" Hover="true" Breakpoint="Breakpoint.Sm" Elevation="0" Style="background: transparent;">
+                <HeaderContent>
+                    <MudTh><MudTableSortLabel SortBy="new Func<Case, object>(x=>x.CaseNumber)">Case ID</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortBy="new Func<Case, object>(x=>x.Title)">Title</MudTableSortLabel></MudTh>
+                    <MudTh>Client</MudTh>
+                    <MudTh>Lawyer</MudTh>
+                    <MudTh>Judge</MudTh>
+                    <MudTh><MudTableSortLabel SortBy="new Func<Case, object>(x=>x.Status)">Status</MudTableSortLabel></MudTh>
+                    <MudTh><MudTableSortLabel SortBy="new Func<Case, object>(x=>x.CreatedAt)">Filing Date</MudTableSortLabel></MudTh>
+                    <MudTh Style="text-align: right;">Action</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd DataLabel="Case ID">
+                        <MudChip T="string" Color="Color.Primary" Variant="Variant.Outlined" Size="Size.Small" Style="border-radius: 6px; font-weight:600;">
+                            @context.CaseNumber
+                        </MudChip>
+                    </MudTd>
+                    <MudTd DataLabel="Title" Style="font-weight: 600;">
+                        @context.Title
+                    </MudTd>
+                    <MudTd DataLabel="Client">
+                        @context.Client?.FullName
+                    </MudTd>
+                    <MudTd DataLabel="Lawyer">
+                        @if (context.Lawyer != null)
+                        {
+                            <span style="font-weight: 500;">@context.Lawyer.FullName</span>
+                        }
+                        else
+                        {
+                            <span class="text-muted" style="font-style: italic;">Unassigned</span>
+                        }
+                    </MudTd>
+                    <MudTd DataLabel="Judge">
+                        @if (context.Judge != null)
+                        {
+                            <span>@context.Judge.FullName</span>
+                        }
+                        else
+                        {
+                            <span class="text-muted" style="font-style: italic;">Unassigned</span>
+                        }
+                    </MudTd>
+                    <MudTd DataLabel="Status">
+                        <MudChip T="string" Color="@GetStatusColor(context.Status)" Size="Size.Small" Style="border-radius: 6px; font-weight: 600;">
+                            @GetStatusLabel(context.Status)
+                        </MudChip>
+                    </MudTd>
+                    <MudTd DataLabel="Filing Date">
+                        @context.CreatedAt.ToLocalTime().ToString("d")
+                    </MudTd>
+                    <MudTd Style="text-align: right;">
+                        <div class="d-flex justify-end gap-2">
+                            <!-- Lawyer accepting workflow -->
+                            @if (_role == "Lawyer" && context.Status == CaseStatus.AvailableForLawyers && context.LawyerId == null)
+                            {
+                                <MudButton Variant="Variant.Filled" Color="Color.Success" Size="Size.Small" OnClick="() => HandleLawyerAction(context.Id, true)" Style="border-radius: 6px; text-transform:none;">
+                                    Accept Case
+                                </MudButton>
+                            }
+                            
+                            <MudButton Href="@($"/{_role.ToLower()}/cases/{context.Id}")" Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small" Style="border-radius: 6px; text-transform:none;">
+                                Open Portal
+                            </MudButton>
+                        </div>
+                    </MudTd>
+                </RowTemplate>
+                <PagerContent>
+                    <MudTablePager PageSizeOptions="new int[]{10, 25, 50}" />
+                </PagerContent>
+            </MudTable>
+        }
+    </MudPaper>
+</div>
+
+@code {
+    private bool _loading = true;
+    private bool _showNewCaseForm = false;
+    private bool _submitting = false;
+    private string _role = string.Empty;
+    private string _userId = string.Empty;
+
+    // Filters
+    private string _searchQuery = string.Empty;
+    private CaseStatus? _selectedStatus;
+
+    private List<Case> _allCases = new();
+    private List<Case> _filteredCases = new();
+
+    private NewCaseViewModel _newCaseModel = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity?.IsAuthenticated ?? false)
+        {
+            _role = user.FindFirst(ClaimTypes.Role)?.Value ?? "Client";
+            _userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "";
+        }
+
+        // Role sub-routing correction
+        var currentUri = Navigation.Uri.ToLower();
+        bool mismatch = false;
+        if (currentUri.Contains("/admin/") && _role != "Admin") mismatch = true;
+        if (currentUri.Contains("/lawyer/") && _role != "Lawyer") mismatch = true;
+        if (currentUri.Contains("/client/") && _role != "Client") mismatch = true;
+        if (currentUri.Contains("/judge/") && _role != "Judge") mismatch = true;
+        if (currentUri.Contains("/police/") && _role != "Police") mismatch = true;
+        if (currentUri.Contains("/clerk/") && _role != "Clerk") mismatch = true;
+
+        if (mismatch || currentUri.EndsWith("/cases") || currentUri.EndsWith("/cases/"))
+        {
+            var correctRole = _role.ToLower();
+            Navigation.NavigateTo($"/{correctRole}/cases");
+            return;
+        }
+
+        await LoadCases();
+    }
+
+    private async Task LoadCases()
+    {
+        _loading = true;
+        _allCases = await CaseService.GetCasesForUserAsync(_userId, Enum.Parse<UserRole>(_role));
+        FilterCases();
+        _loading = false;
+    }
+
+    private void FilterCases()
+    {
+        var query = _allCases.AsQueryable();
+
+        if (_selectedStatus.HasValue)
+        {
+            query = query.Where(c => c.Status == _selectedStatus.Value);
+        }
+
+        if (!string.IsNullOrEmpty(_searchQuery))
+        {
+            var txt = _searchQuery.ToLower();
+            query = query.Where(c => c.CaseNumber.ToLower().Contains(txt) ||
+                                     c.Title.ToLower().Contains(txt) ||
+                                     c.Description.ToLower().Contains(txt) ||
+                                     (c.Client != null && c.Client.FullName.ToLower().Contains(txt)));
+        }
+
+        _filteredCases = query.ToList();
+    }
+
+    private void ToggleNewCaseForm()
+    {
+        _showNewCaseForm = !_showNewCaseForm;
+        _newCaseModel = new();
+    }
+
+    private async Task HandleSubmitFIR()
+    {
+        _submitting = true;
+        try
+        {
+            await CaseService.SubmitFIRAsync(
+                _newCaseModel.Title,
+                _newCaseModel.Description,
+                _userId,
+                "FIR_Draft_Filing_Package.pdf",
+                "/uploads/FIR_Mock.pdf"
+            );
+
+            Snackbar.Add("Your FIR has been successfully registered and sent for Judicial Review.", Severity.Success);
+            _showNewCaseForm = false;
+            await LoadCases();
+        }
+        catch (Exception ex)
+        {
+            Snackbar.Add($"Filing failed: {ex.Message}", Severity.Error);
+        }
+        finally
+        {
+            _submitting = false;
+        }
+    }
+
+    private async Task HandleLawyerAction(int caseId, bool accept)
+    {
+        var action = accept ? "accept" : "decline";
+        var res = await CaseService.UpdateLawyerAssignmentAsync(caseId, _userId, accept);
+        if (res)
+        {
+            Snackbar.Add($"Successfully updated case assignment: {action}ed.", Severity.Success);
+            await LoadCases();
+        }
+        else
+        {
+            Snackbar.Add("Could not update assignment.", Severity.Error);
+        }
+    }
+
+    private Color GetStatusColor(CaseStatus status)
+    {
+        return status switch
+        {
+            CaseStatus.Created => Color.Default,
+            CaseStatus.ReviewedByAdmin => Color.Primary,
+            CaseStatus.AssignedToJudgeAndPolice => Color.Info,
+            CaseStatus.AvailableForLawyers => Color.Warning,
+            CaseStatus.LawyerAccepted => Color.Warning,
+            CaseStatus.AssignedToLawyer => Color.Info,
+            CaseStatus.ClerkAssignedByJudge => Color.Info,
+            CaseStatus.Investigation => Color.Warning,
+            CaseStatus.Hearing => Color.Primary,
+            CaseStatus.VerdictIssued => Color.Secondary,
+            CaseStatus.Closed => Color.Success,
+            _ => Color.Default
+        };
+    }
+
+    private string GetStatusLabel(CaseStatus status)
+    {
+        return status switch
+        {
+            CaseStatus.Created => "Complaint Lodged",
+            CaseStatus.ReviewedByAdmin => "Reviewed By Admin",
+            CaseStatus.AssignedToJudgeAndPolice => "Officials Appointed",
+            CaseStatus.AvailableForLawyers => "Open for Defense",
+            CaseStatus.LawyerAccepted => "Lawyer Accepting",
+            CaseStatus.AssignedToLawyer => "Defense Retained",
+            CaseStatus.ClerkAssignedByJudge => "Clerk Assigned",
+            CaseStatus.Investigation => "Under Investigation",
+            CaseStatus.Hearing => "Court Hearings",
+            CaseStatus.VerdictIssued => "Verdict Issued",
+            CaseStatus.Closed => "Closed / Archived",
+            _ => "Unknown"
+        };
+    }
+
+    public class NewCaseViewModel
+    {
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Title is required")]
+        [System.ComponentModel.DataAnnotations.StringLength(100, ErrorMessage = "Title cannot exceed 100 characters")]
+        public string Title { get; set; } = string.Empty;
+
+        [System.ComponentModel.DataAnnotations.Required(ErrorMessage = "Description is required")]
+        [System.ComponentModel.DataAnnotations.MinLength(20, ErrorMessage = "Provide a meaningful description (min 20 characters)")]
+        public string Description { get; set; } = string.Empty;
+    }
+}

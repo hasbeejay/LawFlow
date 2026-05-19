@@ -1,0 +1,22 @@
+<Router AppAssembly="typeof(Program).Assembly">
+    <Found Context="routeData">
+        <AuthorizeRouteView RouteData="routeData" DefaultLayout="typeof(Layout.MainLayout)">
+            <NotAuthorized>
+                <RedirectToLogin />
+            </NotAuthorized>
+        </AuthorizeRouteView>
+        <FocusOnNavigate RouteData="routeData" Selector="h1" />
+    </Found>
+    <NotFound>
+        <LayoutView Layout="typeof(Layout.MainLayout)">
+            <div class="d-flex flex-column align-center justify-center lf-page-transition" style="min-height: 80vh;">
+                <MudIcon Icon="@Icons.Material.Filled.QuestionMark" Size="Size.Large" Color="Color.Primary" Style="font-size: 80px;" />
+                <MudText Typo="Typo.h3" Color="Color.Primary" Class="font-weight-bold mt-4">Page Not Found</MudText>
+                <MudText Typo="Typo.body1" Class="text-muted mt-2">The page you are looking for does not exist or has been moved.</MudText>
+                <MudButton Href="/dashboard" Variant="Variant.Filled" Color="Color.Primary" Class="mt-6" Style="border-radius: 8px;">
+                    Go Home
+                </MudButton>
+            </div>
+        </LayoutView>
+    </NotFound>
+</Router>

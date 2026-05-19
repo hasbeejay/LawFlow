@@ -1,0 +1,120 @@
+@page "/admin/logs"
+@attribute [Authorize(Roles = "Admin")]
+@inject AuditLogService AuditLogService
+
+<PageTitle>System Audit Logs - LawFlow</PageTitle>
+
+<div class="lf-page-transition">
+    <!-- Top Header -->
+    <div class="d-flex flex-column flex-sm-row justify-space-between align-start align-sm-center mb-6">
+        <div>
+            <MudText Typo="Typo.h4" Class="font-weight-bold" Style="color: var(--lf-primary); font-weight: 700;">
+                Enterprise Security Audit logs
+            </MudText>
+            <MudText Typo="Typo.body2" Class="text-muted mt-1">Audit judicial logs, workflow transactions, and permission states in real-time.</MudText>
+        </div>
+    </div>
+
+    <!-- LOGS DATA TABLE -->
+    <MudPaper Class="pa-6 lf-glass-panel" Style="border-radius: 16px;">
+        <div class="d-flex flex-column flex-sm-row justify-space-between align-sm-center mb-4 gap-4">
+            <MudText Typo="Typo.h6" Class="font-weight-bold">System Log Entries</MudText>
+            <MudTextField @bind-Value="_searchQuery" 
+                          Label="Search logs by Action, Details, or Operator..." 
+                          Variant="Variant.Outlined" 
+                          Adornment="Adornment.Start" 
+                          AdornmentIcon="@Icons.Material.Filled.Search" 
+                          Immediate="true"
+                          OnKeyUp="FilterLogs"
+                          Margin="Margin.Dense"
+                          Style="border-radius:8px; background:white; max-width: 400px;" />
+        </div>
+
+        @if (_loading)
+        {
+            <div class="d-flex justify-center py-10">
+                <MudProgressCircular Color="Color.Primary" Size="Size.Large" Indeterminate="true" />
+            </div>
+        }
+        else
+        {
+            <MudTable Items="@_filteredLogs" Hover="true" Breakpoint="Breakpoint.Sm" Elevation="0" Style="background:transparent;">
+                <HeaderContent>
+                    <MudTh><MudTableSortLabel SortBy="new Func<ActivityLog, object>(x=>x.CreatedAt)">Timestamp</MudTableSortLabel></MudTh>
+                    <MudTh>Authorized Operator</MudTh>
+                    <MudTh>Staff Role</MudTh>
+                    <MudTh><MudTableSortLabel SortBy="new Func<ActivityLog, object>(x=>x.Action)">Action Executed</MudTableSortLabel></MudTh>
+                    <MudTh>Transaction Details</MudTh>
+                </HeaderContent>
+                <RowTemplate>
+                    <MudTd DataLabel="Timestamp">@context.CreatedAt.ToLocalTime().ToString("g")</MudTd>
+                    <MudTd DataLabel="Operator" Style="font-weight:600;">@context.User?.FullName</MudTd>
+                    <MudTd DataLabel="Role">
+                        <MudChip T="string" Color="@GetRoleColor(context.User?.Role ?? UserRole.Client)" Size="Size.Small" Style="border-radius:4px; font-weight:600;">
+                            @context.User?.Role.ToString()
+                        </MudChip>
+                    </MudTd>
+                    <MudTd DataLabel="Action">
+                        <span style="font-weight:700; color:var(--lf-primary);">@context.Action</span>
+                    </MudTd>
+                    <MudTd DataLabel="Details" Style="font-size:13px; line-height:1.4;">@context.Details</MudTd>
+                </RowTemplate>
+                <PagerContent>
+                    <MudTablePager PageSizeOptions="new int[]{25, 50, 100}" />
+                </PagerContent>
+            </MudTable>
+        }
+    </MudPaper>
+</div>
+
+@code {
+    private bool _loading = true;
+    private string _searchQuery = string.Empty;
+
+    private List<ActivityLog> _allLogs = new();
+    private List<ActivityLog> _filteredLogs = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadLogs();
+    }
+
+    private async Task LoadLogs()
+    {
+        _loading = true;
+        _allLogs = await AuditLogService.GetLogsAsync();
+        FilterLogs();
+        _loading = false;
+    }
+
+    private void FilterLogs()
+    {
+        if (string.IsNullOrEmpty(_searchQuery))
+        {
+            _filteredLogs = _allLogs;
+        }
+        else
+        {
+            var txt = _searchQuery.ToLower();
+            _filteredLogs = _allLogs.Where(l => 
+                l.Action.ToLower().Contains(txt) ||
+                l.Details.ToLower().Contains(txt) ||
+                (l.User != null && l.User.FullName.ToLower().Contains(txt))
+            ).ToList();
+        }
+    }
+
+    private Color GetRoleColor(UserRole role)
+    {
+        return role switch
+        {
+            UserRole.Admin => Color.Dark,
+            UserRole.Judge => Color.Primary,
+            UserRole.Lawyer => Color.Info,
+            UserRole.Client => Color.Secondary,
+            UserRole.Police => Color.Warning,
+            UserRole.Clerk => Color.Success,
+            _ => Color.Default
+        };
+    }
+}

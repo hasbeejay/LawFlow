@@ -1,0 +1,1070 @@
+@page "/cases/view/{Id:int}"
+@page "/admin/cases/{Id:int}"
+@page "/lawyer/cases/{Id:int}"
+@page "/client/cases/{Id:int}"
+@page "/judge/cases/{Id:int}"
+@page "/police/cases/{Id:int}"
+@page "/clerk/cases/{Id:int}"
+@attribute [Authorize]
+@implements IDisposable
+@inject CaseService CaseService
+@inject AuthService AuthService
+@inject DocumentService DocumentService
+@inject PoliceReportService PoliceReportService
+@inject VerdictService VerdictService
+@inject HearingService HearingService
+@inject MessageService MessageService
+@inject NotificationService NotificationService
+@inject AuthenticationStateProvider AuthStateProvider
+@inject ISnackbar Snackbar
+@inject NavigationManager NavigationManager
+@using System.Security.Claims
+@using Microsoft.AspNetCore.SignalR.Client
+
+<PageTitle>Case Workspace - LawFlow</PageTitle>
+
+@if (_loading)
+{
+    <div class="d-flex justify-center align-center py-20 lf-page-transition">
+        <MudProgressCircular Color="Color.Primary" Size="Size.Large" Indeterminate="true" />
+    </div>
+}
+else if (_case == null)
+{
+    <div class="d-flex flex-column align-center justify-center py-20 lf-page-transition">
+        <MudIcon Icon="@Icons.Material.Filled.Warning" Color="Color.Error" Size="Size.Large" Style="font-size: 60px;" />
+        <MudText Typo="Typo.h5" Color="Color.Error" Class="mt-4">Case File Not Found</MudText>
+        <MudButton href="/cases" Variant="Variant.Filled" Color="Color.Primary" Class="mt-4">Back to Cases</MudButton>
+    </div>
+}
+else
+{
+    <div class="lf-page-transition">
+        <!-- Top Workspace Bar -->
+        <div class="d-flex flex-column flex-md-row justify-space-between align-start align-md-center mb-6 pa-6 lf-glass-panel" style="border-radius: 16px;">
+            <div>
+                <div class="d-flex align-center gap-2">
+                    <MudChip T="string" Color="Color.Primary" Variant="Variant.Filled" Style="border-radius: 6px; font-weight:700;">
+                        @_case.CaseNumber
+                    </MudChip>
+                    <MudChip T="string" Color="@GetStatusColor(_case.Status)" Style="border-radius: 6px; font-weight:700;">
+                        @GetStatusLabel(_case.Status)
+                    </MudChip>
+                </div>
+                <MudText Typo="Typo.h4" Class="font-weight-bold mt-2" Style="color: var(--lf-primary); font-weight:700;">
+                    @_case.Title
+                </MudText>
+                <MudText Typo="Typo.caption" Class="text-muted">Filing Date: @_case.CreatedAt.ToLocalTime().ToString("f")</MudText>
+            </div>
+            <MudButton href="/cases" Variant="Variant.Outlined" Color="Color.Secondary" StartIcon="@Icons.Material.Filled.ArrowBack" Class="mt-4 mt-md-0" Style="border-radius: 8px;">
+                Case Index
+            </MudButton>
+        </div>
+
+        <!-- PROGRESS VISUAL TIMELINE -->
+        <MudPaper Class="pa-6 lf-glass-panel mb-6" Style="border-radius: 16px;">
+            <MudText Typo="Typo.subtitle2" Class="font-weight-bold mb-4">Judicial Progress Journey</MudText>
+            <div class="d-flex flex-column flex-md-row justify-space-between align-center gap-4 pa-4" style="background: rgba(14,165,233,0.02); border-radius: 12px; border: 1px solid rgba(14,165,233,0.08); overflow-x: auto;">
+                
+                <div class="d-flex align-center gap-2 @( (int)_case.Status >= 0 ? "text-primary font-weight-bold" : "text-muted" )">
+                    <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="@( (int)_case.Status >= 0 ? Color.Primary : Color.Default )" />
+                    <span>1. FIR Registered</span>
+                </div>
+                <MudIcon Icon="@Icons.Material.Filled.ChevronRight" Class="d-none d-md-block text-muted" />
+
+                <div class="d-flex align-center gap-2 @( (int)_case.Status >= 5 ? "text-primary font-weight-bold" : "text-muted" )">
+                    <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="@( (int)_case.Status >= 5 ? Color.Primary : Color.Default )" />
+                    <span>2. Counsel Retained</span>
+                </div>
+                <MudIcon Icon="@Icons.Material.Filled.ChevronRight" Class="d-none d-md-block text-muted" />
+
+                <div class="d-flex align-center gap-2 @( (int)_case.Status >= 6 ? "text-primary font-weight-bold" : "text-muted" )">
+                    <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="@( (int)_case.Status >= 6 ? Color.Primary : Color.Default )" />
+                    <span>3. Clerk Assigned</span>
+                </div>
+                <MudIcon Icon="@Icons.Material.Filled.ChevronRight" Class="d-none d-md-block text-muted" />
+
+                <div class="d-flex align-center gap-2 @( (int)_case.Status >= 7 ? "text-primary font-weight-bold" : "text-muted" )">
+                    <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="@( (int)_case.Status >= 7 ? Color.Primary : Color.Default )" />
+                    <span>4. Investigation</span>
+                </div>
+                <MudIcon Icon="@Icons.Material.Filled.ChevronRight" Class="d-none d-md-block text-muted" />
+
+                <div class="d-flex align-center gap-2 @( (int)_case.Status >= 8 ? "text-primary font-weight-bold" : "text-muted" )">
+                    <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="@( (int)_case.Status >= 8 ? Color.Primary : Color.Default )" />
+                    <span>5. Court Hearings</span>
+                </div>
+                <MudIcon Icon="@Icons.Material.Filled.ChevronRight" Class="d-none d-md-block text-muted" />
+
+                <div class="d-flex align-center gap-2 @( (int)_case.Status >= 9 ? "text-primary font-weight-bold" : "text-muted" )">
+                    <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="@( (int)_case.Status >= 9 ? Color.Primary : Color.Default )" />
+                    <span>6. Verdict Issued</span>
+                </div>
+                <MudIcon Icon="@Icons.Material.Filled.ChevronRight" Class="d-none d-md-block text-muted" />
+
+                <div class="d-flex align-center gap-2 @( (int)_case.Status >= 10 ? "text-success font-weight-bold" : "text-muted" )">
+                    <MudIcon Icon="@Icons.Material.Filled.Stars" Color="@( (int)_case.Status >= 10 ? Color.Success : Color.Default )" />
+                    <span>7. Closed</span>
+                </div>
+            </div>
+        </MudPaper>
+
+        <MudGrid>
+            <!-- LEFT MAIN PANEL: CASE SPECS & WORKFLOW INTERACTION -->
+            <MudItem xs="12" md="8">
+                <!-- Case Description Summary -->
+                <MudPaper Class="pa-6 lf-glass-panel mb-6" Style="border-radius: 16px;">
+                    <MudText Typo="Typo.h6" Class="font-weight-bold mb-3">Case Specifications Summary</MudText>
+                    <MudText Typo="Typo.body1" Class="mb-4" Style="white-space: pre-wrap; line-height: 1.6;">
+                        @_case.Description
+                    </MudText>
+
+                    <MudGrid Class="pt-4" Style="border-top: 1px solid rgba(0,0,0,0.05);">
+                        <MudItem xs="6" sm="4">
+                            <MudText Typo="Typo.caption" Class="text-muted d-block">Client (Filer)</MudText>
+                            <MudText Typo="Typo.body2" Class="font-weight-bold">@(_case.Client?.FullName ?? "Unknown")</MudText>
+                        </MudItem>
+                        <MudItem xs="6" sm="4">
+                            <MudText Typo="Typo.caption" Class="text-muted d-block">Defending Lawyer</MudText>
+                            <MudText Typo="Typo.body2" Class="font-weight-bold">@(_case.Lawyer?.FullName ?? "Awaiting Legal Acceptance")</MudText>
+                        </MudItem>
+                        <MudItem xs="6" sm="4">
+                            <MudText Typo="Typo.caption" Class="text-muted d-block">Presiding Judge</MudText>
+                            <MudText Typo="Typo.body2" Class="font-weight-bold">@(_case.Judge?.FullName ?? "Not Prescribed")</MudText>
+                        </MudItem>
+                    </MudGrid>
+                </MudPaper>
+
+                <!-- WORKFLOW ACTIONS (ADMIN / POLICE / JUDGE / CLERK) -->
+
+                <!-- 1. ADMIN FIR REVIEW PANEL -->
+                @if (_role == "Admin" && _case.Status == CaseStatus.Created)
+                {
+                    <MudPaper Class="pa-6 lf-glow-card mb-6" Outlined="true" Style="border: 2px solid #EF4444; border-radius: 16px;">
+                        <MudText Typo="Typo.h6" Class="font-weight-bold text-danger mb-2">Admin Panel: FIR Legal Assessment</MudText>
+                        <MudText Typo="Typo.body2" Class="mb-4">Review the complaint title and description. Validate details before proceeding.</MudText>
+                        <div class="d-flex gap-4">
+                            <MudButton Variant="Variant.Filled" Color="Color.Success" StartIcon="@Icons.Material.Filled.ThumbUp" OnClick="() => HandleFIRReview(true)" Style="border-radius:8px;">
+                                Approve & File Case
+                            </MudButton>
+                            <MudButton Variant="Variant.Filled" Color="Color.Error" StartIcon="@Icons.Material.Filled.ThumbDown" OnClick="() => HandleFIRReview(false)" Style="border-radius:8px;">
+                                Reject & Close Case
+                            </MudButton>
+                        </div>
+                    </MudPaper>
+                }
+ 
+                <!-- 2. ADMIN OFFICIALS ASSIGNMENT PANEL -->
+                @if (_role == "Admin" && (_case.Status == CaseStatus.ReviewedByAdmin || _case.Status == CaseStatus.AssignedToLawyer || _case.Status == CaseStatus.LawyerAccepted))
+                {
+                    <MudPaper Class="pa-6 lf-glow-card mb-6" Outlined="true" Style="border: 2px solid #F59E0B; border-radius: 16px;">
+                        <MudText Typo="Typo.h6" Class="font-weight-bold text-warning mb-2">Admin Panel: Assign Court Officers</MudText>
+                        <MudText Typo="Typo.body2" Class="mb-4">Select the presiding Judge, Lead Investigator, and Clerk to schedule this case.</MudText>
+                        
+                        <MudGrid Class="mb-4">
+                            <MudItem xs="12" sm="4">
+                                <MudSelect T="string" Label="Select Judge" Variant="Variant.Outlined" @bind-Value="_selectedJudgeId" Margin="Margin.Dense">
+                                    @foreach (var j in _judgesList)
+                                    {
+                                        <MudSelectItem Value="@j.Id">@j.FullName (@j.Specialization)</MudSelectItem>
+                                    }
+                                </MudSelect>
+                            </MudItem>
+                            <MudItem xs="12" sm="4">
+                                <MudSelect T="string" Label="Select Investigator" Variant="Variant.Outlined" @bind-Value="_selectedPoliceId" Margin="Margin.Dense">
+                                    @foreach (var p in _policeList)
+                                    {
+                                        <MudSelectItem Value="@p.Id">@p.FullName (Badge: @p.BadgeNumber)</MudSelectItem>
+                                    }
+                                </MudSelect>
+                            </MudItem>
+                            <MudItem xs="12" sm="4">
+                                <MudSelect T="string" Label="Select Clerk" Variant="Variant.Outlined" @bind-Value="_selectedClerkId" Margin="Margin.Dense">
+                                    @foreach (var c in _clerksList)
+                                    {
+                                        <MudSelectItem Value="@c.Id">@c.FullName (@c.Department)</MudSelectItem>
+                                    }
+                                </MudSelect>
+                            </MudItem>
+                        </MudGrid>
+
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="HandleAssignOfficials" Style="border-radius: 8px;">
+                            Approve Officials & Start Investigation
+                        </MudButton>
+                    </MudPaper>
+                }
+
+                <!-- 3. POLICE REPORT ENTRY PANEL -->
+                @if (_role == "Police" && _case.Status == CaseStatus.Investigation && _case.PoliceId == _userId)
+                {
+                    <MudPaper Class="pa-6 lf-glow-card mb-6" Outlined="true" Style="border: 2px solid #F59E0B; border-radius: 16px;">
+                        <MudText Typo="Typo.h6" Class="font-weight-bold text-warning mb-2">Investigation Command: Submit Case Report</MudText>
+                        <MudText Typo="Typo.body2" Class="mb-4">Lodge official findings, evidence recovered, and investigative logs. Submit report to Judge.</MudText>
+                        
+                        <MudTextField @bind-Value="_policeSummary" Label="Investigation Summary" Variant="Variant.Outlined" Lines="4" Class="mb-4" Placeholder="Describe evidence gathered, forensic details, and final summaries..." />
+                        
+                        <MudCheckBox @bind-Value="_policeUpdateLog" Label="Flag Criminal Records Updated" Color="Color.Secondary" Class="mb-4" />
+
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="HandleSubmitPoliceReport" Style="border-radius: 8px;">
+                             Submit Investigation Finding
+                        </MudButton>
+                    </MudPaper>
+                }
+
+                <!-- 4. JUDGE DECISION PANEL (ISSUE VERDICT) -->
+                @if (_role == "Judge" && (_case.Status == CaseStatus.Hearing || _case.Status == CaseStatus.VerdictIssued) && _case.JudgeId == _userId)
+                {
+                    <MudPaper Class="pa-6 lf-glow-card mb-6" Outlined="true" Style="border: 2px solid #8B5CF6; border-radius: 16px;">
+                        <MudText Typo="Typo.h6" Class="font-weight-bold text-purple mb-2">Presiding Judge: Issue Final Verdict</MudText>
+                        <MudText Typo="Typo.body2" Class="mb-4">After review of evidence, hearings, and logs, enter the final judicial verdict below.</MudText>
+
+                        <MudSelect T="VerdictType" Label="Verdict Type" Variant="Variant.Outlined" @bind-Value="_verdictType" Class="mb-4" Margin="Margin.Dense">
+                            <MudSelectItem Value="VerdictType.Guilty">Guilty</MudSelectItem>
+                            <MudSelectItem Value="VerdictType.Acquitted">Acquitted</MudSelectItem>
+                            <MudSelectItem Value="VerdictType.Dismissed">Dismissed</MudSelectItem>
+                            <MudSelectItem Value="VerdictType.Appealed">Appealed</MudSelectItem>
+                        </MudSelect>
+
+                        <MudTextField @bind-Value="_verdictDetails" Label="Judgement Details & Sentences" Variant="Variant.Outlined" Lines="5" Class="mb-4" Placeholder="State legal reasoning, sentences, fines, and constitutional arguments..." />
+
+                        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="HandleIssueVerdict" Style="border-radius: 8px;">
+                            Issue Judicial Verdict
+                        </MudButton>
+                    </MudPaper>
+                }
+
+                <!-- JUDGE ANNOUNCEMENT DRAFT PANEL -->
+                @if (_role == "Judge" && _case.JudgeId == _userId && _case.Status != CaseStatus.Closed)
+                {
+                    <MudPaper Class="pa-6 lf-glass-panel mb-6" Style="border: 1.5px dashed var(--lf-accent); border-radius: 16px;">
+                        <MudText Typo="Typo.h6" Class="font-weight-bold mb-2">Presiding Judge: Draft Court Announcement</MudText>
+                        <MudText Typo="Typo.body2" Class="text-muted mb-4">Draft an order or notice to be routed to Court Clerk for broadcast coordination.</MudText>
+                        <MudTextField @bind-Value="_judgeAnnouncementText" Label="Announcement Content" Variant="Variant.Outlined" Lines="3" Class="mb-4" Placeholder="e.g. Ordered, that all parties submit final brief files before next scheduled hearing." />
+                        <MudButton Variant="Variant.Filled" Color="Color.Secondary" StartIcon="@Icons.Material.Filled.AssignmentTurnedIn" OnClick="HandleDraftAnnouncement" Style="border-radius: 8px;">
+                            Route to Court Clerk
+                        </MudButton>
+                    </MudPaper>
+                }
+
+                <!-- CLERK PENDING ANNOUNCEMENT REVIEW -->
+                @if (_role == "Clerk" && _case.ClerkId == _userId && _pendingDraftAnnouncements.Count > 0)
+                {
+                    @foreach (var draft in _pendingDraftAnnouncements)
+                    {
+                        <MudPaper Class="pa-6 lf-glow-card mb-6" Outlined="true" Style="border: 2px solid var(--lf-accent); border-radius: 16px; background: rgba(14,165,233,0.03);">
+                            <MudText Typo="Typo.h6" Class="font-weight-bold text-info mb-2">Clerk Action: Pending Judicial Announcement</MudText>
+                            <MudText Typo="Typo.body2" Class="mb-3">The Presiding Judge has drafted a court notice for this proceeding. Coordinate and broadcast it to all parties.</MudText>
+                            
+                            <div class="pa-4 my-3" style="background:var(--lf-surface); border-radius:8px; border:1px solid var(--lf-border);">
+                                <MudText Typo="Typo.body2" Style="font-style:italic;">"@draft.Message"</MudText>
+                            </div>
+
+                            <div class="d-flex gap-3">
+                                <MudButton Variant="Variant.Filled" Color="Color.Primary" StartIcon="@Icons.Material.Filled.Campaign" OnClick="() => HandlePublishAnnouncement(draft)" Style="border-radius: 8px;">
+                                    Approve & Broadcast
+                                </MudButton>
+                                <MudButton Variant="Variant.Outlined" Color="Color.Error" StartIcon="@Icons.Material.Filled.DeleteOutline" OnClick="() => HandleDismissAnnouncement(draft.Id)" Style="border-radius: 8px;">
+                                    Dismiss Draft
+                                </MudButton>
+                            </div>
+                        </MudPaper>
+                    }
+                }
+
+                <!-- 5. CLERK VERDICT PUBLISHING PANEL -->
+                @if (_role == "Clerk" && _case.Status == CaseStatus.VerdictIssued && _case.Verdict != null && !_case.Verdict.IsPublished && _case.ClerkId == _userId)
+                {
+                    <MudPaper Class="pa-6 lf-glow-card mb-6" Outlined="true" Style="border: 2px solid #10B981; border-radius: 16px;">
+                        <MudText Typo="Typo.h6" Class="font-weight-bold text-success mb-2">Clerk Action: Publish Judicial Verdict</MudText>
+                        <MudText Typo="Typo.body2" Class="mb-4">The Presiding Judge has issued the verdict. Click to finalize, archive, and notify all parties of case closure.</MudText>
+
+                        <MudButton Variant="Variant.Filled" Color="Color.Success" StartIcon="@Icons.Material.Filled.Publish" OnClick="HandlePublishVerdict" Style="border-radius: 8px;">
+                            Publish Verdict & Close Case
+                        </MudButton>
+                    </MudPaper>
+                }
+
+                <!-- VERDICT CERTIFICATE (DISPLAYED ONCE ISSUED & PUBLISHED) -->
+                @if (_case.Verdict != null && _case.Verdict.IsPublished)
+                {
+                    <MudPaper Class="pa-8 mb-6" Style="border: 3px double #10B981; border-radius: 20px; background: rgba(16,185,129,0.02); text-align:center; position:relative; overflow:hidden;">
+                        <div style="position:absolute; right: -20px; top: -20px; transform: rotate(15deg); opacity: 0.1; font-size:120px;">
+                            ⚖️
+                        </div>
+                        <MudIcon Icon="@Icons.Material.Filled.Gavel" Color="Color.Success" Style="font-size: 50px;" />
+                        <MudText Typo="Typo.h5" Class="font-weight-bold mt-2" Style="color: #10B981;">OFFICIAL COURT VERDICT</MudText>
+                        <MudText Typo="Typo.caption" Class="text-muted d-block mb-4">IN THE HIGH COURT OF LAWFLOW — CIVIL & CRIMINAL JURISDICTION</MudText>
+                        
+                        <div class="pa-4 my-4" style="background:white; border-radius:10px; border:1px solid rgba(16,185,129,0.2);">
+                            <MudText Typo="Typo.subtitle1" Class="font-weight-bold">Verdict Type: <span class="text-danger">@_case.Verdict.Type.ToString().ToUpper()</span></MudText>
+                            <MudText Typo="Typo.body2" Class="mt-2" Style="white-space: pre-wrap; font-style: italic; line-height: 1.6;">
+                                "@_case.Verdict.Details"
+                            </MudText>
+                        </div>
+
+                        <MudGrid Justify="Justify.SpaceAround">
+                            <MudItem xs="6">
+                                <MudText Typo="Typo.caption" Class="text-muted d-block">Presiding Judge</MudText>
+                                <MudText Typo="Typo.body2" Class="font-weight-bold">@(_case.Verdict.Judge?.FullName ?? "Honorable Judge")</MudText>
+                            </MudItem>
+                            <MudItem xs="6">
+                                <MudText Typo="Typo.caption" Class="text-muted d-block">Published Date</MudText>
+                                <MudText Typo="Typo.body2" Class="font-weight-bold">@_case.Verdict.PublishedAt?.ToLocalTime().ToString("D")</MudText>
+                            </MudItem>
+                        </MudGrid>
+                    </MudPaper>
+                }
+
+                <!-- DOCUMENT LIST & EVIDENCE MANAGER -->
+                <MudPaper Class="pa-6 lf-glass-panel mb-6" Style="border-radius: 16px;">
+                    <div class="d-flex justify-space-between align-center mb-4">
+                        <MudText Typo="Typo.h6" Class="font-weight-bold">Filing Records & Evidence Bags</MudText>
+                        
+                        <!-- Upload Button (For active roles during active investigation/cases) -->
+                        @if (_case.Status != CaseStatus.Closed && (_role == "Client" || _role == "Lawyer" || _role == "Police"))
+                        {
+                            <MudButton Variant="Variant.Filled" Color="Color.Secondary" Size="Size.Small" StartIcon="@Icons.Material.Filled.CloudUpload" OnClick="OpenUploadDialog" Style="border-radius: 8px;">
+                                Upload Document
+                            </MudButton>
+                        }
+                    </div>
+
+                    @if (_showUploadPanel)
+                    {
+                        <div class="pa-4 mb-4" style="background: rgba(0,0,0,0.02); border-radius: 10px; border:1px solid rgba(0,0,0,0.05);">
+                            <MudText Typo="Typo.subtitle2" Class="font-weight-bold mb-3">Upload Legal File</MudText>
+                            <MudGrid Class="mb-3">
+                                <MudItem xs="12" sm="6">
+                                    <MudTextField @bind-Value="_uploadFileName" Label="File Name" Variant="Variant.Outlined" Margin="Margin.Dense" Placeholder="e.g. DNA_Report_Case.pdf" />
+                                </MudItem>
+                                <MudItem xs="12" sm="6">
+                                    <MudSelect T="string" Label="Document Category" Variant="Variant.Outlined" @bind-Value="_uploadDocType" Margin="Margin.Dense">
+                                        <MudSelectItem Value="@("Evidence")">Supporting Evidence</MudSelectItem>
+                                        <MudSelectItem Value="@("LegalBrief")">Legal Brief / Statement</MudSelectItem>
+                                        <MudSelectItem Value="@("PoliceReport")">Police / Investigation PDF</MudSelectItem>
+                                    </MudSelect>
+                                </MudItem>
+                            </MudGrid>
+                            <div class="d-flex gap-2">
+                                <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="HandleUpload" Size="Size.Small">Upload Mock Data</MudButton>
+                                <MudButton Variant="Variant.Outlined" Color="Color.Secondary" OnClick="() => _showUploadPanel = false" Size="Size.Small">Cancel</MudButton>
+                            </div>
+                        </div>
+                    }
+
+                    <MudTable Items="@_case.Documents" Hover="true" Elevation="0" Style="background:transparent;">
+                        <HeaderContent>
+                            <MudTh>File Name</MudTh>
+                            <MudTh>Category</MudTh>
+                            <MudTh>Filer</MudTh>
+                            <MudTh>Date Uploaded</MudTh>
+                            <MudTh>Status</MudTh>
+                            <MudTh Style="text-align: right;">Actions</MudTh>
+                        </HeaderContent>
+                        <RowTemplate>
+                            <MudTd DataLabel="File Name">
+                                <MudIcon Icon="@Icons.Material.Filled.AttachFile" Size="Size.Small" Class="mr-1" />
+                                @context.FileName
+                            </MudTd>
+                            <MudTd DataLabel="Category">
+                                <MudChip T="string" Size="Size.Small" Color="Color.Secondary" Variant="Variant.Outlined" Style="border-radius:4px;">
+                                    @context.DocumentType
+                                </MudChip>
+                            </MudTd>
+                            <MudTd DataLabel="Filer">@context.UploadedBy?.FullName</MudTd>
+                            <MudTd DataLabel="Date Uploaded">@context.UploadedAt.ToLocalTime().ToString("g")</MudTd>
+                            <MudTd DataLabel="Status">
+                                @if (context.IsApproved == null)
+                                {
+                                    <MudChip T="string" Color="Color.Warning" Size="Size.Small" Style="border-radius:4px;">Pending Review</MudChip>
+                                }
+                                else if (context.IsApproved == true)
+                                {
+                                    <MudChip T="string" Color="Color.Success" Size="Size.Small" Style="border-radius:4px;">Approved</MudChip>
+                                }
+                                else
+                                {
+                                    <MudChip T="string" Color="Color.Error" Size="Size.Small" Style="border-radius:4px;">Rejected</MudChip>
+                                }
+                            </MudTd>
+                            <MudTd Style="text-align: right;">
+                                <div class="d-flex justify-end gap-2">
+                                    @if (_role == "Judge" && context.IsApproved == null && _case.JudgeId == _userId)
+                                    {
+                                        <MudIconButton Icon="@Icons.Material.Filled.Check" Color="Color.Success" Size="Size.Small" OnClick="() => HandleReviewEvidence(context.Id, true)" />
+                                        <MudIconButton Icon="@Icons.Material.Filled.Close" Color="Color.Error" Size="Size.Small" OnClick="() => HandleReviewEvidence(context.Id, false)" />
+                                    }
+                                    <MudButton Href="@context.FilePath" Target="_blank" Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small" Style="border-radius:6px; text-transform:none;">
+                                        View
+                                    </MudButton>
+                                </div>
+                            </MudTd>
+                        </RowTemplate>
+                    </MudTable>
+                </MudPaper>
+
+                <!-- 6. SECURE CASE-BASED CHAT ROOM -->
+                @if (IsCaseParticipant())
+                {
+                    <MudPaper Class="pa-6 lf-glass-panel mb-6" Style="border-radius: 16px; border: 1px solid rgba(14, 165, 233, 0.15);">
+                        <div class="d-flex flex-column flex-sm-row justify-space-between align-start align-sm-center mb-4 gap-2">
+                            <div class="d-flex align-center gap-2">
+                                <MudIcon Icon="@Icons.Material.Filled.Security" Color="Color.Primary" />
+                                <MudText Typo="Typo.h6" Class="font-weight-bold" Style="color: var(--lf-primary);">Secure Consultation Room</MudText>
+                            </div>
+                            
+                            @if (_role == "Admin")
+                            {
+                                <MudSelect T="string" Label="Consultation Channel" Variant="Variant.Outlined" @bind-Value="_activeChatChannel" Margin="Margin.Dense" Style="max-width: 250px; background: white;">
+                                    <MudSelectItem Value="@("ClientLawyer")">Client ↔ Lawyer</MudSelectItem>
+                                    <MudSelectItem Value="@("JudgeClerk")">Judge ↔ Clerk</MudSelectItem>
+                                    <MudSelectItem Value="@("AdminPolice")">Admin ↔ Police</MudSelectItem>
+                                </MudSelect>
+                            }
+                            else
+                            {
+                                <MudChip T="string" Color="Color.Primary" Variant="Variant.Filled" Size="Size.Small" Style="font-weight: 700; border-radius: 6px;">
+                                    @(_activeChatChannel switch {
+                                        "ClientLawyer" => "Client ↔ Lawyer Channel",
+                                        "JudgeClerk" => "Judge ↔ Clerk Channel",
+                                        "AdminPolice" => "Admin ↔ Police Channel",
+                                        _ => "Secure Channel"
+                                    })
+                                </MudChip>
+                            }
+                        </div>
+                        <MudText Typo="Typo.body2" Class="text-muted mb-4">Encrypted channel restricted strictly to official courtroom officers and the assigned client.</MudText>
+
+                        <!-- Scrollable Message List -->
+                        <div id="secureChatChamber" style="height: 350px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; padding: 16px; background: rgba(15, 23, 42, 0.02); border-radius: 12px; border: 1px solid rgba(0,0,0,0.04);" class="mb-4">
+                            @{
+                                var filteredMsgs = GetFilteredMessages();
+                            }
+                            @if (filteredMsgs.Count == 0)
+                            {
+                                <div class="d-flex flex-column align-center justify-center h-full text-muted py-10">
+                                    <MudIcon Icon="@Icons.Material.Filled.ChatBubbleOutline" Size="Size.Large" Class="mb-2" />
+                                    <MudText Typo="Typo.body2">Chamber is silent. Start a secure consultation below.</MudText>
+                                </div>
+                            }
+                            else
+                            {
+                                @foreach (var msg in filteredMsgs)
+                                {
+                                    bool isMe = msg.SenderId == _userId;
+                                    <div style="align-self: @(isMe ? "flex-end" : "flex-start"); max-width: 75%; background: @(isMe ? "var(--lf-primary)" : "var(--lf-surface)"); color: @(isMe ? "white" : "var(--lf-text)"); border-radius: 12px; padding: 12px; box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04); border: 1px solid var(--lf-border);">
+                                        <div class="d-flex justify-space-between align-center gap-4 mb-1">
+                                            <span style="font-weight: 700; font-size: 11px; color: @(isMe ? "rgba(255,255,255,0.9)" : "var(--lf-accent)")">
+                                                @msg.SenderName
+                                                <span style="font-size: 9px; opacity: 0.8; margin-left: 4px; padding: 1px 4px; border-radius: 4px; background: @(isMe ? "rgba(255,255,255,0.2)" : "rgba(14, 165, 233, 0.1)"); color: @(isMe ? "white" : "var(--lf-accent)")">
+                                                    @msg.SenderRole
+                                                </span>
+                                            </span>
+                                            <span style="font-size: 9px; opacity: 0.6;">@msg.CreatedAt.ToLocalTime().ToString("t")</span>
+                                        </div>
+                                        <div style="font-size: 13.5px; line-height: 1.4; word-break: break-word; white-space: pre-wrap;">@msg.Content</div>
+                                    </div>
+                                }
+                            }
+                        </div>
+
+                        <!-- Chat Send Message Input Row -->
+                        <div class="d-flex gap-2 align-center">
+                            <MudTextField @bind-Value="_newMessageContent" 
+                                          Placeholder="Type encrypted message..." 
+                                          Variant="Variant.Outlined" 
+                                          Margin="Margin.Dense"
+                                          Immediate="true"
+                                          OnKeyDown="HandleChatKeyDown" />
+                            <MudButton Variant="Variant.Filled" 
+                                       Color="Color.Primary" 
+                                       OnClick="SendSecureMessage" 
+                                       StartIcon="@Icons.Material.Filled.Send" 
+                                       Style="border-radius: 8px; height: 40px; text-transform:none; font-weight:600;">
+                                Send
+                            </MudButton>
+                        </div>
+                    </MudPaper>
+                }
+            </MudItem>
+
+            <!-- RIGHT PANEL: HEARINGS, POLICE LOGS, ACTIVITY FEED -->
+            <MudItem xs="12" md="4">
+                <!-- Hearing Schedules Card -->
+                <MudPaper Class="pa-6 lf-glass-panel mb-6" Style="border-radius: 16px;">
+                    <div class="d-flex justify-space-between align-center mb-4">
+                        <MudText Typo="Typo.h6" Class="font-weight-bold">Court Hearings</MudText>
+                        @if (_role == "Clerk" && _case.Status != CaseStatus.Closed && _case.ClerkId == _userId)
+                        {
+                            <MudIconButton Icon="@Icons.Material.Filled.EditCalendar" Color="Color.Primary" href="/hearings" />
+                        }
+                    </div>
+
+                    @if (_case.Hearings.Count == 0)
+                    {
+                        <MudText Typo="Typo.body2" Class="text-muted" Align="Align.Center">No hearings scheduled yet.</MudText>
+                    }
+                    else
+                    {
+                        @foreach (var h in _case.Hearings.OrderByDescending(h => h.HearingDate))
+                        {
+                            <div class="pa-3 mb-3" style="border: 1px solid rgba(0,0,0,0.06); border-radius: 8px; background: white;">
+                                <div class="d-flex justify-space-between align-center mb-2">
+                                    <MudChip T="string" Size="Size.Small" Color="Color.Primary" Style="border-radius:4px;">@h.Status</MudChip>
+                                    <MudText Typo="Typo.caption" Class="text-muted">@h.HearingDate.ToLocalTime().ToString("g")</MudText>
+                                </div>
+                                <MudText Typo="Typo.body2" Class="font-weight-bold">@h.Location</MudText>
+                                @if (!string.IsNullOrEmpty(h.Notes))
+                                {
+                                    <MudText Typo="Typo.caption" Class="text-muted d-block mt-1">Notes: @h.Notes</MudText>
+                                }
+                            </div>
+                        }
+                    }
+                </MudPaper>
+
+                <!-- Investigation Summary Card -->
+                <MudPaper Class="pa-6 lf-glass-panel mb-6" Style="border-radius: 16px;">
+                    <MudText Typo="Typo.h6" Class="font-weight-bold mb-4">Police Investigation Logs</MudText>
+                    @if (_case.PoliceReports.Count == 0)
+                    {
+                        <MudText Typo="Typo.body2" Class="text-muted" Align="Align.Center">No investigation reports filed.</MudText>
+                    }
+                    else
+                    {
+                        @foreach (var r in _case.PoliceReports)
+                        {
+                            <div class="pa-3 mb-3" style="border-left: 4px solid #F59E0B; border-radius: 0 8px 8px 0; background: white; box-shadow: 0 2px 8px rgba(0,0,0,0.02);">
+                                <MudText Typo="Typo.caption" Class="text-muted d-block">Filed by @r.Officer?.FullName</MudText>
+                                <MudText Typo="Typo.body2" Class="mt-1" Style="line-height:1.4;">@r.Summary</MudText>
+                                @if (r.CriminalRecordUpdated)
+                                {
+                                    <MudChip T="string" Size="Size.Small" Color="Color.Error" Variant="Variant.Outlined" Class="mt-2" Style="border-radius:4px;">
+                                        Criminal Record Logged
+                                    </MudChip>
+                                }
+                            </div>
+                        }
+                    }
+                </MudPaper>
+
+                <!-- System Core Details -->
+                <MudPaper Class="pa-6 lf-glass-panel" Style="border-radius: 16px;">
+                    <MudText Typo="Typo.h6" Class="font-weight-bold mb-4">Official Assigner Board</MudText>
+                    <div class="d-flex flex-column gap-3">
+                        <div class="d-flex align-center gap-3">
+                            <MudAvatar Color="Color.Primary" Size="Size.Medium" Style="border-radius: 8px;">J</MudAvatar>
+                            <div>
+                                <MudText Typo="Typo.caption" Class="text-muted d-block">Presiding Judge</MudText>
+                                <MudText Typo="Typo.body2" Class="font-weight-bold">@(_case.Judge?.FullName ?? "Awaiting Assignment")</MudText>
+                            </div>
+                        </div>
+                        <div class="d-flex align-center gap-3">
+                            <MudAvatar Color="Color.Secondary" Size="Size.Medium" Style="border-radius: 8px;">L</MudAvatar>
+                            <div>
+                                <MudText Typo="Typo.caption" Class="text-muted d-block">Defense Counsel</MudText>
+                                <MudText Typo="Typo.body2" Class="font-weight-bold">@(_case.Lawyer?.FullName ?? "Awaiting Legal Counsel")</MudText>
+                            </div>
+                        </div>
+                        <div class="d-flex align-center gap-3">
+                            <MudAvatar Color="Color.Warning" Size="Size.Medium" Style="border-radius: 8px;">P</MudAvatar>
+                            <div>
+                                <MudText Typo="Typo.caption" Class="text-muted d-block">Lead Investigator</MudText>
+                                <MudText Typo="Typo.body2" Class="font-weight-bold">@(_case.Police?.FullName ?? "Awaiting Officer")</MudText>
+                            </div>
+                        </div>
+                        <div class="d-flex align-center gap-3">
+                            <MudAvatar Color="Color.Success" Size="Size.Medium" Style="border-radius: 8px;">C</MudAvatar>
+                            <div>
+                                <MudText Typo="Typo.caption" Class="text-muted d-block">Court Clerk</MudText>
+                                <MudText Typo="Typo.body2" Class="font-weight-bold">@(_case.Clerk?.FullName ?? "Awaiting Clerk")</MudText>
+                            </div>
+                        </div>
+                    </div>
+                </MudPaper>
+            </MudItem>
+        </MudGrid>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private bool _loading = true;
+    private Case? _case;
+    private string _role = string.Empty;
+    private string _userId = string.Empty;
+
+    // Admin official selections
+    private string _selectedJudgeId = string.Empty;
+    private string _selectedPoliceId = string.Empty;
+    private string _selectedClerkId = string.Empty;
+    private List<ApplicationUser> _judgesList = new();
+    private List<ApplicationUser> _policeList = new();
+    private List<ApplicationUser> _clerksList = new();
+
+    // Police report submission variables
+    private string _policeSummary = string.Empty;
+    private bool _policeUpdateLog = false;
+
+    // Judge verdict variables
+    private VerdictType _verdictType = VerdictType.Guilty;
+    private string _verdictDetails = string.Empty;
+
+    // Document mock uploading
+    private bool _showUploadPanel = false;
+    private string _uploadFileName = string.Empty;
+    private string _uploadDocType = "Evidence";
+
+    // Secure Case Chat fields
+    private List<Message> _chatMessages = new();
+    private string _newMessageContent = string.Empty;
+    private string _activeChatChannel = "ClientLawyer";
+
+    // Judge draft announcements
+    private string _judgeAnnouncementText = string.Empty;
+
+    // Clerk pending announcements
+    private List<Notification> _pendingDraftAnnouncements = new();
+
+    private HubConnection? _hubConnection;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+
+        if (user.Identity?.IsAuthenticated ?? false)
+        {
+            _role = user.FindFirst(ClaimTypes.Role)?.Value ?? "Client";
+            _userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "";
+        }
+
+        await LoadWorkspace();
+
+        // Enforce role-based route protection programmatically
+        var currentUri = NavigationManager.Uri.ToLower();
+        bool roleMismatch = false;
+        if (currentUri.Contains("/admin/") && _role != "Admin") roleMismatch = true;
+        if (currentUri.Contains("/lawyer/") && _role != "Lawyer") roleMismatch = true;
+        if (currentUri.Contains("/client/") && _role != "Client") roleMismatch = true;
+        if (currentUri.Contains("/judge/") && _role != "Judge") roleMismatch = true;
+        if (currentUri.Contains("/police/") && _role != "Police") roleMismatch = true;
+        if (currentUri.Contains("/clerk/") && _role != "Clerk") roleMismatch = true;
+
+        if (roleMismatch || currentUri.Contains("/cases/view/"))
+        {
+            var correctRole = _role.ToLower();
+            NavigationManager.NavigateTo($"/{correctRole}/cases/{Id}");
+            return;
+        }
+
+        // Verify that the user is an assigned participant for this case (or Admin)
+        if (!IsCaseParticipant())
+        {
+            Snackbar.Add("Access Denied: You are not an assigned participant for this judicial case file.", Severity.Error);
+            NavigationManager.NavigateTo("/dashboard");
+            return;
+        }
+
+        // Set the active secure consultation channel based on role
+        if (_role == "Client" || _role == "Lawyer")
+        {
+            _activeChatChannel = "ClientLawyer";
+        }
+        else if (_role == "Judge" || _role == "Clerk")
+        {
+            _activeChatChannel = "JudgeClerk";
+        }
+        else if (_role == "Admin" || _role == "Police")
+        {
+            _activeChatChannel = "AdminPolice";
+        }
+
+        // Fetch secure case chat history
+        _chatMessages = await MessageService.GetMessagesForCaseAsync(Id);
+
+        // Initialize SignalR connection for case chat
+        var baseUri = NavigationManager.BaseUri;
+        _hubConnection = new HubConnectionBuilder()
+            .WithUrl(NavigationManager.ToAbsoluteUri("/casechathub"))
+            .Build();
+
+        _hubConnection.On<dynamic>("ReceiveMessage", message =>
+        {
+            // dynamic fallback
+        });
+        
+        // Typed handler
+        _hubConnection.On<int, string, string, string, string, DateTime>("ReceiveMessage", (caseId, senderId, senderName, senderRole, content, timestamp) =>
+        {
+            if (caseId == Id)
+            {
+                var msg = new Message
+                {
+                    CaseId = caseId,
+                    SenderId = senderId,
+                    SenderName = senderName,
+                    SenderRole = senderRole,
+                    Content = content,
+                    CreatedAt = timestamp
+                };
+                InvokeAsync(() =>
+                {
+                    _chatMessages.Add(msg);
+                    StateHasChanged();
+                });
+            }
+        });
+
+        await _hubConnection.StartAsync();
+        await _hubConnection.SendAsync("JoinCase", Id);
+
+        // Load pending announcements for clerk review
+        if (_role == "Clerk")
+        {
+            var allNotifications = await NotificationService.GetNotificationsForUserAsync(_userId);
+            _pendingDraftAnnouncements = allNotifications
+                .Where(n => !n.IsRead && n.Title == $"[Draft Announcement] CaseId: {Id}")
+                .ToList();
+        }
+
+        // Load officers for admin choices
+        if (_role == "Admin")
+        {
+            _judgesList = await AuthService.GetUsersByRoleAsync(UserRole.Judge);
+            _policeList = await AuthService.GetUsersByRoleAsync(UserRole.Police);
+            _clerksList = await AuthService.GetUsersByRoleAsync(UserRole.Clerk);
+        }
+    }
+
+    private async Task LoadWorkspace()
+    {
+        _loading = true;
+        _case = await CaseService.GetCaseByIdAsync(Id);
+        _loading = false;
+    }
+
+    private async Task HandleFIRReview(bool approve)
+    {
+        var action = approve ? "approved" : "rejected";
+        var res = await CaseService.ReviewFIRAsync(Id, _userId, approve);
+        if (res)
+        {
+            Snackbar.Add($"FIR successfully reviewed: {action}.", Severity.Success);
+            await LoadWorkspace();
+        }
+        else
+        {
+            Snackbar.Add("Failed to process FIR.", Severity.Error);
+        }
+    }
+
+    private async Task HandleAssignOfficials()
+    {
+        if (string.IsNullOrEmpty(_selectedJudgeId) || string.IsNullOrEmpty(_selectedPoliceId) || string.IsNullOrEmpty(_selectedClerkId))
+        {
+            Snackbar.Add("Please select all three officers first.", Severity.Warning);
+            return;
+        }
+
+        var res = await CaseService.AssignCoreOfficialsAsync(Id, _userId, _selectedJudgeId, _selectedPoliceId, _selectedClerkId);
+        if (res)
+        {
+            Snackbar.Add("Presiding Judge, Police, and Clerk officials assigned successfully.", Severity.Success);
+            await LoadWorkspace();
+        }
+        else
+        {
+            Snackbar.Add("Official assignment failed.", Severity.Error);
+        }
+    }
+
+    private async Task HandleSubmitPoliceReport()
+    {
+        if (string.IsNullOrEmpty(_policeSummary))
+        {
+            Snackbar.Add("Summary cannot be empty.", Severity.Warning);
+            return;
+        }
+
+        var res = await PoliceReportService.SubmitReportAsync(Id, _userId, _policeSummary, _policeUpdateLog);
+        if (res)
+        {
+            Snackbar.Add("Police investigation findings logged successfully.", Severity.Success);
+            _policeSummary = string.Empty;
+            await LoadWorkspace();
+        }
+        else
+        {
+            Snackbar.Add("Could not submit report.", Severity.Error);
+        }
+    }
+
+    private async Task HandleIssueVerdict()
+    {
+        if (string.IsNullOrEmpty(_verdictDetails))
+        {
+            Snackbar.Add("Verdict reasoning details cannot be empty.", Severity.Warning);
+            return;
+        }
+
+        var res = await VerdictService.IssueVerdictAsync(Id, _userId, _verdictType, _verdictDetails);
+        if (res)
+        {
+            Snackbar.Add("Judgement Verdict issued successfully and routed to Clerk for final publication.", Severity.Success);
+            _verdictDetails = string.Empty;
+            await LoadWorkspace();
+        }
+        else
+        {
+            Snackbar.Add("Verdict filing failed.", Severity.Error);
+        }
+    }
+
+    private async Task HandlePublishVerdict()
+    {
+        var res = await VerdictService.PublishVerdictAsync(Id, _userId);
+        if (res)
+        {
+            Snackbar.Add("Verdict published officially. This case is now resolved and closed.", Severity.Success);
+            await LoadWorkspace();
+        }
+        else
+        {
+            Snackbar.Add("Could not publish verdict.", Severity.Error);
+        }
+    }
+
+    private void OpenUploadDialog()
+    {
+        _showUploadPanel = true;
+        _uploadFileName = string.Empty;
+        _uploadDocType = "Evidence";
+    }
+
+    private async Task HandleUpload()
+    {
+        if (string.IsNullOrEmpty(_uploadFileName))
+        {
+            Snackbar.Add("Please enter a file name.", Severity.Warning);
+            return;
+        }
+
+        // Simulate file uploading by generating mock byte array
+        var mockBytes = System.Text.Encoding.UTF8.GetBytes("Mock file contents for " + _uploadFileName);
+        
+        var doc = await DocumentService.UploadDocumentAsync(Id, _uploadFileName, mockBytes, _uploadDocType, _userId);
+        if (doc != null)
+        {
+            Snackbar.Add($"Document '{_uploadFileName}' uploaded successfully.", Severity.Success);
+            _showUploadPanel = false;
+            await LoadWorkspace();
+        }
+        else
+        {
+            Snackbar.Add("Document upload failed.", Severity.Error);
+        }
+    }
+
+    private async Task HandleReviewEvidence(int docId, bool approve)
+    {
+        var res = await DocumentService.ReviewEvidenceAsync(docId, _userId, approve);
+        if (res)
+        {
+            Snackbar.Add($"Evidence successfully {(approve ? "approved" : "rejected")}.", Severity.Success);
+            await LoadWorkspace();
+        }
+        else
+        {
+            Snackbar.Add("Review evaluation failed.", Severity.Error);
+        }
+    }
+
+    private List<Message> GetFilteredMessages()
+    {
+        return _chatMessages.Where(m =>
+        {
+            if (m.SenderRole == "System Order" || m.SenderRole == "Court Clerk Announcement") return true;
+
+            return _activeChatChannel switch
+            {
+                "ClientLawyer" => m.SenderRole == "Client" || m.SenderRole == "Lawyer",
+                "JudgeClerk" => m.SenderRole == "Judge" || m.SenderRole == "Clerk",
+                "AdminPolice" => m.SenderRole == "Admin" || m.SenderRole == "Police",
+                _ => false
+            };
+        }).ToList();
+    }
+
+    private Color GetStatusColor(CaseStatus status)
+    {
+        return status switch
+        {
+            CaseStatus.Created => Color.Default,
+            CaseStatus.ReviewedByAdmin => Color.Primary,
+            CaseStatus.AssignedToJudgeAndPolice => Color.Info,
+            CaseStatus.AvailableForLawyers => Color.Warning,
+            CaseStatus.LawyerAccepted => Color.Warning,
+            CaseStatus.AssignedToLawyer => Color.Info,
+            CaseStatus.ClerkAssignedByJudge => Color.Info,
+            CaseStatus.Investigation => Color.Warning,
+            CaseStatus.Hearing => Color.Primary,
+            CaseStatus.VerdictIssued => Color.Secondary,
+            CaseStatus.Closed => Color.Success,
+            _ => Color.Default
+        };
+    }
+
+    private string GetStatusLabel(CaseStatus status)
+    {
+        return status switch
+        {
+            CaseStatus.Created => "Complaint Lodged",
+            CaseStatus.ReviewedByAdmin => "Reviewed By Admin",
+            CaseStatus.AssignedToJudgeAndPolice => "Officials Appointed",
+            CaseStatus.AvailableForLawyers => "Open for Defense",
+            CaseStatus.LawyerAccepted => "Lawyer Accepting",
+            CaseStatus.AssignedToLawyer => "Defense Retained",
+            CaseStatus.ClerkAssignedByJudge => "Clerk Assigned",
+            CaseStatus.Investigation => "Under Investigation",
+            CaseStatus.Hearing => "Court Hearings",
+            CaseStatus.VerdictIssued => "Verdict Issued",
+            CaseStatus.Closed => "Closed / Archived",
+            _ => "Unknown"
+        };
+    }
+
+    private bool IsCaseParticipant()
+    {
+        if (_case == null) return false;
+        return _role == "Admin" || 
+               _userId == _case.ClientId || 
+               _userId == _case.LawyerId || 
+               _userId == _case.JudgeId || 
+               _userId == _case.PoliceId || 
+               _userId == _case.ClerkId;
+    }
+
+    private async Task SendSecureMessage()
+    {
+        if (string.IsNullOrWhiteSpace(_newMessageContent)) return;
+
+        var senderName = "Official Participant";
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var user = authState.User;
+        if (user.Identity?.IsAuthenticated ?? false)
+        {
+            senderName = user.Identity.Name ?? _role;
+            var fullUser = await AuthService.GetUserByIdAsync(_userId);
+            if (fullUser != null)
+            {
+                senderName = fullUser.FullName;
+            }
+        }
+
+        // Save to DB
+        await MessageService.SaveMessageAsync(Id, _userId, senderName, _role, _newMessageContent.Trim());
+        
+        // Broadcast via SignalR CaseChatHub
+        if (_hubConnection is not null && _hubConnection.State == HubConnectionState.Connected)
+        {
+            await _hubConnection.SendAsync("SendMessage", Id, _userId, senderName, _role, _newMessageContent.Trim());
+        }
+
+        _newMessageContent = string.Empty;
+    }
+
+    private async Task HandleChatKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            await SendSecureMessage();
+        }
+    }
+
+    private async Task HandleDraftAnnouncement()
+    {
+        if (string.IsNullOrWhiteSpace(_judgeAnnouncementText))
+        {
+            Snackbar.Add("Announcement text cannot be empty.", Severity.Warning);
+            return;
+        }
+        if (string.IsNullOrEmpty(_case?.ClerkId))
+        {
+            Snackbar.Add("No Clerk is assigned to this case to coordinate the broadcast.", Severity.Error);
+            return;
+        }
+
+        var title = $"[Draft Announcement] CaseId: {Id}";
+        var message = _judgeAnnouncementText.Trim();
+        await NotificationService.SendNotificationAsync(_case.ClerkId, title, message);
+
+        Snackbar.Add("Draft announcement successfully routed to Clerk.", Severity.Success);
+        _judgeAnnouncementText = string.Empty;
+    }
+
+    private async Task HandlePublishAnnouncement(Notification draft)
+    {
+        await NotificationService.MarkAsReadAsync(draft.Id);
+
+        var announcementText = draft.Message;
+        var broadcastTitle = $"Court Announcement - Case {_case?.CaseNumber}";
+        
+        if (_case != null)
+        {
+            var participants = new List<string> { _case.ClientId };
+            if (!string.IsNullOrEmpty(_case.LawyerId)) participants.Add(_case.LawyerId);
+            if (!string.IsNullOrEmpty(_case.PoliceId)) participants.Add(_case.PoliceId);
+
+            foreach (var pId in participants)
+            {
+                await NotificationService.SendNotificationAsync(pId, broadcastTitle, announcementText);
+            }
+
+            // Post to secure consultation chamber as a System Order
+            await MessageService.SaveMessageAsync(Id, "SYSTEM", "Court Clerk Announcement", "System Order", announcementText);
+            
+            if (_hubConnection is not null && _hubConnection.State == HubConnectionState.Connected)
+            {
+                await _hubConnection.SendAsync("SendMessage", Id, "SYSTEM", "Court Clerk Announcement", "System Order", announcementText);
+            }
+        }
+
+        Snackbar.Add("Announcement published and broadcasted successfully.", Severity.Success);
+        
+        // Reload pending drafts
+        var allNotifications = await NotificationService.GetNotificationsForUserAsync(_userId);
+        _pendingDraftAnnouncements = allNotifications
+            .Where(n => !n.IsRead && n.Title == $"[Draft Announcement] CaseId: {Id}")
+            .ToList();
+        
+        await LoadWorkspace();
+    }
+
+    private async Task HandleDismissAnnouncement(int notifId)
+    {
+        await NotificationService.MarkAsReadAsync(notifId);
+        Snackbar.Add("Judicial announcement draft dismissed.", Severity.Info);
+        
+        // Reload pending drafts
+        var allNotifications = await NotificationService.GetNotificationsForUserAsync(_userId);
+        _pendingDraftAnnouncements = allNotifications
+            .Where(n => !n.IsRead && n.Title == $"[Draft Announcement] CaseId: {Id}")
+            .ToList();
+    }
+
+    public async void Dispose()
+    {
+        if (_hubConnection is null) return;
+        
+        try 
+        {
+            await _hubConnection.SendAsync("LeaveCase", Id);
+            await _hubConnection.DisposeAsync();
+        } 
+        catch { }
+    }
+}
+

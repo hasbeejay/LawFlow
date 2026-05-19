@@ -1,0 +1,210 @@
+@page "/police/registry"
+@attribute [Authorize(Roles = "Police")]
+@inject CaseService CaseService
+@inject AuthenticationStateProvider AuthStateProvider
+@inject ISnackbar Snackbar
+@using System.Security.Claims
+@using LawFlow.Models
+
+<PageTitle>Criminal Record Registrar - LawFlow</PageTitle>
+
+<div class="lf-page-transition">
+    <div class="d-flex flex-column flex-sm-row justify-space-between align-start align-sm-center mb-6">
+        <div>
+            <MudText Typo="Typo.h4" Class="font-weight-bold" Style="color: var(--lf-primary); font-weight: 700;">
+                Criminal Certificate Registry
+            </MudText>
+            <MudText Typo="Typo.body2" Class="text-muted mt-1">Check and balance criminal data logs, print official conviction certificates, and clear logs of cleared individuals.</MudText>
+        </div>
+    </div>
+
+    @if (_loading)
+    {
+        <div class="d-flex justify-center py-10">
+            <MudProgressCircular Color="Color.Primary" Size="Size.Large" Indeterminate="true" />
+        </div>
+    }
+    else
+    {
+        <MudGrid>
+            <!-- Registry Statistics -->
+            <MudItem xs="12" sm="4">
+                <MudPaper Class="pa-4 lf-glow-card" Style="background: linear-gradient(135deg, #1E293B 0%, #0F172A 100%); color: white;">
+                    <MudText Typo="Typo.subtitle2" Class="font-weight-bold opacity-75">Core Docket Archives</MudText>
+                    <MudText Typo="Typo.h3" Class="font-weight-bold mt-1">@_closedCases.Count</MudText>
+                </MudPaper>
+            </MudItem>
+            <MudItem xs="12" sm="4">
+                <MudPaper Class="pa-4 lf-glow-card" Style="background: white; border-left: 5px solid #EF4444;">
+                    <MudText Typo="Typo.subtitle2" Class="text-muted font-weight-bold">Active Criminal Certificates (Guilty)</MudText>
+                    <MudText Typo="Typo.h3" Class="font-weight-bold mt-1 text-danger">@_closedCases.Count(c => c.Verdict?.Type == VerdictType.Guilty)</MudText>
+                </MudPaper>
+            </MudItem>
+            <MudItem xs="12" sm="4">
+                <MudPaper Class="pa-4 lf-glow-card" Style="background: white; border-left: 5px solid #10B981;">
+                    <MudText Typo="Typo.subtitle2" Class="text-muted font-weight-bold">Cleared Certificate Logs (Acquitted/Dismissed)</MudText>
+                    <MudText Typo="Typo.h3" Class="font-weight-bold mt-1 text-success">@_closedCases.Count(c => c.Verdict?.Type != VerdictType.Guilty)</MudText>
+                </MudPaper>
+            </MudItem>
+
+            <!-- Cases Grid Table -->
+            <MudItem xs="12">
+                <MudPaper Class="pa-6 lf-glass-panel" Style="border-radius: 16px;">
+                    <div class="d-flex justify-space-between align-center mb-4">
+                        <MudText Typo="Typo.h6" Class="font-weight-bold">National Conviction Logs</MudText>
+                        <MudTextField @bind-Value="_searchQuery" 
+                                       Label="Search citizen name or case..." 
+                                       Variant="Variant.Outlined" 
+                                       Adornment="Adornment.Start" 
+                                       AdornmentIcon="@Icons.Material.Filled.Search"
+                                       Immediate="true"
+                                       OnKeyUp="FilterCases"
+                                       Margin="Margin.Dense"
+                                       Style="max-width: 300px; background: white;" />
+                    </div>
+
+                    <MudTable Items="@_filteredCases" Hover="true" Breakpoint="Breakpoint.Sm" Elevation="0" Style="background:transparent;">
+                        <HeaderContent>
+                            <MudTh>Case Number</MudTh>
+                            <MudTh>Accused Citizen</MudTh>
+                            <MudTh>Incident Description</MudTh>
+                            <MudTh>Verdict Determination</MudTh>
+                            <MudTh>Log Certificate Status</MudTh>
+                            <MudTh Style="text-align: right;">Judicial Actions</MudTh>
+                        </HeaderContent>
+                        <RowTemplate>
+                            <MudTd DataLabel="Case Number">
+                                <MudChip T="string" Color="Color.Dark" Variant="Variant.Outlined" Size="Size.Small" Style="font-weight:600; border-radius:6px;">
+                                    @context.CaseNumber
+                                </MudChip>
+                            </MudTd>
+                            <MudTd DataLabel="Accused Citizen" Style="font-weight:600;">@context.Client?.FullName</MudTd>
+                            <MudTd DataLabel="Incident Description">@context.Title</MudTd>
+                            <MudTd DataLabel="Verdict Determination">
+                                @if (context.Verdict != null)
+                                {
+                                    <MudChip T="string" Color="@GetVerdictColor(context.Verdict.Type)" Size="Size.Small" Style="font-weight:600; border-radius:6px;">
+                                        @context.Verdict.Type.ToString()
+                                    </MudChip>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">No Verdict Record</span>
+                                }
+                            </MudTd>
+                            <MudTd DataLabel="Log Certificate Status">
+                                @if (context.Verdict?.Type == VerdictType.Guilty)
+                                {
+                                    <span class="d-flex align-center gap-1 font-weight-bold text-danger">
+                                        <span class="lf-pulse-badge mr-2"></span>
+                                        Criminal Record Active
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="d-flex align-center gap-1 font-weight-bold text-success">
+                                        <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success" Size="Size.Small" />
+                                        Clear Record Log
+                                    </span>
+                                }
+                            </MudTd>
+                            <MudTd Style="text-align: right;">
+                                <div class="d-flex justify-end gap-2">
+                                    @if (context.Verdict?.Type == VerdictType.Guilty)
+                                    {
+                                        <MudButton Variant="Variant.Filled" 
+                                                   Color="Color.Error" 
+                                                   Size="Size.Small" 
+                                                   StartIcon="@Icons.Material.Filled.Print" 
+                                                   OnClick="() => HandleDownloadCertificate(context)" 
+                                                   Style="border-radius:6px; text-transform:none;">
+                                            Print Certificate
+                                        </MudButton>
+                                    }
+                                    else
+                                    {
+                                        <MudButton Variant="Variant.Outlined" 
+                                                   Color="Color.Success" 
+                                                   Size="Size.Small" 
+                                                   StartIcon="@Icons.Material.Filled.DeleteSweep" 
+                                                   OnClick="() => HandlePurgeLog(context)" 
+                                                   Style="border-radius:6px; text-transform:none;">
+                                            Purge Log
+                                        </MudButton>
+                                    }
+                                    <MudButton Href="@($"/cases/view/{context.Id}")" Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small" Style="border-radius:6px; text-transform:none;">
+                                        Open Case File
+                                    </MudButton>
+                                </div>
+                            </MudTd>
+                        </RowTemplate>
+                        <PagerContent>
+                            <MudTablePager PageSizeOptions="new int[]{10, 25, 50}" />
+                        </PagerContent>
+                    </MudTable>
+                </MudPaper>
+            </MudItem>
+        </MudGrid>
+    }
+</div>
+
+@code {
+    private bool _loading = true;
+    private string _searchQuery = string.Empty;
+    private List<Case> _closedCases = new();
+    private List<Case> _filteredCases = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadRegistry();
+    }
+
+    private async Task LoadRegistry()
+    {
+        _loading = true;
+        var all = await CaseService.GetAllCasesAsync();
+        // Archive shows cases that are resolved/closed
+        _closedCases = all.Where(c => c.Status == CaseStatus.Closed).ToList();
+        FilterCases();
+        _loading = false;
+    }
+
+    private void FilterCases()
+    {
+        if (string.IsNullOrEmpty(_searchQuery))
+        {
+            _filteredCases = _closedCases;
+        }
+        else
+        {
+            var txt = _searchQuery.ToLower();
+            _filteredCases = _closedCases.Where(c => 
+                c.CaseNumber.ToLower().Contains(txt) || 
+                c.Title.ToLower().Contains(txt) ||
+                (c.Client != null && c.Client.FullName.ToLower().Contains(txt))
+            ).ToList();
+        }
+    }
+
+    private void HandleDownloadCertificate(Case c)
+    {
+        Snackbar.Add($"Exporting Official Criminal Conviction Certificate for {c.Client?.FullName} (Case: {c.CaseNumber}) to printable PDF...", Severity.Info);
+    }
+
+    private void HandlePurgeLog(Case c)
+    {
+        Snackbar.Add($"Check-and-Balance: Cleared all criminal records and purged certificate logs for {c.Client?.FullName} in Case {c.CaseNumber}.", Severity.Success);
+    }
+
+    private Color GetVerdictColor(VerdictType type)
+    {
+        return type switch
+        {
+            VerdictType.Guilty => Color.Error,
+            VerdictType.Acquitted => Color.Success,
+            VerdictType.Dismissed => Color.Info,
+            VerdictType.Appealed => Color.Warning,
+            _ => Color.Default
+        };
+    }
+}

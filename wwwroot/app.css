@@ -1,0 +1,219 @@
+/* Global Custom Styles for LawFlow - Premium SaaS Design System */
+
+:root {
+    --lf-primary: #1E3A8A;       /* Premium Royal Navy Blue */
+    --lf-accent: #0EA5E9;        /* SaaS Vibrant Cyan */
+    --lf-accent-glow: rgba(14, 165, 233, 0.25);
+    --lf-success: #10B981;       /* Emerald */
+    --lf-success-glow: rgba(16, 185, 129, 0.25);
+    --lf-warning: #F59E0B;       /* Amber */
+    --lf-error: #EF4444;         /* Coral Red */
+    --lf-bg: #F8FAFC;            /* Clean Slate background */
+    --lf-surface: #FFFFFF;
+    --lf-border: rgba(203, 213, 225, 0.6);
+    --lf-glass-bg: rgba(255, 255, 255, 0.75);
+    --lf-shadow: 0 10px 30px -10px rgba(15, 23, 42, 0.08);
+}
+
+/* Dark mode theme variables applied seamlessly */
+.mud-dark-mode {
+    --lf-primary: #38BDF8;       /* Electric Sky Blue */
+    --lf-accent: #0EA5E9;
+    --lf-accent-glow: rgba(56, 189, 248, 0.3);
+    --lf-bg: #0B0F19;            /* Pitch Dark Slate */
+    --lf-surface: #151D30;       /* Lighter navy cards */
+    --lf-border: rgba(51, 65, 85, 0.5);
+    --lf-glass-bg: rgba(21, 29, 48, 0.75);
+    --lf-shadow: 0 15px 40px -15px rgba(0, 0, 0, 0.5);
+}
+
+body {
+    font-family: 'Outfit', sans-serif !important;
+    background-color: var(--lf-bg) !important;
+    color: var(--mud-palette-text-primary) !important;
+    transition: background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1), color 0.4s ease;
+}
+
+/* Glassmorphism & SaaS Panel Design */
+.lf-glass-panel {
+    background: var(--lf-glass-bg) !important;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--lf-border) !important;
+    box-shadow: var(--lf-shadow) !important;
+    border-radius: 16px;
+    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.lf-glass-panel:hover {
+    box-shadow: 0 20px 50px -15px var(--lf-accent-glow) !important;
+    transform: translateY(-2px);
+    border-color: var(--lf-accent) !important;
+}
+
+/* Card Glow Effects */
+.lf-glow-card {
+    border-radius: 16px;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: var(--lf-shadow);
+    border: 1px solid var(--lf-border) !important;
+    background-color: var(--lf-surface) !important;
+}
+
+.lf-glow-card:hover {
+    box-shadow: 0 15px 35px -5px var(--lf-accent-glow) !important;
+    transform: translateY(-4px);
+    border-color: var(--lf-accent) !important;
+}
+
+/* Neon Green Success Glow Card */
+.lf-glow-card-success {
+    border: 1px solid var(--lf-border) !important;
+    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.lf-glow-card-success:hover {
+    box-shadow: 0 15px 35px -5px var(--lf-success-glow) !important;
+    transform: translateY(-4px);
+    border-color: var(--lf-success) !important;
+}
+
+/* Smooth Navigation Sidebar Highlight */
+.mud-nav-link {
+    border-radius: 8px !important;
+    margin: 2px 8px !important;
+    transition: all 0.25s ease !important;
+}
+
+.mud-nav-link:hover {
+    background-color: rgba(14, 165, 233, 0.06) !important;
+    color: var(--lf-accent) !important;
+}
+
+.mud-nav-link.active {
+    background-color: rgba(14, 165, 233, 0.12) !important;
+    color: var(--lf-accent) !important;
+    font-weight: 600 !important;
+    border-left: 4px solid var(--lf-accent);
+    box-shadow: 0 4px 15px -5px var(--lf-accent-glow);
+}
+
+/* Custom Premium Scrollbar */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(148, 163, 184, 0.3);
+    border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(148, 163, 184, 0.6);
+}
+
+/* Timeline Custom Visual Styling */
+.lf-timeline-active {
+    color: var(--lf-accent) !important;
+    font-weight: bold;
+    text-shadow: 0 0 10px var(--lf-accent-glow);
+}
+
+/* Page Transitions */
+.lf-page-transition {
+    animation: slideInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Pulse Glow Badge for Pending Actions */
+.lf-pulse-badge {
+    position: relative;
+}
+
+.lf-pulse-badge::after {
+    content: '';
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    background-color: var(--lf-error);
+    border-radius: 50%;
+    top: -3px;
+    right: -3px;
+    border: 2px solid var(--lf-surface);
+    animation: pulseGlow 2s infinite;
+}
+
+@keyframes pulseGlow {
+    0% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+    }
+    70% {
+        transform: scale(1.1);
+        box-shadow: 0 0 0 8px rgba(239, 68, 68, 0);
+    }
+    100% {
+        transform: scale(0.95);
+        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+    }
+}
+
+/* Neon Glow Indicators for Workspace elements */
+.lf-neon-dot-active {
+    width: 8px;
+    height: 8px;
+    background-color: var(--lf-success);
+    border-radius: 50%;
+    box-shadow: 0 0 12px var(--lf-success);
+    display: inline-block;
+}
+
+/* Table Enhancements */
+.mud-table-root {
+    border-collapse: separate !important;
+    border-spacing: 0 6px !important;
+}
+
+.mud-table-row {
+    background-color: var(--lf-surface) !important;
+    border-radius: 8px !important;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.01) !important;
+    transition: all 0.25s ease;
+}
+
+.mud-table-row:hover {
+    transform: scale(1.002) translateY(-1px);
+    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.04) !important;
+}
+
+.mud-table-cell {
+    border-bottom: none !important;
+    padding: 12px 16px !important;
+}
+
+.mud-table-cell:first-child {
+    border-top-left-radius: 8px !important;
+    border-bottom-left-radius: 8px !important;
+}
+
+.mud-table-cell:last-child {
+    border-top-right-radius: 8px !important;
+    border-bottom-right-radius: 8px !important;
+}
+
