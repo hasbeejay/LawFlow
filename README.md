@@ -116,6 +116,131 @@ Client Creates Case
 
 ---
 
+# ⚖️ LawFlow – Judicial Workflow Flow Diagram
+
+```text id="i1d2b0"
+┌───────────────────────┐
+│   CLIENT CREATES FIR  │
+│  Uploads Case & Docs  │
+└──────────┬────────────┘
+           │
+           ▼
+┌───────────────────────┐
+│     ADMIN REVIEW      │
+│ Verify & Approve Case │
+└──────────┬────────────┘
+           │
+           ▼
+┌────────────────────────────────────┐
+│ ADMIN ASSIGNS:                    │
+│ • Judge                           │
+│ • Police Officer                  │
+└──────────┬────────────────────────┘
+           │
+           ▼
+┌───────────────────────┐
+│ CASE AVAILABLE TO     │
+│      LAWYERS          │
+└──────────┬────────────┘
+           │
+    ┌──────┴──────┐
+    │             │
+    ▼             ▼
+┌───────────┐  ┌────────────┐
+│ ACCEPTED  │  │ DECLINED   │
+└─────┬─────┘  └─────┬──────┘
+      │              │
+      ▼              │
+┌────────────────────▼─────────────┐
+│ CASE ASSIGNED TO LAWYER          │
+│ Lawyer ↔ Client Chat Activated   │
+└────────────────┬─────────────────┘
+                 │
+                 ▼
+┌──────────────────────────────────┐
+│ JUDGE REVIEWS CASE               │
+│ Reviews Evidence & Documents     │
+└────────────────┬─────────────────┘
+                 │
+                 ▼
+┌──────────────────────────────────┐
+│ JUDGE ASSIGNS CLERK              │
+│ Clerk manages hearings/schedule  │
+└────────────────┬─────────────────┘
+                 │
+                 ▼
+┌──────────────────────────────────┐
+│ POLICE INVESTIGATION             │
+│ Upload Reports & Criminal Logs   │
+└────────────────┬─────────────────┘
+                 │
+                 ▼
+┌──────────────────────────────────┐
+│ HEARING PHASE                    │
+│ Clerk schedules hearings         │
+│ Judge conducts proceedings       │
+└────────────────┬─────────────────┘
+                 │
+                 ▼
+┌──────────────────────────────────┐
+│ VERDICT ISSUED                   │
+│ Judge publishes decision         │
+└────────────────┬─────────────────┘
+                 │
+                 ▼
+┌──────────────────────────────────┐
+│ POLICE RECORD UPDATE             │
+│ Guilty → Criminal Record Update  │
+│ Not Guilty → Clear Logs          │
+└────────────────┬─────────────────┘
+                 │
+                 ▼
+┌───────────────────────┐
+│     CASE CLOSED       │
+└───────────────────────┘
+```
+
+# 💬 Case-Based Communication Flow
+
+```text id="y6pc7x"
+CLIENT  ⇄  LAWYER
+   │          │
+   └── Chat only inside specific case
+
+JUDGE  ⇄  CLERK
+   │          │
+   └── Hearing coordination per case
+
+ADMIN  ⇄  POLICE
+   │          │
+   └── Investigation communication per case
+```
+
+# 📊 High-Level System Architecture
+
+```text id="j1ql5d"
+Users
+  │
+  ▼
+Authentication & Role System
+  │
+  ▼
+Case Management Engine
+  │
+  ├── Hearings
+  ├── Verdicts
+  ├── Documents
+  ├── Notifications
+  ├── Real-Time Chat
+  ├── Activity Logs
+  └── Analytics Dashboard
+  │
+  ▼
+Supabase PostgreSQL Database
+```
+
+---
+
 # 💬 Case-Based Chat System
 
 LawFlow uses a **strict case-scoped communication model**.
