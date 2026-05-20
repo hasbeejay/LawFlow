@@ -1,384 +1,379 @@
 # ⚖️ LawFlow – Smart Judicial Case Management System
 
-LawFlow is a modern judicial workflow and case management platform built using **ASP.NET Core Blazor Server**, **C#**, **Entity Framework Core**, **SignalR**, and **Supabase PostgreSQL**.
+<div align="center">
 
-The platform digitizes and streamlines legal and judicial processes through a centralized online portal for:
+## 🚀 Modern Judicial Workflow & Case Management Platform
 
-- Administrators
-- Judges
-- Lawyers
-- Clients
-- Police Officers
-- Court Clerks
-
-LawFlow focuses on:
-- judicial workflow automation
-- role-based access control
-- real-time communication
-- case lifecycle tracking
-- document management
-- hearing scheduling
-- modern SaaS-style dashboards
+**Built with**
+`ASP.NET Core Blazor Server` • `C#` • `Entity Framework Core` • `SignalR` • `Supabase PostgreSQL`
 
 ---
 
-# 🚀 Features
+### 🏛️ Digitizing Judicial Operations with Real-Time Collaboration
 
-## ✅ Core Features
+LawFlow centralizes judicial workflows into one secure, scalable, and modern SaaS-style platform for:
 
-- Role-based authentication & authorization
-- Real-time notifications using SignalR
-- Dashboard analytics & charts
-- CRUD operations
-- Search & filtering system
-- Responsive tables
-- File upload & document management
-- Light/Dark theme switching
-- Activity logging system
-- Real-time case-based chat
-- Responsive SaaS-style UI
+👨‍⚖️ Judges • 👨‍💼 Lawyers • 🧑 Clients • 👮 Police • 🧾 Clerks • 🛠️ Admins
 
 ---
 
-# 🧠 System Architecture
+![.NET](https://img.shields.io/badge/.NET-10-purple?style=for-the-badge\&logo=.net)
+![Blazor](https://img.shields.io/badge/Blazor-Server-blueviolet?style=for-the-badge\&logo=blazor)
+![SignalR](https://img.shields.io/badge/SignalR-RealTime-success?style=for-the-badge)
+![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-3FCF8E?style=for-the-badge\&logo=supabase)
+![Status](https://img.shields.io/badge/Status-Active_Development-brightgreen?style=for-the-badge)
 
-LawFlow follows a **case-first architecture**.
+</div>
 
-Everything revolves around:
+---
+
+# ✨ Overview
+
+LawFlow is a **smart judicial ecosystem** that automates and streamlines court and legal operations through a centralized online portal.
+
+The system focuses on:
+
+* ⚖️ Judicial workflow automation
+* 🔐 Role-based access control
+* 💬 Real-time communication
+* 📂 Case lifecycle management
+* 📑 Document organization
+* 📅 Hearing scheduling
+* 📊 SaaS-style analytics dashboards
+
+---
+
+# 🧠 Core Architecture Philosophy
+
+LawFlow follows a **Case-First Architecture**.
+
 ```text
 User → Role → Case → Permissions → Actions
-````
-
-The application enforces strict role-based workflows and case-scoped interactions.
-
----
-
-# 🔄 Case Workflow Lifecycle
-
-```text
-Client Creates Case
-→ Admin Reviews
-→ Judge & Police Assigned
-→ Available For Lawyers
-→ Lawyer Accepts
-→ Clerk Assigned By Judge
-→ Investigation
-→ Hearings
-→ Verdict Issued
-→ Case Closed
 ```
 
+Every action inside the platform is scoped around a specific legal case, ensuring:
+
+* secure access control
+* workflow traceability
+* accountability
+* organized communication
+* centralized records
+
 ---
 
-# 👥 User Roles
+# ⚡ Key Features
 
-## 🟦 Admin
+## ✅ Core Functionalities
 
-* Manage users
-* Assign judges & police
-* Manage cases
+| Feature                   | Description                                    |
+| ------------------------- | ---------------------------------------------- |
+| 🔐 Authentication System  | ASP.NET Identity with role-based authorization |
+| ⚡ Real-Time Notifications | Live updates using SignalR                     |
+| 📊 Analytics Dashboard    | Charts, statistics, timelines                  |
+| 💬 Case-Based Chat        | Real-time communication per case               |
+| 📂 Document Management    | Secure uploads & evidence handling             |
+| 📅 Hearing Scheduling     | Calendar & hearing workflow                    |
+| 📝 Activity Logging       | Full audit trails                              |
+| 🔎 Search & Filtering     | Smart responsive data tables                   |
+| 🎨 SaaS UI/UX             | Glassmorphism + responsive design              |
+| 🌙 Theme Switching        | Persistent dark/light mode                     |
+
+---
+
+# 👥 User Roles & Responsibilities
+
+## 🛠️ Admin
+
+* Manage users & roles
+* Approve submitted cases
+* Assign judges & police officers
 * Monitor analytics
-* Manage hearings & verdicts
+* Oversee hearings & verdicts
+
+---
 
 ## ⚖️ Judge
 
 * Review assigned cases
-* Approve/reject evidence
+* Evaluate evidence
 * Assign clerks
+* Conduct hearings
 * Issue verdicts
+
+---
 
 ## 👨‍💼 Lawyer
 
-* Accept/decline cases
-* Review evidence
-* Chat with clients
-* View hearings & verdicts
+* Accept or decline cases
+* Access case evidence
+* Communicate with clients
+* Monitor hearing schedules
+
+---
 
 ## 🧑 Client
 
-* Submit FIR/cases
-* Upload documents
+* Submit FIRs & legal cases
+* Upload supporting documents
 * Track case progress
-* Communicate with lawyer
+* Chat with assigned lawyer
 
-## 👮 Police
+---
 
-* Manage investigations
+## 👮 Police Officer
+
+* Conduct investigations
 * Upload reports
 * Maintain criminal records
+* Collaborate with admin
+
+---
 
 ## 🧾 Clerk
 
 * Schedule hearings
 * Manage court calendars
-* Assist judges
 * Publish notifications
+* Assist judges during proceedings
 
 ---
 
-# ⚖️ LawFlow – Judicial Workflow Flow Diagram
+# 🔄 Judicial Workflow Lifecycle
 
-```text id="i1d2b0"
-┌───────────────────────┐
-│   CLIENT CREATES FIR  │
-│  Uploads Case & Docs  │
-└──────────┬────────────┘
-           │
-           ▼
-┌───────────────────────┐
-│     ADMIN REVIEW      │
-│ Verify & Approve Case │
-└──────────┬────────────┘
-           │
-           ▼
-┌────────────────────────────────────┐
-│ ADMIN ASSIGNS:                    │
-│ • Judge                           │
-│ • Police Officer                  │
-└──────────┬────────────────────────┘
-           │
-           ▼
-┌───────────────────────┐
-│ CASE AVAILABLE TO     │
-│      LAWYERS          │
-└──────────┬────────────┘
-           │
-    ┌──────┴──────┐
-    │             │
-    ▼             ▼
-┌───────────┐  ┌────────────┐
-│ ACCEPTED  │  │ DECLINED   │
-└─────┬─────┘  └─────┬──────┘
-      │              │
-      ▼              │
-┌────────────────────▼─────────────┐
-│ CASE ASSIGNED TO LAWYER          │
-│ Lawyer ↔ Client Chat Activated   │
-└────────────────┬─────────────────┘
-                 │
-                 ▼
-┌──────────────────────────────────┐
-│ JUDGE REVIEWS CASE               │
-│ Reviews Evidence & Documents     │
-└────────────────┬─────────────────┘
-                 │
-                 ▼
-┌──────────────────────────────────┐
-│ JUDGE ASSIGNS CLERK              │
-│ Clerk manages hearings/schedule  │
-└────────────────┬─────────────────┘
-                 │
-                 ▼
-┌──────────────────────────────────┐
-│ POLICE INVESTIGATION             │
-│ Upload Reports & Criminal Logs   │
-└────────────────┬─────────────────┘
-                 │
-                 ▼
-┌──────────────────────────────────┐
-│ HEARING PHASE                    │
-│ Clerk schedules hearings         │
-│ Judge conducts proceedings       │
-└────────────────┬─────────────────┘
-                 │
-                 ▼
-┌──────────────────────────────────┐
-│ VERDICT ISSUED                   │
-│ Judge publishes decision         │
-└────────────────┬─────────────────┘
-                 │
-                 ▼
-┌──────────────────────────────────┐
-│ POLICE RECORD UPDATE             │
-│ Guilty → Criminal Record Update  │
-│ Not Guilty → Clear Logs          │
-└────────────────┬─────────────────┘
-                 │
-                 ▼
-┌───────────────────────┐
-│     CASE CLOSED       │
-└───────────────────────┘
-```
+```mermaid
+flowchart TD
 
-# 💬 Case-Based Communication Flow
+A[🧑 Client Creates FIR & Uploads Documents]
+--> B[🛠️ Admin Reviews Case]
 
-```text id="y6pc7x"
-CLIENT  ⇄  LAWYER
-   │          │
-   └── Chat only inside specific case
+B --> C[⚖️ Assign Judge]
+B --> D[👮 Assign Police Officer]
 
-JUDGE  ⇄  CLERK
-   │          │
-   └── Hearing coordination per case
+C --> E[📢 Case Available To Lawyers]
 
-ADMIN  ⇄  POLICE
-   │          │
-   └── Investigation communication per case
-```
+E --> F{👨‍💼 Lawyer Decision}
 
-# 📊 High-Level System Architecture
+F -->|Accept| G[✅ Lawyer Assigned]
+F -->|Decline| E
 
-```text id="j1ql5d"
-Users
-  │
-  ▼
-Authentication & Role System
-  │
-  ▼
-Case Management Engine
-  │
-  ├── Hearings
-  ├── Verdicts
-  ├── Documents
-  ├── Notifications
-  ├── Real-Time Chat
-  ├── Activity Logs
-  └── Analytics Dashboard
-  │
-  ▼
-Supabase PostgreSQL Database
+G --> H[💬 Lawyer ↔ Client Chat Activated]
+
+H --> I[⚖️ Judge Reviews Evidence]
+
+I --> J[🧾 Judge Assigns Clerk]
+
+J --> K[👮 Police Investigation]
+
+K --> L[📅 Hearing Phase]
+
+L --> M[⚖️ Verdict Issued]
+
+M --> N[📂 Criminal Record Updated]
+
+N --> O[✅ Case Closed]
 ```
 
 ---
 
-# 💬 Case-Based Chat System
+# 💬 Case-Based Communication Model
 
-LawFlow uses a **strict case-scoped communication model**.
+LawFlow uses a **strict case-scoped communication system**.
 
-### Allowed Chats:
+Only authorized users linked to a case can communicate.
 
-* Client ↔ Lawyer
-* Judge ↔ Clerk
-* Admin ↔ Police
+```mermaid
+graph LR
 
-All chats:
+A[🧑 Client] <-->|Case Chat| B[👨‍💼 Lawyer]
 
-* are linked to a specific CaseId
-* use SignalR for real-time messaging
-* are only accessible inside case details pages
+C[⚖️ Judge] <-->|Hearing Coordination| D[🧾 Clerk]
+
+E[🛠️ Admin] <-->|Investigation Updates| F[👮 Police]
+```
+
+---
+
+# 🏗️ High-Level System Architecture
+
+```mermaid
+flowchart TB
+
+U[👥 Users]
+--> A[🔐 Authentication & Authorization]
+
+A --> B[⚖️ Case Management Engine]
+
+B --> C1[📅 Hearings]
+B --> C2[📂 Documents]
+B --> C3[💬 Real-Time Chat]
+B --> C4[🔔 Notifications]
+B --> C5[📊 Analytics]
+B --> C6[📝 Activity Logs]
+B --> C7[⚖️ Verdict System]
+
+B --> D[(🗄️ Supabase PostgreSQL)]
+
+D --> E[⚡ SignalR Real-Time Layer]
+```
+
+---
+
+# 🗂️ Database Architecture
+
+## 📌 Main Entities
+
+```mermaid
+erDiagram
+
+USERS ||--o{ CASE_ASSIGNMENTS : assigned
+USERS ||--o{ MESSAGES : sends
+USERS ||--o{ NOTIFICATIONS : receives
+
+CASES ||--o{ DOCUMENTS : contains
+CASES ||--o{ HEARINGS : schedules
+CASES ||--o{ VERDICTS : generates
+CASES ||--o{ POLICE_REPORTS : includes
+CASES ||--o{ MESSAGES : contains
+CASES ||--o{ ACTIVITY_LOGS : tracks
+
+USERS {
+    Guid Id
+    string FullName
+    string Email
+    string Role
+}
+
+CASES {
+    Guid Id
+    string Title
+    string Status
+    datetime CreatedAt
+}
+
+DOCUMENTS {
+    Guid Id
+    string FileName
+    string FileUrl
+}
+
+HEARINGS {
+    Guid Id
+    datetime HearingDate
+    string Status
+}
+
+VERDICTS {
+    Guid Id
+    string Decision
+    datetime IssuedAt
+}
+```
+
+---
+
+# ⚡ Real-Time Features (SignalR)
+
+LawFlow uses **SignalR** for instant synchronization across the platform.
+
+## Included Real-Time Systems
+
+* 🔔 Live notifications
+* 💬 Real-time chat
+* ⚖️ Case status updates
+* 📅 Hearing schedule updates
+* 📊 Dashboard auto-refresh
+* 📝 Activity stream updates
 
 ---
 
 # 📊 Dashboard & Analytics
 
-Each role has a dedicated dashboard containing:
+Every role gets a dedicated intelligent dashboard.
 
-* statistics cards
-* visual charts
-* activity timelines
-* recent cases
-* quick action buttons
-* notifications panel
+## Dashboard Components
 
-### Visualizations Include:
-
-* Bar charts
-* Pie charts
-* Case status analytics
-* Hearing statistics
-* Verdict distribution
-* Activity summaries
+* 📈 Statistics cards
+* 📊 Bar & pie charts
+* 🕒 Activity timelines
+* 📂 Recent cases
+* 🔔 Notification center
+* ⚡ Quick actions
 
 ---
 
-# 🎨 UI/UX Design
+# 🎨 Modern SaaS UI/UX
 
-LawFlow uses a modern SaaS-inspired UI system with:
+LawFlow uses a premium modern interface inspired by contemporary SaaS platforms.
 
-* glassmorphism cards
-* smooth animations
-* hover glow effects
-* responsive layouts
-* rounded components
-* sidebar navigation
-* theme persistence
+## UI Highlights
 
-### UI Features
-
-* Light/Dark mode
-* Animated dashboards
-* Responsive design
-* Smooth transitions
-* Interactive cards & tables
+* ✨ Glassmorphism cards
+* 🌙 Light/Dark theme
+* 🎞️ Smooth animations
+* 💡 Hover glow effects
+* 📱 Fully responsive layouts
+* 🧭 Sidebar navigation
+* 🔥 Interactive tables & dashboards
 
 ---
 
-# 🛠️ Tech Stack
+# 🛠️ Technology Stack
 
-## Frontend
+## 🎨 Frontend
 
-* Blazor Server
-* HTML5
-* CSS3
-* Bootstrap 5
-* MudBlazor
-* Chart.js
-* Tailwind CSS
-
-## Backend
-
-* ASP.NET Core
-* C#
-* Entity Framework Core
-* SignalR
-
-## Database
-
-* Supabase PostgreSQL
-* Npgsql Provider
+| Technology    | Purpose                 |
+| ------------- | ----------------------- |
+| Blazor Server | Frontend Framework      |
+| MudBlazor     | UI Components           |
+| Bootstrap 5   | Responsive Layout       |
+| Tailwind CSS  | Utility Styling         |
+| Chart.js      | Analytics Visualization |
 
 ---
 
-# 🗄️ Database Entities
+## ⚙️ Backend
 
-Main entities include:
+| Technology            | Purpose                 |
+| --------------------- | ----------------------- |
+| ASP.NET Core          | Backend Framework       |
+| C#                    | Core Language           |
+| Entity Framework Core | ORM                     |
+| SignalR               | Real-Time Communication |
 
-* Users
-* Roles
-* Cases
-* CaseAssignments
-* Documents
-* Hearings
-* Verdicts
-* Messages
-* Notifications
-* ActivityLogs
-* PoliceReports
-* ClerkAssignments
+---
+
+## 🗄️ Database
+
+| Technology          | Purpose             |
+| ------------------- | ------------------- |
+| Supabase PostgreSQL | Primary Database    |
+| Npgsql              | PostgreSQL Provider |
 
 ---
 
 # 🔐 Security Features
 
-* ASP.NET Identity authentication
-* Role-based authorization
-* Secure route protection
-* Password hashing
-* File upload validation
-* Audit logging
-* Session management
-  
----
+LawFlow prioritizes secure judicial data management.
 
-# ⚡ Real-Time Features
+## Security Systems
 
-Using SignalR:
-
-* Real-time notifications
-* Live chat updates
-* Case status updates
-* Hearing schedule updates
-* Dashboard refreshes
+* 🔐 ASP.NET Identity authentication
+* 🛡️ Role-based authorization
+* 🔒 Secure route protection
+* 🔑 Password hashing
+* 📂 File validation
+* 📝 Audit logging
+* 🧭 Session management
 
 ---
 
-# 📱 Responsive Support
+# 📱 Responsive Design
 
-The application is fully responsive and optimized for:
+Optimized for:
 
-* Desktop
-* Tablet
-* Mobile browsers
+* 💻 Desktop
+* 📱 Mobile
+* 📟 Tablets
 
 ---
 
@@ -386,37 +381,64 @@ The application is fully responsive and optimized for:
 
 LawFlow aims to:
 
-* reduce manual judicial paperwork
-* improve legal workflow transparency
-* centralize communication
-* improve document organization
+* reduce manual paperwork
 * modernize judicial operations
+* centralize legal communication
+* improve workflow transparency
+* organize evidence & documents
+* improve case tracking efficiency
 
 ---
 
-# 🚀 Future Improvements
+# 🚀 Future Roadmap
 
-Planned future enhancements:
+## Planned Enhancements
 
-* AI-assisted document analysis
-* OCR document scanning
-* Email/SMS notifications
-* Video hearing support
-* E-signature system
-* Multi-language support
-* Court calendar integrations
-* Court Locations
+* 🤖 AI-powered document analysis
+* 🔍 OCR document scanning
+* 📧 Email/SMS notifications
+* 🎥 Video hearing system
+* ✍️ E-signature integration
+* 🌐 Multi-language support
+* 🗓️ Court calendar integration
+* 📍 Court location management
 
 ---
 
-# 📌 Status
+# 📌 Development Status
 
-🟢 In Active Development
+```diff
++ 🟢 ACTIVE DEVELOPMENT
++ Core Architecture Completed
++ UI/UX In Progress
++ Database Integration Active
++ SignalR Features In Development
+```
 
 ---
 
 # 👨‍💻 Developed By
 
-hasbeejay
+## hasbeejay
 
-Built using modern .NET and Blazor technologies.
+> Built using modern .NET technologies to redefine judicial workflow management systems.
+
+---
+
+# ⭐ Support
+
+If you like this project:
+
+🌟 Star the repository
+🍴 Fork the project
+🛠️ Contribute to development
+
+---
+
+<div align="center">
+
+# ⚖️ LawFlow
+
+### Smart • Secure • Real-Time Judicial Management
+
+</div>
