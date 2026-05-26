@@ -404,177 +404,137 @@ namespace LawFlow.Services
         // Seed comprehensive historical dashboard data matching the 11-stage status machine
         public async Task SeedDemoCasesAsync()
         {
-            // Ensure a clean slate for cases and related data
-            _context.Cases.RemoveRange(_context.Cases);
-            _context.Hearings.RemoveRange(_context.Hearings);
-            _context.Documents.RemoveRange(_context.Documents);
-            _context.PoliceReports.RemoveRange(_context.PoliceReports);
-            _context.Verdicts.RemoveRange(_context.Verdicts);
-            await _context.SaveChangesAsync();
+            var users = await _context.Users.ToListAsync();
+            var clients = users.Where(u => u.Role == UserRole.Client).ToList();
+            var lawyers = users.Where(u => u.Role == UserRole.Lawyer).ToList();
+            var judges = users.Where(u => u.Role == UserRole.Judge).ToList();
+            var police = users.Where(u => u.Role == UserRole.Police).ToList();
+            var clerks = users.Where(u => u.Role == UserRole.Clerk).ToList();
 
-            // Retrieve seeded users by username
-            var clientZaheer = await _context.Users.FirstOrDefaultAsync(u => u.UserName == "client_zaheer");
-            var clientFariha = await _context.Users.FirstOrDefaultAsync(u => u.UserName == "client_fariha");
-            var clientHaneef = await _context.Users.FirstOrDefaultAsync(u => u.UserName == "client_haneef");
-            var clientSamira = await _context.Users.FirstOrDefaultAsync(u => u.UserName == "client_samira");
+            if (!clients.Any()) return; // Sanity check
 
-            var lawyerFaisal = await _context.Users.FirstOrDefaultAsync(u => u.UserName == "lawyer_faisal");
-            var lawyerNadia = await _context.Users.FirstOrDefaultAsync(u => u.UserName == "lawyer_nadia");
-            var lawyerUzair = await _context.Users.FirstOrDefaultAsync(u => u.UserName == "lawyer_uzair");
+            var faker = new Bogus.Faker("en_US");
+            var casesToInsert = new List<Case>();
+            var docsToInsert = new List<Document>();
+            var hearingsToInsert = new List<Hearing>();
+            var reportsToInsert = new List<PoliceReport>();
+            var verdictsToInsert = new List<Verdict>();
 
-            var judgeAli = await _context.Users.FirstOrDefaultAsync(u => u.UserName == "judge_ali");
-            var judgeSaba = await _context.Users.FirstOrDefaultAsync(u => u.UserName == "judge_saba");
+            var caseStatuses = Enum.GetValues(typeof(CaseStatus)).Cast<CaseStatus>().ToList();
 
-            var policeRahim = await _context.Users.FirstOrDefaultAsync(u => u.UserName == "police_rahim");
-            var policeLara = await _context.Users.FirstOrDefaultAsync(u => u.UserName == "police_lara");
-            var policeHammad = await _context.Users.FirstOrDefaultAsync(u => u.UserName == "police_hammad");
-            var policeFarooq = await _context.Users.FirstOrDefaultAsync(u => u.UserName == "police_farooq");
-
-            var clerkAhmad = await _context.Users.FirstOrDefaultAsync(u => u.UserName == "clerk_ahmad");
-            var clerkLaila = await _context.Users.FirstOrDefaultAsync(u => u.UserName == "clerk_laila");
-            var clerkOsama = await _context.Users.FirstOrDefaultAsync(u => u.UserName == "clerk_osama");
-            var clerkFahad = await _context.Users.FirstOrDefaultAsync(u => u.UserName == "clerk_fahad");
-
-            // Helper to safely get Ids
-            string IdOr(string? id) => id ?? string.Empty;
-
-            // 1. Created (Complaint Lodged)
-            var case1 = new Case
+            int caseCount = 2500; // Large scale over 5 years
+            
+            for (int i = 1; i <= caseCount; i++)
             {
-                CaseNumber = "PK-2026-0001",
-                Title = "Illegal Construction of Unauthorized Mosque",
-                Description = "A residential area reports an unauthorized mosque built without permits, causing community disputes.",
-                Status = CaseStatus.Created,
-                ClientId = IdOr(clientZaheer?.Id),
-                CreatedAt = DateTime.UtcNow.AddDays(-20),
-                UpdatedAt = DateTime.UtcNow.AddDays(-20)
-            };
+                var createdAt = faker.Date.Past(5).ToUniversalTime();
+                var client = faker.PickRandom(clients);
+                var status = faker.PickRandom(caseStatuses);
+                
+                var c = new Case
+                {
+                    CaseNumber = $"LF-{createdAt.Year}-{i:D4}",
+                    Title = faker.Lorem.Sentence(3, 8),
+                    Description = faker.Lorem.Paragraphs(2),
+                    Status = status,
+                    ClientId = client.Id,
+                    CreatedAt = createdAt,
+                    UpdatedAt = faker.Date.Between(createdAt, DateTime.UtcNow).ToUniversalTime()
+                };
 
-            // 2. Investigation Case
-            var case2 = new Case
+                // Determine assigned officials based on status
+                if (status >= CaseStatus.AssignedToJudgeAndPolice || status == CaseStatus.Closed)
+                {
+                    if (judges.Any()) c.JudgeId = faker.PickRandom(judges).Id;
+                    if (police.Any()) c.PoliceId = faker.PickRandom(police).Id;
+                    if (clerks.Any()) c.ClerkId = faker.PickRandom(clerks).Id;
+                }
+
+                if (status >= CaseStatus.LawyerAccepted || status == CaseStatus.AssignedToLawyer || status == CaseStatus.Closed)
+                {
+                    if (lawyers.Any()) c.LawyerId = faker.PickRandom(lawyers).Id;
+                }
+
+                casesToInsert.Add(c);
+            }
+
+            // Save cases first so we get IDs
+            foreach (var batch in casesToInsert.Chunk(500))
             {
-                CaseNumber = "PK-2026-0002",
-                Title = "High‑Value Art Theft from Lahore Museum",
-                Description = "Stolen paintings valued at PKR 150M reported missing; investigators suspect an inside job.",
-                Status = CaseStatus.Investigation,
-                ClientId = IdOr(clientFariha?.Id),
-                LawyerId = IdOr(lawyerFaisal?.Id),
-                JudgeId = IdOr(judgeAli?.Id),
-                PoliceId = IdOr(policeRahim?.Id),
-                ClerkId = IdOr(clerkAhmad?.Id),
-                CreatedAt = DateTime.UtcNow.AddDays(-15),
-                UpdatedAt = DateTime.UtcNow.AddDays(-10)
-            };
+                _context.Cases.AddRange(batch);
+                await _context.SaveChangesAsync();
+            }
 
-            // 3. Hearing Case
-            var case3 = new Case
+            // Now that cases have IDs, we can generate related data
+            foreach (var c in casesToInsert)
             {
-                CaseNumber = "PK-2026-0003",
-                Title = "Corporate Fraud at National Bank",
-                Description = "Allegations of embezzlement and false accounting spanning three fiscal years.",
-                Status = CaseStatus.Hearing,
-                ClientId = IdOr(clientHaneef?.Id),
-                LawyerId = IdOr(lawyerNadia?.Id),
-                JudgeId = IdOr(judgeSaba?.Id),
-                PoliceId = IdOr(policeLara?.Id),
-                ClerkId = IdOr(clerkLaila?.Id),
-                CreatedAt = DateTime.UtcNow.AddDays(-30),
-                UpdatedAt = DateTime.UtcNow.AddDays(-5)
-            };
+                // Documents
+                int docCount = faker.Random.Int(1, 5);
+                for (int d = 0; d < docCount; d++)
+                {
+                    docsToInsert.Add(new Document
+                    {
+                        CaseId = c.Id,
+                        FileName = faker.System.FileName("pdf"),
+                        FilePath = $"/uploads/{faker.System.FileName("pdf")}",
+                        DocumentType = faker.PickRandom("FIR", "Evidence", "Report", "Statement"),
+                        UploadedById = c.ClientId,
+                        UploadedAt = faker.Date.Between(c.CreatedAt, c.UpdatedAt ?? DateTime.UtcNow).ToUniversalTime(),
+                        IsApproved = true
+                    });
+                }
 
-            // 4. VerdictIssued Case
-            var case4 = new Case
-            {
-                CaseNumber = "PK-2026-0004",
-                Title = "Environmental Pollution Violation by Textile Mill",
-                Description = "Factory accused of dumping hazardous waste into the River Ravi, violating EPA standards.",
-                Status = CaseStatus.VerdictIssued,
-                ClientId = IdOr(clientSamira?.Id),
-                LawyerId = IdOr(lawyerUzair?.Id),
-                JudgeId = IdOr(judgeAli?.Id),
-                PoliceId = IdOr(policeHammad?.Id),
-                ClerkId = IdOr(clerkOsama?.Id),
-                CreatedAt = DateTime.UtcNow.AddDays(-25),
-                UpdatedAt = DateTime.UtcNow.AddDays(-2)
-            };
+                // Hearings
+                if (c.Status >= CaseStatus.Hearing || c.Status == CaseStatus.VerdictIssued || c.Status == CaseStatus.Closed)
+                {
+                    int hearingCount = faker.Random.Int(1, 4);
+                    for (int h = 0; h < hearingCount; h++)
+                    {
+                        hearingsToInsert.Add(new Hearing
+                        {
+                            CaseId = c.Id,
+                            HearingDate = faker.Date.Between(c.CreatedAt, DateTime.UtcNow.AddDays(30)).ToUniversalTime(),
+                            Location = $"Courtroom {faker.Random.Int(1, 10)}",
+                            Notes = faker.Lorem.Sentence(),
+                            Status = faker.PickRandom("Scheduled", "Completed", "Adjourned"),
+                            CreatedAt = c.CreatedAt
+                        });
+                    }
+                }
 
-            // 5. Closed Case with Verdict
-            var case5 = new Case
-            {
-                CaseNumber = "PK-2026-0005",
-                Title = "Kidnapping Ring Dismantled in Karachi",
-                Description = "Multi‑city kidnapping operation uncovered; suspects arrested and charged.",
-                Status = CaseStatus.Closed,
-                ClientId = IdOr(clientZaheer?.Id),
-                LawyerId = IdOr(lawyerFaisal?.Id),
-                JudgeId = IdOr(judgeSaba?.Id),
-                PoliceId = IdOr(policeFarooq?.Id),
-                ClerkId = IdOr(clerkFahad?.Id),
-                CreatedAt = DateTime.UtcNow.AddDays(-45),
-                UpdatedAt = DateTime.UtcNow.AddDays(-10)
-            };
+                // Police Reports
+                if (c.Status >= CaseStatus.Investigation && c.PoliceId != null)
+                {
+                    reportsToInsert.Add(new PoliceReport
+                    {
+                        CaseId = c.Id,
+                        OfficerId = c.PoliceId,
+                        Summary = faker.Lorem.Paragraph(),
+                        CriminalRecordUpdated = faker.Random.Bool(),
+                        CreatedAt = faker.Date.Between(c.CreatedAt, c.UpdatedAt ?? DateTime.UtcNow).ToUniversalTime()
+                    });
+                }
 
-            // Add cases to context
-            _context.Cases.AddRange(case1, case2, case3, case4, case5);
-            await _context.SaveChangesAsync();
+                // Verdicts
+                if ((c.Status == CaseStatus.VerdictIssued || c.Status == CaseStatus.Closed) && c.JudgeId != null)
+                {
+                    verdictsToInsert.Add(new Verdict
+                    {
+                        CaseId = c.Id,
+                        JudgeId = c.JudgeId,
+                        Type = faker.PickRandom(VerdictType.Guilty, VerdictType.Acquitted, VerdictType.Dismissed),
+                        Details = faker.Lorem.Paragraph(),
+                        IsPublished = true,
+                        IssuedAt = (c.UpdatedAt ?? DateTime.UtcNow).AddDays(-1),
+                        PublishedAt = c.UpdatedAt ?? DateTime.UtcNow
+                    });
+                }
+            }
 
-            // Seed supporting data
-            var hearing = new Hearing
-            {
-                CaseId = case3.Id,
-                HearingDate = DateTime.UtcNow.AddDays(3),
-                Location = "Lahore High Courtroom 2",
-                Notes = "Final arguments and cross‑examination.",
-                Status = "Scheduled",
-                CreatedAt = DateTime.UtcNow.AddDays(-5)
-            };
-            _context.Hearings.Add(hearing);
-
-            var verdict = new Verdict
-            {
-                CaseId = case5.Id,
-                JudgeId = case5.JudgeId,
-                Type = VerdictType.Guilty,
-                Details = "All accused found guilty of kidnapping and sentenced to 20 years imprisonment.",
-                IsPublished = true,
-                IssuedAt = DateTime.UtcNow.AddDays(-12),
-                PublishedAt = DateTime.UtcNow.AddDays(-12)
-            };
-            _context.Verdicts.Add(verdict);
-
-            var policeReport = new PoliceReport
-            {
-                CaseId = case2.Id,
-                OfficerId = case2.PoliceId,
-                Summary = "Recovered stolen artworks from a hidden warehouse; forensic analysis linked suspects.",
-                CriminalRecordUpdated = true,
-                CreatedAt = DateTime.UtcNow.AddDays(-8)
-            };
-            _context.PoliceReports.Add(policeReport);
-
-            var doc1 = new Document
-            {
-                CaseId = case2.Id,
-                FileName = "Incident_Report.pdf",
-                FilePath = "/uploads/incident_report.pdf",
-                DocumentType = "Report",
-                UploadedById = case2.PoliceId,
-                UploadedAt = DateTime.UtcNow.AddDays(-14),
-                IsApproved = true
-            };
-            var doc2 = new Document
-            {
-                CaseId = case2.Id,
-                FileName = "Surveillance_Video.mp4",
-                FilePath = "/uploads/surveillance.mp4",
-                DocumentType = "Evidence",
-                UploadedById = case2.PoliceId,
-                UploadedAt = DateTime.UtcNow.AddDays(-13),
-                IsApproved = true
-            };
-            _context.Documents.AddRange(doc1, doc2);
-
-            await _context.SaveChangesAsync();
+            // Add related data in batches to avoid overwhelming the context
+            foreach (var batch in docsToInsert.Chunk(500)) { _context.Documents.AddRange(batch); await _context.SaveChangesAsync(); }
+            foreach (var batch in hearingsToInsert.Chunk(500)) { _context.Hearings.AddRange(batch); await _context.SaveChangesAsync(); }
+            foreach (var batch in reportsToInsert.Chunk(500)) { _context.PoliceReports.AddRange(batch); await _context.SaveChangesAsync(); }
+            foreach (var batch in verdictsToInsert.Chunk(500)) { _context.Verdicts.AddRange(batch); await _context.SaveChangesAsync(); }
         }
     }
 }

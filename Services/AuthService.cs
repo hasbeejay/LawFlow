@@ -143,7 +143,6 @@ namespace LawFlow.Services
         {
             // Clear existing data to ensure a clean slate
             _context.Users.RemoveRange(_context.Users);
-            // Also clear related tables if needed (Cases, Documents, etc.)
             _context.Cases.RemoveRange(_context.Cases);
             _context.Documents.RemoveRange(_context.Documents);
             _context.Notifications.RemoveRange(_context.Notifications);
@@ -153,38 +152,30 @@ namespace LawFlow.Services
             _context.Hearings.RemoveRange(_context.Hearings);
             await _context.SaveChangesAsync();
 
-            // Seed default accounts for testing the workflow with Pakistani participants
-            var usersToSeed = new List<(string Username, string FullName, UserRole Role, string Spec, string Badge, string Dept)>
+            // 1. Seed base static users so login always works for these roles
+            var staticUsers = new List<(string Username, string FullName, UserRole Role, string Spec, string Badge, string Dept)>
             {
                 ("admin", "Ahmed Khan", UserRole.Admin, "", "", ""),
-                // Judges (2)
                 ("judge_ali", "Ali Raza", UserRole.Judge, "Criminal Law", "", ""),
                 ("judge_saba", "Saba Malik", UserRole.Judge, "Civil Law", "", ""),
-                // Lawyers (3)
                 ("lawyer_faisal", "Faisal Ahmed", UserRole.Lawyer, "Defense Attorney", "", ""),
                 ("lawyer_nadia", "Nadia Hussain", UserRole.Lawyer, "Corporate Law", "", ""),
                 ("lawyer_uzair", "Uzair Siddiqui", UserRole.Lawyer, "Family Law", "", ""),
-                // Clients (4)
                 ("client_zaheer", "Zaheer Ahmed", UserRole.Client, "", "", ""),
                 ("client_fariha", "Fariha Begum", UserRole.Client, "", "", ""),
                 ("client_haneef", "Haneef Iqbal", UserRole.Client, "", "", ""),
                 ("client_samira", "Samira Khan", UserRole.Client, "", "", ""),
-                // Police (5)
                 ("police_rahim", "Rahim Ali", UserRole.Police, "", "PKP-001", ""),
                 ("police_lara", "Lara Siddiqi", UserRole.Police, "", "PKP-002", ""),
                 ("police_hammad", "Hammad Saleem", UserRole.Police, "", "PKP-003", ""),
                 ("police_farooq", "Farooq Zaman", UserRole.Police, "", "PKP-004", ""),
-                ("police_nazir", "Nazir Ahmed", UserRole.Police, "", "PKP-005", ""),
-                // Clerks (6)
                 ("clerk_ahmad", "Ahmad Shah", UserRole.Clerk, "", "", "Records Department"),
                 ("clerk_laila", "Laila Qureshi", UserRole.Clerk, "", "", "Scheduling Department"),
                 ("clerk_osama", "Osama Tariq", UserRole.Clerk, "", "", "Evidence Management"),
-                ("clerk_nida", "Nida Khan", UserRole.Clerk, "", "", "Document Control"),
-                ("clerk_fahad", "Fahad Iqbal", UserRole.Clerk, "", "", "Administrative Support"),
-                ("clerk_zara", "Zara Butt", UserRole.Clerk, "", "", "Public Relations")
+                ("clerk_fahad", "Fahad Iqbal", UserRole.Clerk, "", "", "Administrative Support")
             };
 
-            foreach (var u in usersToSeed)
+            foreach (var u in staticUsers)
             {
                 var user = new ApplicationUser
                 {
@@ -204,69 +195,94 @@ namespace LawFlow.Services
 
             await _context.SaveChangesAsync();
 
-            // Seed sample cases spanning 5 years
-            var random = new Random();
-            var users = _context.Users.ToList();
+            // 2. Generate extra users with Bogus
+            var faker = new Bogus.Faker("en_US"); // Use generic English
+            var extraUsers = new List<ApplicationUser>();
 
-            // Helper to find user by username
-            ApplicationUser FindUser(string username) => users.FirstOrDefault(u => u.UserName == username)!;
-
-            var casesToSeed = new List<(string CaseNumber, string Title, string Description, string ClientUser, string? LawyerUser, string? JudgeUser, DateTime CreatedAt)>
+            // Generate 150 clients
+            for (int i = 0; i < 150; i++)
             {
-                ("2022-001", "Land Dispute", "Dispute over property boundaries.", "client_zaheer", "lawyer_faisal", "judge_ali", DateTime.UtcNow.AddYears(-4)),
-                ("2023-015", "Contract Breach", "Breach of commercial contract.", "client_fariha", "lawyer_nadia", "judge_saba", DateTime.UtcNow.AddYears(-3).AddMonths(-2)),
-                ("2024-027", "Family Custody", "Custody battle between parents.", "client_haneef", "lawyer_uzair", "judge_ali", DateTime.UtcNow.AddYears(-2).AddMonths(-5)),
-                ("2025-042", "Fraud Investigation", "Investigation of financial fraud.", "client_samira", "lawyer_faisal", "judge_saba", DateTime.UtcNow.AddYears(-1).AddMonths(-1)),
-                ("2026-058", "Cybercrime case", "Investigation of hacking incident.", "client_zaheer", "lawyer_nadia", "judge_ali", DateTime.UtcNow.AddMonths(-3))
-            };
-
-            foreach (var c in casesToSeed)
-            {
-                var client = FindUser(c.ClientUser);
-                var lawyer = c.LawyerUser != null ? FindUser(c.LawyerUser) : null;
-                var judge = c.JudgeUser != null ? FindUser(c.JudgeUser) : null;
-
-                var caseEntity = new Case
+                var user = new ApplicationUser
                 {
-                    CaseNumber = c.CaseNumber,
-                    Title = c.Title,
-                    Description = c.Description,
-                    Status = CaseStatus.InProgress,
-                    ClientId = client.Id,
-                    LawyerId = lawyer?.Id,
-                    JudgeId = judge?.Id,
-                    CreatedAt = c.CreatedAt,
-                    UpdatedAt = c.CreatedAt
+                    UserName = faker.Internet.UserName(),
+                    Email = faker.Internet.Email(),
+                    FullName = faker.Name.FullName(),
+                    Role = UserRole.Client,
+                    IsActive = true,
+                    CreatedAt = faker.Date.Past(5).ToUniversalTime()
                 };
-                _context.Cases.Add(caseEntity);
-                await _context.SaveChangesAsync();
-
-                // Add hearings
-                int hearingCount = random.Next(1, 4);
-                for (int i = 0; i < hearingCount; i++)
-                {
-                    var hearing = new Hearing
-                    {
-                        CaseId = caseEntity.Id,
-                        HearingDate = caseEntity.CreatedAt.AddDays(i * 30),
-                        Notes = $"Hearing {i + 1} for case {c.CaseNumber}",
-                        CreatedAt = caseEntity.CreatedAt.AddDays(i * 30)
-                    };
-                    _context.Hearings.Add(hearing);
-                }
-
-                // Add a document
-                var doc = new Document
-                {
-                    CaseId = caseEntity.Id,
-                    FileName = $"{c.Title} Evidence.pdf",
-                    FilePath = $"/files/{c.CaseNumber}_evidence.pdf",
-                    UploadedAt = caseEntity.CreatedAt.AddDays(1)
-                };
-                _context.Documents.Add(doc);
+                user.PasswordHash = _passwordHasher.HashPassword(user, "Password123!");
+                extraUsers.Add(user);
             }
 
-            // Final save
+            // Generate 30 lawyers
+            for (int i = 0; i < 30; i++)
+            {
+                var user = new ApplicationUser
+                {
+                    UserName = faker.Internet.UserName() + "_lawyer",
+                    Email = faker.Internet.Email(),
+                    FullName = faker.Name.FullName(),
+                    Role = UserRole.Lawyer,
+                    Specialization = faker.PickRandom("Corporate Law", "Criminal Law", "Family Law", "Real Estate Law", "Intellectual Property"),
+                    IsActive = true,
+                    CreatedAt = faker.Date.Past(5).ToUniversalTime()
+                };
+                user.PasswordHash = _passwordHasher.HashPassword(user, "Password123!");
+                extraUsers.Add(user);
+            }
+
+            // Generate 15 judges
+            for (int i = 0; i < 15; i++)
+            {
+                var user = new ApplicationUser
+                {
+                    UserName = faker.Internet.UserName() + "_judge",
+                    Email = faker.Internet.Email(),
+                    FullName = "Hon. " + faker.Name.FullName(),
+                    Role = UserRole.Judge,
+                    IsActive = true,
+                    CreatedAt = faker.Date.Past(5).ToUniversalTime()
+                };
+                user.PasswordHash = _passwordHasher.HashPassword(user, "Password123!");
+                extraUsers.Add(user);
+            }
+
+            // Generate 30 police
+            for (int i = 0; i < 30; i++)
+            {
+                var user = new ApplicationUser
+                {
+                    UserName = faker.Internet.UserName() + "_police",
+                    Email = faker.Internet.Email(),
+                    FullName = "Officer " + faker.Name.FullName(),
+                    Role = UserRole.Police,
+                    BadgeNumber = "PKP-" + faker.Random.Number(100, 9999),
+                    IsActive = true,
+                    CreatedAt = faker.Date.Past(5).ToUniversalTime()
+                };
+                user.PasswordHash = _passwordHasher.HashPassword(user, "Password123!");
+                extraUsers.Add(user);
+            }
+
+            // Generate 15 clerks
+            for (int i = 0; i < 15; i++)
+            {
+                var user = new ApplicationUser
+                {
+                    UserName = faker.Internet.UserName() + "_clerk",
+                    Email = faker.Internet.Email(),
+                    FullName = faker.Name.FullName(),
+                    Role = UserRole.Clerk,
+                    Department = faker.PickRandom("Records Department", "Scheduling Department", "Evidence Management", "Public Relations"),
+                    IsActive = true,
+                    CreatedAt = faker.Date.Past(5).ToUniversalTime()
+                };
+                user.PasswordHash = _passwordHasher.HashPassword(user, "Password123!");
+                extraUsers.Add(user);
+            }
+
+            _context.Users.AddRange(extraUsers);
             await _context.SaveChangesAsync();
 
             return true;

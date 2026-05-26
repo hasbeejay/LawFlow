@@ -493,3 +493,4 @@ D:/LawFlow/obj/Debug/net10.0/compressed/se26rdiey6-{0}-692ysjxzf2-692ysjxzf2.gz
 /Users/hasbeejay/Desktop/Github Repos/LawFlow/obj/Debug/net10.0/LawFlow.pdb
 /Users/hasbeejay/Desktop/Github Repos/LawFlow/obj/Debug/net10.0/LawFlow.genruntimeconfig.cache
 /Users/hasbeejay/Desktop/Github Repos/LawFlow/obj/Debug/net10.0/ref/LawFlow.dll
+/Users/hasbeejay/Desktop/Github Repos/LawFlow/bin/Debug/net10.0/Bogus.dll

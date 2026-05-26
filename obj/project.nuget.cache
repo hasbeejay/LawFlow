@@ -1,9 +1,10 @@
 {
   "version": 2,
-  "dgSpecHash": "WyTdT+fff54=",
+  "dgSpecHash": "5efF63kSmpo=",
   "success": true,
   "projectFilePath": "/Users/hasbeejay/Desktop/Github Repos/LawFlow/LawFlow.csproj",
   "expectedPackageFiles": [
+    "/Users/hasbeejay/.nuget/packages/bogus/35.6.5/bogus.35.6.5.nupkg.sha512",
     "/Users/hasbeejay/.nuget/packages/humanizer.core/2.14.1/humanizer.core.2.14.1.nupkg.sha512",
     "/Users/hasbeejay/.nuget/packages/microsoft.aspnetcore.app.internal.assets/10.0.8/microsoft.aspnetcore.app.internal.assets.10.0.8.nupkg.sha512",
     "/Users/hasbeejay/.nuget/packages/microsoft.aspnetcore.http.connections.client/8.0.0/microsoft.aspnetcore.http.connections.client.8.0.0.nupkg.sha512",
