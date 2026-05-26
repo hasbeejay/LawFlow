@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "6Wsr3t6kfVM=",
+  "dgSpecHash": "WyodtLIdsrY=",
   "success": true,
   "projectFilePath": "/Users/hasbeejay/Desktop/Github Repos/LawFlow/LawFlow.csproj",
   "expectedPackageFiles": [
@@ -22,6 +22,7 @@
     "/Users/hasbeejay/.nuget/packages/microsoft.entityframeworkcore.design/8.0.0/microsoft.entityframeworkcore.design.8.0.0.nupkg.sha512",
     "/Users/hasbeejay/.nuget/packages/microsoft.entityframeworkcore.relational/8.0.2/microsoft.entityframeworkcore.relational.8.0.2.nupkg.sha512",
     "/Users/hasbeejay/.nuget/packages/microsoft.entityframeworkcore.tools/8.0.0/microsoft.entityframeworkcore.tools.8.0.0.nupkg.sha512",
+    "/Users/hasbeejay/.nuget/packages/microsoft.extensions.configuration.json/10.0.0/microsoft.extensions.configuration.json.10.0.0.nupkg.sha512",
     "/Users/hasbeejay/.nuget/packages/microsoft.extensions.dependencymodel/8.0.0/microsoft.extensions.dependencymodel.8.0.0.nupkg.sha512",
     "/Users/hasbeejay/.nuget/packages/mono.texttemplating/2.2.1/mono.texttemplating.2.2.1.nupkg.sha512",
     "/Users/hasbeejay/.nuget/packages/mudblazor/9.4.0/mudblazor.9.4.0.nupkg.sha512",
@@ -36,6 +37,18 @@
     "/Users/hasbeejay/.nuget/packages/system.composition.typedparts/6.0.0/system.composition.typedparts.6.0.0.nupkg.sha512"
   ],
   "logs": [
+    {
+      "code": "NU1510",
+      "level": "Warning",
+      "message": "PackageReference Microsoft.Extensions.Configuration.Json will not be pruned. Consider removing this package from your dependencies, as it is likely unnecessary.",
+      "projectPath": "/Users/hasbeejay/Desktop/Github Repos/LawFlow/LawFlow.csproj",
+      "warningLevel": 1,
+      "filePath": "/Users/hasbeejay/Desktop/Github Repos/LawFlow/LawFlow.csproj",
+      "libraryId": "Microsoft.Extensions.Configuration.Json",
+      "targetGraphs": [
+        "net10.0"
+      ]
+    },
     {
       "code": "NU1903",
       "level": "Warning",
