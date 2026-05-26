@@ -52,6 +52,12 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     ServiceLifetime.Transient,
     ServiceLifetime.Transient);
 
+// Secondary database context for accounts, cases, chat, etc.
+builder.Services.AddDbContext<SecondaryDbContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("SecondaryConnection"), npgsqlOptions => npgsqlOptions.EnableRetryOnFailure()),
+    ServiceLifetime.Transient,
+    ServiceLifetime.Transient);
+
 // Add Identity core
 builder.Services.AddIdentityCore<ApplicationUser>()
     .AddEntityFrameworkStores<ApplicationDbContext>()
