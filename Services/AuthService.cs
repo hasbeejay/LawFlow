@@ -7,7 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-
+using System.Linq;
 namespace LawFlow.Services
 {
     public class AuthService
@@ -203,6 +203,72 @@ namespace LawFlow.Services
             }
 
             await _context.SaveChangesAsync();
+
+            // Seed sample cases spanning 5 years
+            var random = new Random();
+            var users = _context.Users.ToList();
+
+            // Helper to find user by username
+            ApplicationUser FindUser(string username) => users.FirstOrDefault(u => u.UserName == username)!;
+
+            var casesToSeed = new List<(string CaseNumber, string Title, string Description, string ClientUser, string? LawyerUser, string? JudgeUser, DateTime CreatedAt)>
+            {
+                ("2022-001", "Land Dispute", "Dispute over property boundaries.", "client_zaheer", "lawyer_faisal", "judge_ali", DateTime.UtcNow.AddYears(-4)),
+                ("2023-015", "Contract Breach", "Breach of commercial contract.", "client_fariha", "lawyer_nadia", "judge_saba", DateTime.UtcNow.AddYears(-3).AddMonths(-2)),
+                ("2024-027", "Family Custody", "Custody battle between parents.", "client_haneef", "lawyer_uzair", "judge_ali", DateTime.UtcNow.AddYears(-2).AddMonths(-5)),
+                ("2025-042", "Fraud Investigation", "Investigation of financial fraud.", "client_samira", "lawyer_faisal", "judge_saba", DateTime.UtcNow.AddYears(-1).AddMonths(-1)),
+                ("2026-058", "Cybercrime case", "Investigation of hacking incident.", "client_zaheer", "lawyer_nadia", "judge_ali", DateTime.UtcNow.AddMonths(-3))
+            };
+
+            foreach (var c in casesToSeed)
+            {
+                var client = FindUser(c.ClientUser);
+                var lawyer = c.LawyerUser != null ? FindUser(c.LawyerUser) : null;
+                var judge = c.JudgeUser != null ? FindUser(c.JudgeUser) : null;
+
+                var caseEntity = new Case
+                {
+                    CaseNumber = c.CaseNumber,
+                    Title = c.Title,
+                    Description = c.Description,
+                    Status = CaseStatus.InProgress,
+                    ClientId = client.Id,
+                    LawyerId = lawyer?.Id,
+                    JudgeId = judge?.Id,
+                    CreatedAt = c.CreatedAt,
+                    UpdatedAt = c.CreatedAt
+                };
+                _context.Cases.Add(caseEntity);
+                await _context.SaveChangesAsync();
+
+                // Add hearings
+                int hearingCount = random.Next(1, 4);
+                for (int i = 0; i < hearingCount; i++)
+                {
+                    var hearing = new Hearing
+                    {
+                        CaseId = caseEntity.Id,
+                        HearingDate = caseEntity.CreatedAt.AddDays(i * 30),
+                        Notes = $"Hearing {i + 1} for case {c.CaseNumber}",
+                        CreatedAt = caseEntity.CreatedAt.AddDays(i * 30)
+                    };
+                    _context.Hearings.Add(hearing);
+                }
+
+                // Add a document
+                var doc = new Document
+                {
+                    CaseId = caseEntity.Id,
+                    FileName = $"{c.Title} Evidence.pdf",
+                    FilePath = $"/files/{c.CaseNumber}_evidence.pdf",
+                    UploadedAt = caseEntity.CreatedAt.AddDays(1)
+                };
+                _context.Documents.Add(doc);
+            }
+
+            // Final save
+            await _context.SaveChangesAsync();
+
             return true;
         }
 

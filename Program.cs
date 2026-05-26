@@ -16,7 +16,6 @@ builder.Services.AddMudServices();
 
 // Database Configuration
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
-    ?? Environment.GetEnvironmentVariable("DATABASE_URL")
     ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
 if (connectionString.StartsWith("postgresql://", StringComparison.OrdinalIgnoreCase))
@@ -31,13 +30,16 @@ if (connectionString.StartsWith("postgresql://", StringComparison.OrdinalIgnoreC
         var port = uri.Port > 0 ? uri.Port : 5432;
         var database = uri.AbsolutePath.TrimStart('/');
         
-        // Auto-redirect direct IPv6 host to IPv4 session pooler for network compatibility
-        if (host.Equals("db.yxynxedzgthcovccxrci.supabase.co", StringComparison.OrdinalIgnoreCase))
-        {
-            host = "aws-1-ap-northeast-1.pooler.supabase.com";
-            port = 5432;
-            username = "postgres.yxynxedzgthcovccxrci";
-        }
+        // Auto-redirect any Supabase host to the IPv4 pooler for network compatibility
+if (host.EndsWith(".supabase.co", StringComparison.OrdinalIgnoreCase))
+{
+    host = "aws-1-ap-northeast-1.pooler.supabase.com";
+    port = 5432;
+    // Extract project ID from the original host (e.g., db.<project>.supabase.co)
+    var hostParts = uri.Host.Split('.');
+    string projectId = hostParts.Length >= 3 ? hostParts[1] : "";
+    username = $"postgres.{projectId}";
+}
         
         connectionString = $"Host={host};Port={port};Database={database};Username={username};Password={password};Ssl Mode=Require;Trust Server Certificate=true;";
     }
@@ -49,12 +51,6 @@ if (connectionString.StartsWith("postgresql://", StringComparison.OrdinalIgnoreC
 
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseNpgsql(connectionString, npgsqlOptions => npgsqlOptions.EnableRetryOnFailure()),
-    ServiceLifetime.Transient,
-    ServiceLifetime.Transient);
-
-// Secondary database context for accounts, cases, chat, etc.
-builder.Services.AddDbContext<SecondaryDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("SecondaryConnection"), npgsqlOptions => npgsqlOptions.EnableRetryOnFailure()),
     ServiceLifetime.Transient,
     ServiceLifetime.Transient);
 
@@ -104,10 +100,11 @@ builder.Services.AddRazorComponents()
 builder.WebHost.ConfigureKestrel(options =>
 {
     // Listen on a random free port assigned by the OS to prevent "address already in use"
-    options.ListenLocalhost(0);
+    options.Listen(System.Net.IPAddress.Loopback, 0);
 });
 
-// Configure the HTTP request pipeline.
+var app = builder.Build();
+ // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error", createScopeForErrors: true);
