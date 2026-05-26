@@ -855,6 +855,7 @@ else
             var participants = new List<string> { _case.ClientId };
             if (!string.IsNullOrEmpty(_case.LawyerId)) participants.Add(_case.LawyerId);
             if (!string.IsNullOrEmpty(_case.PoliceId)) participants.Add(_case.PoliceId);
+            if (!string.IsNullOrEmpty(_case.JudgeId)) participants.Add(_case.JudgeId);
 
             foreach (var pId in participants)
             {
