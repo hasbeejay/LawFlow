@@ -95,7 +95,11 @@ builder.Services.AddSignalR();
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
-var app = builder.Build();
+builder.WebHost.ConfigureKestrel(options =>
+{
+    // Listen on a random free port assigned by the OS to prevent "address already in use"
+    options.ListenLocalhost(0);
+});
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
@@ -122,6 +126,15 @@ using (var scope = app.Services.CreateScope())
     try
     {
         var context = services.GetRequiredService<ApplicationDbContext>();
+        // Read optional flag to force full DB reset (useful for upgrades)
+        var forceReset = builder.Configuration.GetValue<bool>("ForceResetDatabase");
+        if (forceReset)
+        {
+            // NOTE: Dropping the public schema is not permitted on Supabase managed databases.
+            // The operation is therefore skipped. If you need to reset the database, do it manually
+            // via Supabase dashboard or a dedicated migration script.
+            // context.Database.ExecuteSqlRaw("DROP SCHEMA IF EXISTS public CASCADE; CREATE SCHEMA public;");
+        }
         context.Database.Migrate();
 
         // Safety net: an earlier `AddMessageChannel` migration was generated empty
