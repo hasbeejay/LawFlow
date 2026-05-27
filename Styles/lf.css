@@ -443,6 +443,11 @@
   .lf-input:hover { border-color: rgb(var(--lf-muted) / 0.55); }
   .lf-input:focus { outline: none; border-color: rgb(var(--lf-primary) / 0.7); }
 
+  /* reduce over-eager "transition-all" animation to safe visual changes only */
+  .transition-all {
+    transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform;
+  }
+
   /* table */
   .lf-table { @apply w-full text-sm border-collapse; }
   .lf-table thead th {
@@ -518,6 +523,54 @@
   .lf-stroke-info   { stroke: rgb(var(--lf-info)); }
   .lf-stroke-success{ stroke: rgb(var(--lf-success)); }
   .lf-stroke-warning{ stroke: rgb(var(--lf-warning)); }
+
+  /* ------------------------------------------------------------------ */
+  /* Responsive / accessibility performance fallbacks                    */
+  /* Disable expensive backdrop-filters and heavy shadows on touch and   */
+  /* narrow screens to avoid jank on tablets/phones. Also honour        */
+  /* prefers-reduced-motion.                                            */
+  /* ------------------------------------------------------------------ */
+  @media (pointer: coarse), (max-width: 1024px) {
+    .lf-liquid,
+    .lf-card,
+    .lf-elevated,
+    .lf-liquid-bar,
+    .lf-kpi,
+    .lf-glass-panel,
+    .lf-welcome-backdrop,
+    .lf-welcome-card {
+      -webkit-backdrop-filter: none !important;
+      backdrop-filter: none !important;
+      filter: none !important;
+      box-shadow: 0 1px 6px rgba(0,0,0,0.06) !important;
+    }
+
+    /* Tone down hover effects on touch devices */
+    .lf-card:hover,
+    .lf-kpi:hover,
+    .lf-liquid:hover {
+      transform: none !important;
+      box-shadow: 0 1px 6px rgba(0,0,0,0.06) !important;
+      border-color: rgba(0,0,0,0.06) !important;
+    }
+
+    .animate-fade-in-up { animation-duration: 120ms !important; }
+    .transition { transition-duration: 120ms !important; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .animate-fade-in-up,
+    .animate-pulse,
+    .animate-pulse-dot {
+      animation: none !important;
+    }
+
+    * {
+      transition-duration: 0ms !important;
+      transition-delay: 0ms !important;
+      animation-delay: 0ms !important;
+    }
+  }
   .lf-stroke-danger { stroke: rgb(var(--lf-danger)); }
   .lf-stroke-track  { stroke: rgb(var(--lf-hairline)); }
   .lf-grid-line     { stroke: rgb(var(--lf-hairline) / 0.7); stroke-width: 0.18; stroke-dasharray: 0.6 1.2; }

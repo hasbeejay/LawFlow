@@ -57,7 +57,7 @@ else
         @foreach (var c in _cases)
         {
             <button type="button" @onclick="@(() => Open(c.Id))"
-                    class="lf-card p-5 text-left flex flex-col h-full w-full justify-between gap-4 transition-all group hover:scale-[1.01] hover:-translate-y-1 hover:shadow-[0_8px_20px_rgba(124,92,250,0.3)] dark:hover:shadow-[0_8px_20px_rgba(124,92,250,0.4)] hover:border-primary/60 z-10 relative">
+                    class="lf-card p-5 text-left flex flex-col h-full w-full justify-between gap-4 transition transform hover:-translate-y-1 hover:shadow-sm dark:hover:shadow-sm hover:border-primary/40 z-10 relative">
                 <div class="flex flex-col gap-3 w-full">
                     <div class="flex items-center justify-between w-full">
                         <span class="lf-tag-num border-transparent bg-canvas/50">@c.CaseNumber</span>
