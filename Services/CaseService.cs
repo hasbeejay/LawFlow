@@ -526,7 +526,7 @@ namespace LawFlow.Services
             var caseStatuses = Enum.GetValues(typeof(CaseStatus)).Cast<CaseStatus>().ToList();
             var earlyStatuses = caseStatuses.Take(8).ToArray();
 
-            int caseCount = 500; // 500 cases over 1 year
+            int caseCount = 100; // reduced demo volume for local development
             
             for (int i = 1; i <= caseCount; i++)
             {
@@ -588,7 +588,7 @@ namespace LawFlow.Services
             foreach (var c in casesToInsert)
             {
                 // Documents
-                int docCount = rand.Next(1, 6);
+                int docCount = rand.Next(1, 4);
                 var docTypes = new[] { "FIR", "Evidence", "Report", "Statement" };
                 for (int d = 0; d < docCount; d++)
                 {
@@ -609,7 +609,7 @@ namespace LawFlow.Services
                 // Hearings
                 if (c.Status >= CaseStatus.Hearing || c.Status == CaseStatus.VerdictIssued || c.Status == CaseStatus.Closed)
                 {
-                    int hearingCount = rand.Next(1, 4);
+                    int hearingCount = rand.Next(0, 3);
                     var hearingStatuses = new[] { "Scheduled", "Completed", "Adjourned" };
                     for (int h = 0; h < hearingCount; h++)
                     {
@@ -627,21 +627,21 @@ namespace LawFlow.Services
                 }
 
                 // Police Reports
-                if (c.Status >= CaseStatus.Investigation && c.PoliceId != null)
+                if (c.Status >= CaseStatus.Investigation && c.PoliceId != null && rand.Next(0, 2) == 0)
                 {
-                        var reportStation = pick(pakistaniPoliceStations);
-                        var reportCrime = pick(pakistaniCrimes);
-                        var firNumber = $"FIR-{rand.Next(1000, 9999)}-{c.CreatedAt.Year}";
-                        var reportCreatedAt = c.CreatedAt.AddDays(rand.Next(0, Math.Max(1, (int)(DateTime.UtcNow - c.CreatedAt).TotalDays + 1))).ToUniversalTime();
-                        reportsToInsert.Add(new PoliceReport
-                        {
-                            CaseId = c.Id,
-                            OfficerId = c.PoliceId,
-                            Summary = $"Investigation report filed at {reportStation} (FIR No. {firNumber}). {reportCrime}. The team documented witness testimony, mobile records, and scene photographs. " +
-                                      (c.Status >= CaseStatus.VerdictIssued ? "The criminal record has been updated and forwarded to the judicial review panel." : "The inquiry is ongoing and all findings are being compiled for review."),
-                            CriminalRecordUpdated = c.Status >= CaseStatus.VerdictIssued,
-                            CreatedAt = reportCreatedAt
-                        });
+                    var reportStation = pick(pakistaniPoliceStations);
+                    var reportCrime = pick(pakistaniCrimes);
+                    var firNumber = $"FIR-{rand.Next(1000, 9999)}-{c.CreatedAt.Year}";
+                    var reportCreatedAt = c.CreatedAt.AddDays(rand.Next(0, Math.Max(1, (int)(DateTime.UtcNow - c.CreatedAt).TotalDays + 1))).ToUniversalTime();
+                    reportsToInsert.Add(new PoliceReport
+                    {
+                        CaseId = c.Id,
+                        OfficerId = c.PoliceId,
+                        Summary = $"Investigation report filed at {reportStation} (FIR No. {firNumber}). {reportCrime}. The team documented witness testimony, mobile records, and scene photographs. " +
+                                  (c.Status >= CaseStatus.VerdictIssued ? "The criminal record has been updated and forwarded to the judicial review panel." : "The inquiry is ongoing and all findings are being compiled for review."),
+                        CriminalRecordUpdated = c.Status >= CaseStatus.VerdictIssued,
+                        CreatedAt = reportCreatedAt
+                    });
                 }
 
                 // Verdicts

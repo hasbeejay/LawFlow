@@ -126,6 +126,9 @@ app.MapHub<CaseChatHub>("/casechathub");
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
+    var logger = services.GetRequiredService<ILogger<Program>>();
+    var dbAvailable = true;
+
     try
     {
         var context = services.GetRequiredService<ApplicationDbContext>();
@@ -138,29 +141,19 @@ using (var scope = app.Services.CreateScope())
             // via Supabase dashboard or a dedicated migration script.
             // context.Database.ExecuteSqlRaw("DROP SCHEMA IF EXISTS public CASCADE; CREATE SCHEMA public;");
         }
-        // Attempt to apply migrations; if they already exist, fall back to EnsureCreated to avoid errors
-try
-{
-            // Ensure the database schema is created based on the current models.
-            context.Database.EnsureCreated();
-            // Ensure ActivityLogs table exists (in case migrations missed it)
-            try
-            {
-                context.Database.ExecuteSqlRaw(@"CREATE TABLE IF NOT EXISTS ""ActivityLogs"" (""Id"" text NOT NULL, ""UserId"" text NOT NULL, ""Action"" text NOT NULL, ""Details"" text, ""CreatedAt"" timestamp NOT NULL, ""IsDeleted"" boolean NOT NULL DEFAULT FALSE, ""UpdatedAt"" timestamp, CONSTRAINT ""PK_ActivityLogs"" PRIMARY KEY (""Id""));");
-            }
-            catch (Exception ex)
-            {
-                var logger = services.GetRequiredService<ILogger<Program>>();
-                logger.LogWarning(ex, "Failed to create ActivityLogs table via raw SQL.");
-            }
-}
-catch (Exception ex)
-{
-    var logger = services.GetRequiredService<ILogger<Program>>();
-    logger.LogWarning(ex, "Migration failed, likely due to existing tables. Falling back to EnsureCreated.");
-    // Ensure database is created without applying migrations that may conflict
-    context.Database.EnsureCreated();
-}
+
+        // Ensure the database schema is created based on the current models.
+        context.Database.EnsureCreated();
+
+        // Ensure ActivityLogs table exists (in case migrations missed it)
+        try
+        {
+            context.Database.ExecuteSqlRaw(@"CREATE TABLE IF NOT EXISTS ""ActivityLogs"" (""Id"" text NOT NULL, ""UserId"" text NOT NULL, ""Action"" text NOT NULL, ""Details"" text, ""CreatedAt"" timestamp NOT NULL, ""IsDeleted"" boolean NOT NULL DEFAULT FALSE, ""UpdatedAt"" timestamp, CONSTRAINT ""PK_ActivityLogs"" PRIMARY KEY (""Id""));");
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Failed to create ActivityLogs table via raw SQL.");
+        }
 
         // Safety net: an earlier `AddMessageChannel` migration was generated empty
         // (the EF tooling ran against a stale build), so existing databases have
@@ -175,7 +168,6 @@ catch (Exception ex)
         }
         catch (Exception ex)
         {
-            var logger = services.GetRequiredService<ILogger<Program>>();
             logger.LogWarning(ex, "Could not ensure Messages.Channel column exists.");
         }
 
@@ -187,25 +179,38 @@ catch (Exception ex)
         }
         catch (Exception ex)
         {
-            var logger = services.GetRequiredService<ILogger<Program>>();
-            logger.LogWarning(ex, "Failed to delete non-Pakistani records.");
-        }
-
-        // Important for real databases (e.g., Supabase): keep demo seeding opt-in only.
-        var shouldSeedDemoData = builder.Configuration.GetValue<bool>("SeedDemoData");
-        if (shouldSeedDemoData)
-        {
-            var authService = services.GetRequiredService<AuthService>();
-            await authService.SeedDemoDataAsync();
-
-            var caseService = services.GetRequiredService<CaseService>();
-            await caseService.SeedDemoCasesAsync();
+            logger.LogWarning(ex, "Could not prune country-specific data.");
         }
     }
     catch (Exception ex)
     {
-        var logger = services.GetRequiredService<ILogger<Program>>();
-        logger.LogError(ex, "An error occurred while migrating or seeding the database.");
+        logger.LogWarning(ex, "Database initialization failed. Continuing startup without DB schema creation.");
+        dbAvailable = false;
+    }
+
+    if (!dbAvailable)
+    {
+        logger.LogWarning("Database is not available. The app will continue startup, but identity and data features may fail until a valid database connection is provided.");
+    }
+
+    if (dbAvailable)
+    {
+        try
+        {
+            var shouldSeedDemoData = builder.Configuration.GetValue<bool>("SeedDemoData");
+            if (shouldSeedDemoData)
+            {
+                var authService = services.GetRequiredService<AuthService>();
+                await authService.SeedDemoDataAsync();
+
+                var caseService = services.GetRequiredService<CaseService>();
+                await caseService.SeedDemoCasesAsync();
+            }
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "An error occurred while migrating or seeding the database.");
+        }
     }
 }
 
