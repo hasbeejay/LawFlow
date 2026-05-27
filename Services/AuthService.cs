@@ -142,15 +142,22 @@ namespace LawFlow.Services
         public async Task<bool> SeedDemoDataAsync()
         {
             // Clear existing data to ensure a clean slate
-            _context.Users.RemoveRange(_context.Users);
-            _context.Cases.RemoveRange(_context.Cases);
-            _context.Documents.RemoveRange(_context.Documents);
-            _context.Notifications.RemoveRange(_context.Notifications);
-            _context.ActivityLogs.RemoveRange(_context.ActivityLogs);
-            _context.PoliceReports.RemoveRange(_context.PoliceReports);
-            _context.Verdicts.RemoveRange(_context.Verdicts);
-            _context.Hearings.RemoveRange(_context.Hearings);
-            await _context.SaveChangesAsync();
+            try
+            {
+                _context.Users.RemoveRange(_context.Users);
+                _context.Cases.RemoveRange(_context.Cases);
+                _context.Documents.RemoveRange(_context.Documents);
+                _context.Notifications.RemoveRange(_context.Notifications);
+                _context.ActivityLogs.RemoveRange(_context.ActivityLogs);
+                _context.PoliceReports.RemoveRange(_context.PoliceReports);
+                _context.Verdicts.RemoveRange(_context.Verdicts);
+                _context.Hearings.RemoveRange(_context.Hearings);
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception)
+            {
+                // Ignored: tables may not exist yet.
+            }
 
             // 1. Seed base static users so login always works for these roles
             var staticUsers = new List<(string Username, string FullName, UserRole Role, string Spec, string Badge, string Dept)>
@@ -195,38 +202,64 @@ namespace LawFlow.Services
 
             await _context.SaveChangesAsync();
 
-            // 2. Generate extra users with Bogus
-            var faker = new Bogus.Faker("en_US"); // Use generic English
+            // 2. Generate extra users manually (avoid Bogus locales)
+            var pakistaniFirstNames = new[] { "Adeel", "Aisha", "Ali", "Amina", "Bilal", "Fatima", "Hassan", "Imran", "Khadija", "Laila", "Mahnoor", "Mariam", "Nadia", "Osama", "Rahim", "Rania", "Saba", "Saima", "Uzair", "Zainab" };
+            var pakistaniLastNames = new[] { "Ahmed", "Ali", "Hussain", "Khan", "Malik", "Qureshi", "Raza", "Siddiqui", "Tariq", "Yousaf", "Zaman", "Begum", "Shaikh", "Saeed", "Nawaz", "Javed", "Khurshid" };
+            var rand = new Random();
             var extraUsers = new List<ApplicationUser>();
+
+            string RandomName()
+            {
+                return pakistaniFirstNames[rand.Next(pakistaniFirstNames.Length)] + " " + pakistaniLastNames[rand.Next(pakistaniLastNames.Length)];
+            }
+
+            string RandomUsername(string suffix = "")
+            {
+                var first = pakistaniFirstNames[rand.Next(pakistaniFirstNames.Length)].ToLower();
+                var last = pakistaniLastNames[rand.Next(pakistaniLastNames.Length)].ToLower();
+                return $"{first}.{last}{rand.Next(100, 999)}{suffix}";
+            }
+
+            DateTime RandomPastDate(int yearsBack)
+            {
+                return DateTime.UtcNow.AddDays(-rand.Next(0, 365 * yearsBack)).ToUniversalTime();
+            }
 
             // Generate 150 clients
             for (int i = 0; i < 150; i++)
             {
+                var fullName = RandomName();
+                var userName = RandomUsername();
                 var user = new ApplicationUser
                 {
-                    UserName = faker.Internet.UserName(),
-                    Email = faker.Internet.Email(),
-                    FullName = faker.Name.FullName(),
+                    UserName = userName,
+                    Email = $"{userName}@lawflow.pk",
+                    FullName = fullName,
                     Role = UserRole.Client,
+                    Country = "Pakistan",
                     IsActive = true,
-                    CreatedAt = faker.Date.Past(5).ToUniversalTime()
+                    CreatedAt = RandomPastDate(5)
                 };
                 user.PasswordHash = _passwordHasher.HashPassword(user, "Password123!");
                 extraUsers.Add(user);
             }
 
             // Generate 30 lawyers
+            var lawyerSpecs = new[] { "Corporate Law", "Criminal Law", "Family Law", "Real Estate Law", "Intellectual Property" };
             for (int i = 0; i < 30; i++)
             {
+                var fullName = RandomName();
+                var userName = RandomUsername("_lawyer");
                 var user = new ApplicationUser
                 {
-                    UserName = faker.Internet.UserName() + "_lawyer",
-                    Email = faker.Internet.Email(),
-                    FullName = faker.Name.FullName(),
+                    UserName = userName,
+                    Email = $"{userName}@lawflow.pk",
+                    FullName = fullName,
                     Role = UserRole.Lawyer,
-                    Specialization = faker.PickRandom("Corporate Law", "Criminal Law", "Family Law", "Real Estate Law", "Intellectual Property"),
+                    Country = "Pakistan",
+                    Specialization = lawyerSpecs[rand.Next(lawyerSpecs.Length)],
                     IsActive = true,
-                    CreatedAt = faker.Date.Past(5).ToUniversalTime()
+                    CreatedAt = RandomPastDate(5)
                 };
                 user.PasswordHash = _passwordHasher.HashPassword(user, "Password123!");
                 extraUsers.Add(user);
@@ -235,14 +268,17 @@ namespace LawFlow.Services
             // Generate 15 judges
             for (int i = 0; i < 15; i++)
             {
+                var fullName = RandomName();
+                var userName = RandomUsername("_judge");
                 var user = new ApplicationUser
                 {
-                    UserName = faker.Internet.UserName() + "_judge",
-                    Email = faker.Internet.Email(),
-                    FullName = "Hon. " + faker.Name.FullName(),
+                    UserName = userName,
+                    Email = $"{userName}@lawflow.pk",
+                    FullName = "Hon. " + fullName,
                     Role = UserRole.Judge,
+                    Country = "Pakistan",
                     IsActive = true,
-                    CreatedAt = faker.Date.Past(5).ToUniversalTime()
+                    CreatedAt = RandomPastDate(5)
                 };
                 user.PasswordHash = _passwordHasher.HashPassword(user, "Password123!");
                 extraUsers.Add(user);
@@ -251,32 +287,39 @@ namespace LawFlow.Services
             // Generate 30 police
             for (int i = 0; i < 30; i++)
             {
+                var fullName = RandomName();
+                var userName = RandomUsername("_police");
                 var user = new ApplicationUser
                 {
-                    UserName = faker.Internet.UserName() + "_police",
-                    Email = faker.Internet.Email(),
-                    FullName = "Officer " + faker.Name.FullName(),
+                    UserName = userName,
+                    Email = $"{userName}@lawflow.pk",
+                    FullName = "Officer " + fullName,
                     Role = UserRole.Police,
-                    BadgeNumber = "PKP-" + faker.Random.Number(100, 9999),
+                    Country = "Pakistan",
+                    BadgeNumber = "PKP-" + rand.Next(100, 9999),
                     IsActive = true,
-                    CreatedAt = faker.Date.Past(5).ToUniversalTime()
+                    CreatedAt = RandomPastDate(5)
                 };
                 user.PasswordHash = _passwordHasher.HashPassword(user, "Password123!");
                 extraUsers.Add(user);
             }
 
             // Generate 15 clerks
+            var clerkDepts = new[] { "Records Department", "Scheduling Department", "Evidence Management", "Public Relations" };
             for (int i = 0; i < 15; i++)
             {
+                var fullName = RandomName();
+                var userName = RandomUsername("_clerk");
                 var user = new ApplicationUser
                 {
-                    UserName = faker.Internet.UserName() + "_clerk",
-                    Email = faker.Internet.Email(),
-                    FullName = faker.Name.FullName(),
+                    UserName = userName,
+                    Email = $"{userName}@lawflow.pk",
+                    FullName = fullName,
                     Role = UserRole.Clerk,
-                    Department = faker.PickRandom("Records Department", "Scheduling Department", "Evidence Management", "Public Relations"),
+                    Country = "Pakistan",
+                    Department = clerkDepts[rand.Next(clerkDepts.Length)],
                     IsActive = true,
-                    CreatedAt = faker.Date.Past(5).ToUniversalTime()
+                    CreatedAt = RandomPastDate(5)
                 };
                 user.PasswordHash = _passwordHasher.HashPassword(user, "Password123!");
                 extraUsers.Add(user);

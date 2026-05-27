@@ -124,6 +124,50 @@
 }
 
 /* ------------------------------------------------------------------ */
+/* Performance override — apply `.lf-performance` on <html> to reduce
+   expensive SVG displacement and use a simpler blur instead. Useful
+   for diagnosing and avoiding GPU-heavy repaint work on slower machines. */
+/* Enable by setting `localStorage.lf-performance = '1'` (the App.razor
+   script above will apply the class before paint). */
+.lf-performance * {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  -webkit-filter: none !important;
+  filter: none !important;
+}
+
+.lf-performance body::before,
+.lf-performance body::after {
+  background: transparent !important;
+}
+
+.lf-performance .lf-liquid::before,
+.lf-performance .lf-liquid::after,
+.lf-performance .lf-card::before,
+.lf-performance .lf-card::after,
+.lf-performance .lf-liquid-bar::after {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+.lf-performance .lf-liquid,
+.lf-performance .lf-card,
+.lf-performance .lf-liquid-bar,
+.lf-performance .lf-kpi,
+.lf-performance .lf-glass-panel,
+.lf-performance .lf-welcome-backdrop,
+.lf-performance .lf-welcome-card {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+}
+
+/* Fallback: if you want to force-disable all backdrop SVG effects during
+   a session, open the browser console and run:
+     localStorage.setItem('lf-performance','1'); location.reload();
+ */
+
+
+/* ------------------------------------------------------------------ */
 /* Component layer — used by Lf* Razor primitives                       */
 /* ------------------------------------------------------------------ */
 @layer components {

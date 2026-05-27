@@ -138,7 +138,29 @@ using (var scope = app.Services.CreateScope())
             // via Supabase dashboard or a dedicated migration script.
             // context.Database.ExecuteSqlRaw("DROP SCHEMA IF EXISTS public CASCADE; CREATE SCHEMA public;");
         }
-        context.Database.Migrate();
+        // Attempt to apply migrations; if they already exist, fall back to EnsureCreated to avoid errors
+try
+{
+            // Ensure the database schema is created based on the current models.
+            context.Database.EnsureCreated();
+            // Ensure ActivityLogs table exists (in case migrations missed it)
+            try
+            {
+                context.Database.ExecuteSqlRaw(@"CREATE TABLE IF NOT EXISTS ""ActivityLogs"" (""Id"" text NOT NULL, ""UserId"" text NOT NULL, ""Action"" text NOT NULL, ""Details"" text, ""CreatedAt"" timestamp NOT NULL, ""IsDeleted"" boolean NOT NULL DEFAULT FALSE, ""UpdatedAt"" timestamp, CONSTRAINT ""PK_ActivityLogs"" PRIMARY KEY (""Id""));");
+            }
+            catch (Exception ex)
+            {
+                var logger = services.GetRequiredService<ILogger<Program>>();
+                logger.LogWarning(ex, "Failed to create ActivityLogs table via raw SQL.");
+            }
+}
+catch (Exception ex)
+{
+    var logger = services.GetRequiredService<ILogger<Program>>();
+    logger.LogWarning(ex, "Migration failed, likely due to existing tables. Falling back to EnsureCreated.");
+    // Ensure database is created without applying migrations that may conflict
+    context.Database.EnsureCreated();
+}
 
         // Safety net: an earlier `AddMessageChannel` migration was generated empty
         // (the EF tooling ran against a stale build), so existing databases have

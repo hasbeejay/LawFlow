@@ -488,7 +488,35 @@ namespace LawFlow.Services
 
             if (!clients.Any()) return; // Sanity check
 
-            var faker = new Bogus.Faker("en_PK");
+            var rand = new Random();
+            Func<string[], string> pick = arr => arr[rand.Next(arr.Length)];
+            var pakistaniCities = new[] { "Karachi", "Lahore", "Islamabad", "Rawalpindi", "Multan", "Peshawar", "Quetta", "Faisalabad", "Sialkot", "Hyderabad" };
+            var pakistaniCourts = new[] { "Lahore High Court", "Islamabad District Court", "Karachi Sessions Court", "Peshawar District Court", "Multan Judicial Complex", "Quetta Judicial Complex" };
+            var pakistaniPoliceStations = new[] { "Lahore Cantt Police Station", "Bahria Town Police Station", "Islamabad City Police Station", "Faisalabad Saddar Police Station", "Peshawar City Police Station", "Karachi Central Police Station", "Quetta Civil Lines Police Station" };
+            var pakistaniCrimes = new[]
+            {
+                "Attempted robbery under Section 392 PPC",
+                "Assault with intent under Section 324 PPC",
+                "Fraudulent possession under Section 420 PPC",
+                "Burglary at a residential compound under Section 457 PPC",
+                "Dowry harassment complaint under Section 498-A PPC",
+                "Hit-and-run injury under Section 279 PPC",
+                "Illegal arms possession under the Arms Act",
+                "Land dispute and trespass under Section 107 CrPC",
+                "Cyber fraud under Section 420 PPC",
+                "Domestic violence complaint under Section 354 PPC"
+            };
+            var pakistaniSentences = new[]
+            {
+                "two years imprisonment and a fine of PKR 50,000",
+                "three years imprisonment with community service",
+                "five years imprisonment under Section 302 PPC",
+                "one year imprisonment and restitution to the victim",
+                "a fine of PKR 100,000 and a formal apology",
+                "six months imprisonment and probation",
+                "seven years imprisonment with mandatory rehabilitation",
+                "a suspended sentence with strict bail conditions"
+            };
             var casesToInsert = new List<Case>();
             var docsToInsert = new List<Document>();
             var hearingsToInsert = new List<Hearing>();
@@ -496,37 +524,54 @@ namespace LawFlow.Services
             var verdictsToInsert = new List<Verdict>();
 
             var caseStatuses = Enum.GetValues(typeof(CaseStatus)).Cast<CaseStatus>().ToList();
+            var earlyStatuses = caseStatuses.Take(8).ToArray();
 
             int caseCount = 500; // 500 cases over 1 year
             
             for (int i = 1; i <= caseCount; i++)
             {
-                var createdAt = faker.Date.Past(1).ToUniversalTime();
-                var client = faker.PickRandom(clients);
-                var status = faker.PickRandom(caseStatuses);
-                
+                var createdAt = DateTime.UtcNow.AddDays(-rand.Next(0, 365)).ToUniversalTime();
+                var client = clients[rand.Next(clients.Count)];
+                var crime = pick(pakistaniCrimes);
+                var station = pick(pakistaniPoliceStations);
+                var court = pick(pakistaniCourts);
+                var city = pick(pakistaniCities);
+                var status = i <= 150 ? CaseStatus.Closed
+                    : i <= 280 ? CaseStatus.VerdictIssued
+                    : i <= 360 ? CaseStatus.Hearing
+                    : i <= 420 ? CaseStatus.Investigation
+                    : earlyStatuses[rand.Next(earlyStatuses.Length)];
+
+                var title = crime + " in " + city;
+                var description = $"FIR registered at {station} under {crime}. The investigation team is collecting witness statements, CCTV footage, and forensic evidence. " +
+                                  $"The matter is currently routed through {court} and is being reviewed under Pakistan Penal Code procedures. " +
+                                  "Additional case notes recorded.";
+
+                var updatedAt = createdAt.AddDays(rand.Next(0, Math.Max(1, (int)(DateTime.UtcNow - createdAt).TotalDays + 1))).ToUniversalTime();
+
                 var c = new Case
                 {
+                    Country = "Pakistan",
                     CaseNumber = $"LF-{createdAt.Year}-{i:D4}",
-                    Title = faker.Lorem.Sentence(3, 8),
-                    Description = faker.Lorem.Paragraphs(2),
+                    Title = title,
+                    Description = description,
                     Status = status,
                     ClientId = client.Id,
                     CreatedAt = createdAt,
-                    UpdatedAt = faker.Date.Between(createdAt, DateTime.UtcNow).ToUniversalTime()
+                    UpdatedAt = updatedAt
                 };
 
                 // Determine assigned officials based on status
                 if (status >= CaseStatus.AssignedToJudgeAndPolice || status == CaseStatus.Closed)
                 {
-                    if (judges.Any()) c.JudgeId = faker.PickRandom(judges).Id;
-                    if (police.Any()) c.PoliceId = faker.PickRandom(police).Id;
-                    if (clerks.Any()) c.ClerkId = faker.PickRandom(clerks).Id;
+                    if (judges.Any()) c.JudgeId = judges[rand.Next(judges.Count)].Id;
+                    if (police.Any()) c.PoliceId = police[rand.Next(police.Count)].Id;
+                    if (clerks.Any()) c.ClerkId = clerks[rand.Next(clerks.Count)].Id;
                 }
 
                 if (status >= CaseStatus.LawyerAccepted || status == CaseStatus.AssignedToLawyer || status == CaseStatus.Closed)
                 {
-                    if (lawyers.Any()) c.LawyerId = faker.PickRandom(lawyers).Id;
+                    if (lawyers.Any()) c.LawyerId = lawyers[rand.Next(lawyers.Count)].Id;
                 }
 
                 casesToInsert.Add(c);
@@ -543,17 +588,20 @@ namespace LawFlow.Services
             foreach (var c in casesToInsert)
             {
                 // Documents
-                int docCount = faker.Random.Int(1, 5);
+                int docCount = rand.Next(1, 6);
+                var docTypes = new[] { "FIR", "Evidence", "Report", "Statement" };
                 for (int d = 0; d < docCount; d++)
                 {
+                    var file = $"doc-{rand.Next(1000, 9999)}.pdf";
+                    var uploadedAt = c.CreatedAt.AddDays(rand.Next(0, Math.Max(1, (int)(DateTime.UtcNow - c.CreatedAt).TotalDays + 1))).ToUniversalTime();
                     docsToInsert.Add(new Document
                     {
                         CaseId = c.Id,
-                        FileName = faker.System.FileName("pdf"),
-                        FilePath = $"/uploads/{faker.System.FileName("pdf")}",
-                        DocumentType = faker.PickRandom("FIR", "Evidence", "Report", "Statement"),
+                        FileName = file,
+                        FilePath = $"/uploads/{file}",
+                        DocumentType = docTypes[rand.Next(docTypes.Length)],
                         UploadedById = c.ClientId,
-                        UploadedAt = faker.Date.Between(c.CreatedAt, c.UpdatedAt ?? DateTime.UtcNow).ToUniversalTime(),
+                        UploadedAt = uploadedAt,
                         IsApproved = true
                     });
                 }
@@ -561,16 +609,18 @@ namespace LawFlow.Services
                 // Hearings
                 if (c.Status >= CaseStatus.Hearing || c.Status == CaseStatus.VerdictIssued || c.Status == CaseStatus.Closed)
                 {
-                    int hearingCount = faker.Random.Int(1, 4);
+                    int hearingCount = rand.Next(1, 4);
+                    var hearingStatuses = new[] { "Scheduled", "Completed", "Adjourned" };
                     for (int h = 0; h < hearingCount; h++)
                     {
+                        var hearingDate = c.CreatedAt.AddDays(rand.Next(0, 31)).ToUniversalTime();
                         hearingsToInsert.Add(new Hearing
                         {
                             CaseId = c.Id,
-                            HearingDate = faker.Date.Between(c.CreatedAt, DateTime.UtcNow.AddDays(30)).ToUniversalTime(),
-                            Location = $"Courtroom {faker.Random.Int(1, 10)}",
-                            Notes = faker.Lorem.Sentence(),
-                            Status = faker.PickRandom("Scheduled", "Completed", "Adjourned"),
+                            HearingDate = hearingDate,
+                            Location = $"{pick(pakistaniCities)} Courtroom {rand.Next(1, 11)}",
+                            Notes = "Hearing notes recorded.",
+                            Status = hearingStatuses[rand.Next(hearingStatuses.Length)],
                             CreatedAt = c.CreatedAt
                         });
                     }
@@ -579,28 +629,45 @@ namespace LawFlow.Services
                 // Police Reports
                 if (c.Status >= CaseStatus.Investigation && c.PoliceId != null)
                 {
-                    reportsToInsert.Add(new PoliceReport
-                    {
-                        CaseId = c.Id,
-                        OfficerId = c.PoliceId,
-                        Summary = faker.Lorem.Paragraph(),
-                        CriminalRecordUpdated = faker.Random.Bool(),
-                        CreatedAt = faker.Date.Between(c.CreatedAt, c.UpdatedAt ?? DateTime.UtcNow).ToUniversalTime()
-                    });
+                        var reportStation = pick(pakistaniPoliceStations);
+                        var reportCrime = pick(pakistaniCrimes);
+                        var firNumber = $"FIR-{rand.Next(1000, 9999)}-{c.CreatedAt.Year}";
+                        var reportCreatedAt = c.CreatedAt.AddDays(rand.Next(0, Math.Max(1, (int)(DateTime.UtcNow - c.CreatedAt).TotalDays + 1))).ToUniversalTime();
+                        reportsToInsert.Add(new PoliceReport
+                        {
+                            CaseId = c.Id,
+                            OfficerId = c.PoliceId,
+                            Summary = $"Investigation report filed at {reportStation} (FIR No. {firNumber}). {reportCrime}. The team documented witness testimony, mobile records, and scene photographs. " +
+                                      (c.Status >= CaseStatus.VerdictIssued ? "The criminal record has been updated and forwarded to the judicial review panel." : "The inquiry is ongoing and all findings are being compiled for review."),
+                            CriminalRecordUpdated = c.Status >= CaseStatus.VerdictIssued,
+                            CreatedAt = reportCreatedAt
+                        });
                 }
 
                 // Verdicts
                 if ((c.Status == CaseStatus.VerdictIssued || c.Status == CaseStatus.Closed) && c.JudgeId != null)
                 {
+                    var verdictTypes = new[] { VerdictType.Guilty, VerdictType.Acquitted, VerdictType.Dismissed, VerdictType.Appealed };
+                    var verdictType = verdictTypes[rand.Next(verdictTypes.Length)];
+                    var sentence = pakistaniSentences[rand.Next(pakistaniSentences.Length)];
+                    var details = verdictType switch
+                    {
+                        VerdictType.Guilty => $"After hearing the evidence, the court found the accused guilty under the relevant sections of the Pakistan Penal Code and imposed {sentence}.",
+                        VerdictType.Acquitted => $"The court acquitted the accused due to insufficient evidence and contradictions in witness statements, in accordance with Pakistan Penal Code standards.",
+                        VerdictType.Dismissed => $"The case was dismissed for lack of prosecutable evidence and procedural concerns under the PPC.",
+                        VerdictType.Appealed => $"The verdict is under appeal pending review by the higher judiciary, with questions on evidentiary sufficiency and sentencing.",
+                        _ => "Verdict details recorded."
+                    };
+
                     verdictsToInsert.Add(new Verdict
                     {
                         CaseId = c.Id,
                         JudgeId = c.JudgeId,
-                        Type = faker.PickRandom(VerdictType.Guilty, VerdictType.Acquitted, VerdictType.Dismissed),
-                        Details = faker.Lorem.Paragraph(),
-                        IsPublished = true,
+                        Type = verdictType,
+                        Details = details,
+                        IsPublished = c.Status == CaseStatus.Closed,
                         IssuedAt = (c.UpdatedAt ?? DateTime.UtcNow).AddDays(-1),
-                        PublishedAt = c.UpdatedAt ?? DateTime.UtcNow
+                        PublishedAt = c.Status == CaseStatus.Closed ? (DateTime?)(c.UpdatedAt ?? DateTime.UtcNow) : null
                     });
                 }
             }

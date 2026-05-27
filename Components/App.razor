@@ -31,6 +31,16 @@
         })();
     </script>
 
+    <!-- Optional performance mode: set localStorage.lf-performance = '1' to enable cheaper visuals -->
+    <script>
+        (function () {
+            try {
+                var p = localStorage.getItem('lf-performance');
+                if (p === '1') document.documentElement.classList.add('lf-performance');
+            } catch (e) {}
+        })();
+    </script>
+
     <HeadOutlet @rendermode="new InteractiveServerRenderMode(prerender: false)" />
 </head>
 

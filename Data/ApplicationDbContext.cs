@@ -25,9 +25,9 @@ namespace LawFlow.Data
         {
             base.OnModelCreating(builder);
 
-            // Global filter to exclude soft‑deleted entities and restrict to Pakistani records
-            builder.Entity<ApplicationUser>().HasQueryFilter(u => !u.IsDeleted && u.Country == "Pakistan");
-            builder.Entity<Case>().HasQueryFilter(c => !c.IsDeleted && c.Country == "Pakistan");
+            // Global filter to exclude soft‑deleted entities
+            builder.Entity<ApplicationUser>().HasQueryFilter(u => !u.IsDeleted);
+            builder.Entity<Case>().HasQueryFilter(c => !c.IsDeleted);
             builder.Entity<Document>().HasQueryFilter(d => !d.IsDeleted);
             builder.Entity<Hearing>().HasQueryFilter(h => !h.IsDeleted);
             builder.Entity<PoliceReport>().HasQueryFilter(p => !p.IsDeleted);
