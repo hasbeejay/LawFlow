@@ -9,6 +9,7 @@ namespace LawFlow.Models
     {
         [Key]
         public int Id { get; set; }
+        public string Country { get; set; } = "Pakistan";
 
         [Required]
         public string CaseNumber { get; set; } = string.Empty;

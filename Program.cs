@@ -157,6 +157,18 @@ using (var scope = app.Services.CreateScope())
             logger.LogWarning(ex, "Could not ensure Messages.Channel column exists.");
         }
 
+        // Remove any records that are not from Pakistan to keep data relevant
+        try
+        {
+            context.Database.ExecuteSqlRaw("DELETE FROM \"Cases\" WHERE \"Country\" <> 'Pakistan';");
+            context.Database.ExecuteSqlRaw("DELETE FROM \"AspNetUsers\" WHERE \"Country\" <> 'Pakistan';");
+        }
+        catch (Exception ex)
+        {
+            var logger = services.GetRequiredService<ILogger<Program>>();
+            logger.LogWarning(ex, "Failed to delete non-Pakistani records.");
+        }
+
         // Important for real databases (e.g., Supabase): keep demo seeding opt-in only.
         var shouldSeedDemoData = builder.Configuration.GetValue<bool>("SeedDemoData");
         if (shouldSeedDemoData)

@@ -19,49 +19,56 @@ namespace LawFlow.Services
 
         public async Task<AdminStats> GetAdminStatsAsync()
         {
-            var totalCases = await _context.Cases.CountAsync();
-            var pendingReview = await _context.Cases.CountAsync(c => c.Status == CaseStatus.Created);
-            var activeInvestigations = await _context.Cases.CountAsync(c => c.Status == CaseStatus.Investigation);
-            var activeHearings = await _context.Cases.CountAsync(c => c.Status == CaseStatus.Hearing);
-            var closedCases = await _context.Cases.CountAsync(c => c.Status == CaseStatus.Closed);
+            var statusCounts = await _context.Cases
+                .GroupBy(c => c.Status)
+                .Select(g => new { Status = g.Key, Count = g.Count() })
+                .ToDictionaryAsync(k => k.Status, v => v.Count);
+
             var activeUsers = await _context.Users.CountAsync(u => u.IsActive);
 
             return new AdminStats
             {
-                TotalCases = totalCases,
-                PendingReview = pendingReview,
-                ActiveInvestigations = activeInvestigations,
-                ActiveHearings = activeHearings,
-                ClosedCases = closedCases,
+                TotalCases = statusCounts.Values.Sum(),
+                PendingReview = statusCounts.GetValueOrDefault(CaseStatus.Created, 0),
+                ActiveInvestigations = statusCounts.GetValueOrDefault(CaseStatus.Investigation, 0),
+                ActiveHearings = statusCounts.GetValueOrDefault(CaseStatus.Hearing, 0),
+                ClosedCases = statusCounts.GetValueOrDefault(CaseStatus.Closed, 0),
                 ActiveUsers = activeUsers
             };
         }
 
         public async Task<JudgeStats> GetJudgeStatsAsync(string judgeId)
         {
-            var totalAssigned = await _context.Cases.CountAsync(c => c.JudgeId == judgeId);
-            var verdictPending = await _context.Cases.CountAsync(c => c.JudgeId == judgeId && c.Status == CaseStatus.VerdictIssued);
+            var statusCounts = await _context.Cases
+                .Where(c => c.JudgeId == judgeId)
+                .GroupBy(c => c.Status)
+                .Select(g => new { Status = g.Key, Count = g.Count() })
+                .ToDictionaryAsync(k => k.Status, v => v.Count);
+
             var scheduledHearings = await _context.Hearings
-                .Include(h => h.Case)
                 .CountAsync(h => h.Case != null && h.Case.JudgeId == judgeId && h.Status == "Scheduled");
-            
-            var closed = await _context.Cases.CountAsync(c => c.JudgeId == judgeId && c.Status == CaseStatus.Closed);
 
             return new JudgeStats
             {
-                TotalAssigned = totalAssigned,
-                VerdictPending = verdictPending,
+                TotalAssigned = statusCounts.Values.Sum(),
+                VerdictPending = statusCounts.GetValueOrDefault(CaseStatus.VerdictIssued, 0),
                 ScheduledHearings = scheduledHearings,
-                ClosedCases = closed
+                ClosedCases = statusCounts.GetValueOrDefault(CaseStatus.Closed, 0)
             };
         }
 
         public async Task<LawyerStats> GetLawyerStatsAsync(string lawyerId)
         {
-            var activeCases = await _context.Cases.CountAsync(c => c.LawyerId == lawyerId && c.Status != CaseStatus.Closed);
-            var completedCases = await _context.Cases.CountAsync(c => c.LawyerId == lawyerId && c.Status == CaseStatus.Closed);
+            var statusCounts = await _context.Cases
+                .Where(c => c.LawyerId == lawyerId)
+                .GroupBy(c => c.Status)
+                .Select(g => new { Status = g.Key, Count = g.Count() })
+                .ToDictionaryAsync(k => k.Status, v => v.Count);
+
+            var completedCases = statusCounts.GetValueOrDefault(CaseStatus.Closed, 0);
+            var activeCases = statusCounts.Where(kvp => kvp.Key != CaseStatus.Closed).Sum(kvp => kvp.Value);
+
             var upcomingHearings = await _context.Hearings
-                .Include(h => h.Case)
                 .CountAsync(h => h.Case != null && h.Case.LawyerId == lawyerId && h.Status == "Scheduled");
 
             var offeredCases = await _context.Cases.CountAsync(c => c.Status == CaseStatus.AvailableForLawyers && c.LawyerId == null);
@@ -77,47 +84,55 @@ namespace LawFlow.Services
 
         public async Task<ClientStats> GetClientStatsAsync(string clientId)
         {
-            var totalCases = await _context.Cases.CountAsync(c => c.ClientId == clientId);
-            var activeCases = await _context.Cases.CountAsync(c => c.ClientId == clientId && c.Status != CaseStatus.Closed);
-            var closedCases = await _context.Cases.CountAsync(c => c.ClientId == clientId && c.Status == CaseStatus.Closed);
+            var statusCounts = await _context.Cases
+                .Where(c => c.ClientId == clientId)
+                .GroupBy(c => c.Status)
+                .Select(g => new { Status = g.Key, Count = g.Count() })
+                .ToDictionaryAsync(k => k.Status, v => v.Count);
             
+            var closedCases = statusCounts.GetValueOrDefault(CaseStatus.Closed, 0);
             return new ClientStats
             {
-                TotalCases = totalCases,
-                ActiveCases = activeCases,
+                TotalCases = statusCounts.Values.Sum(),
+                ActiveCases = statusCounts.Where(kvp => kvp.Key != CaseStatus.Closed).Sum(kvp => kvp.Value),
                 ClosedCases = closedCases
             };
         }
 
         public async Task<PoliceStats> GetPoliceStatsAsync(string policeId)
         {
-            var totalAssigned = await _context.Cases.CountAsync(c => c.PoliceId == policeId);
-            var underInvestigation = await _context.Cases.CountAsync(c => c.PoliceId == policeId && c.Status == CaseStatus.Investigation);
+            var statusCounts = await _context.Cases
+                .Where(c => c.PoliceId == policeId)
+                .GroupBy(c => c.Status)
+                .Select(g => new { Status = g.Key, Count = g.Count() })
+                .ToDictionaryAsync(k => k.Status, v => v.Count);
+
             var reportsSubmitted = await _context.PoliceReports.CountAsync(r => r.OfficerId == policeId);
 
             return new PoliceStats
             {
-                TotalAssigned = totalAssigned,
-                UnderInvestigation = underInvestigation,
+                TotalAssigned = statusCounts.Values.Sum(),
+                UnderInvestigation = statusCounts.GetValueOrDefault(CaseStatus.Investigation, 0),
                 ReportsSubmitted = reportsSubmitted
             };
         }
 
         public async Task<ClerkStats> GetClerkStatsAsync(string clerkId)
         {
-            var totalAssigned = await _context.Cases.CountAsync(c => c.ClerkId == clerkId);
+            var statusCounts = await _context.Cases
+                .Where(c => c.ClerkId == clerkId)
+                .GroupBy(c => c.Status)
+                .Select(g => new { Status = g.Key, Count = g.Count() })
+                .ToDictionaryAsync(k => k.Status, v => v.Count);
+
             var scheduledHearings = await _context.Hearings
-                .Include(h => h.Case)
                 .CountAsync(h => h.Case != null && h.Case.ClerkId == clerkId && h.Status == "Scheduled");
-            
-            var pendingVerdicts = await _context.Cases
-                .CountAsync(c => c.ClerkId == clerkId && c.Status == CaseStatus.VerdictIssued);
 
             return new ClerkStats
             {
-                TotalAssigned = totalAssigned,
+                TotalAssigned = statusCounts.Values.Sum(),
                 ScheduledHearings = scheduledHearings,
-                PendingVerdicts = pendingVerdicts
+                PendingVerdicts = statusCounts.GetValueOrDefault(CaseStatus.VerdictIssued, 0)
             };
         }
 
@@ -131,18 +146,22 @@ namespace LawFlow.Services
             var lineData = new double[12];
             var barData = new double[12];
 
-            // Count real cases filed per month in the current year
+            // Select only the needed columns instead of the entire Case entity
             var year = DateTime.UtcNow.Year;
-            var cases = await _context.Cases.Where(c => c.CreatedAt.Year == year).ToListAsync();
+            var caseData = await _context.Cases
+                .Where(c => c.CreatedAt.Year == year)
+                .Select(c => new { c.CreatedAt.Month, c.Status })
+                .AsNoTracking()
+                .ToListAsync();
             
             for (int i = 0; i < 12; i++)
             {
-                lineData[i] = cases.Count(c => c.CreatedAt.Month == (i + 1));
-                barData[i] = cases.Count(c => c.CreatedAt.Month == (i + 1) && c.Status == CaseStatus.Closed);
+                lineData[i] = caseData.Count(c => c.Month == (i + 1));
+                barData[i] = caseData.Count(c => c.Month == (i + 1) && c.Status == CaseStatus.Closed);
             }
 
             // Guarantee some default values if database was just cleared, so chart is never empty
-            if (cases.Count == 0)
+            if (caseData.Count == 0)
             {
                 lineData = new double[] { 12, 19, 3, 5, 2, 3, 7, 10, 15, 8, 12, 5 };
                 barData = new double[] { 8, 11, 2, 4, 1, 2, 5, 8, 11, 5, 9, 3 };
@@ -158,10 +177,15 @@ namespace LawFlow.Services
 
         public async Task<VerdictDistribution> GetVerdictDistributionAsync()
         {
-            var guilty = await _context.Verdicts.CountAsync(v => v.Type == VerdictType.Guilty);
-            var acquitted = await _context.Verdicts.CountAsync(v => v.Type == VerdictType.Acquitted);
-            var dismissed = await _context.Verdicts.CountAsync(v => v.Type == VerdictType.Dismissed);
-            var appealed = await _context.Verdicts.CountAsync(v => v.Type == VerdictType.Appealed);
+            var typeCounts = await _context.Verdicts
+                .GroupBy(v => v.Type)
+                .Select(g => new { Type = g.Key, Count = g.Count() })
+                .ToDictionaryAsync(k => k.Type, v => v.Count);
+
+            var guilty = typeCounts.GetValueOrDefault(VerdictType.Guilty, 0);
+            var acquitted = typeCounts.GetValueOrDefault(VerdictType.Acquitted, 0);
+            var dismissed = typeCounts.GetValueOrDefault(VerdictType.Dismissed, 0);
+            var appealed = typeCounts.GetValueOrDefault(VerdictType.Appealed, 0);
 
             // Seed chart data if it's 0
             if (guilty == 0 && acquitted == 0 && dismissed == 0 && appealed == 0)

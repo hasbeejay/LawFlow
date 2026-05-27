@@ -9,6 +9,7 @@ namespace LawFlow.Data
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
         {
+            ChangeTracker.QueryTrackingBehavior = QueryTrackingBehavior.NoTracking;
         }
 
         public DbSet<Case> Cases { get; set; } = null!;
@@ -24,9 +25,9 @@ namespace LawFlow.Data
         {
             base.OnModelCreating(builder);
 
-            // Global filter to exclude soft‑deleted entities
-            builder.Entity<ApplicationUser>().HasQueryFilter(u => !u.IsDeleted);
-            builder.Entity<Case>().HasQueryFilter(c => !c.IsDeleted);
+            // Global filter to exclude soft‑deleted entities and restrict to Pakistani records
+            builder.Entity<ApplicationUser>().HasQueryFilter(u => !u.IsDeleted && u.Country == "Pakistan");
+            builder.Entity<Case>().HasQueryFilter(c => !c.IsDeleted && c.Country == "Pakistan");
             builder.Entity<Document>().HasQueryFilter(d => !d.IsDeleted);
             builder.Entity<Hearing>().HasQueryFilter(h => !h.IsDeleted);
             builder.Entity<PoliceReport>().HasQueryFilter(p => !p.IsDeleted);
@@ -35,7 +36,9 @@ namespace LawFlow.Data
             builder.Entity<ActivityLog>().HasQueryFilter(a => !a.IsDeleted);
             builder.Entity<Message>().HasQueryFilter(m => !m.IsDeleted);
 
-            // Existing relationship configurations (unchanged)
+            // Index on Country for fast filtering
+            builder.Entity<Case>().HasIndex(c => c.Country).HasDatabaseName("IX_Case_Country");
+            builder.Entity<ApplicationUser>().HasIndex(u => u.Country).HasDatabaseName("IX_User_Country");
             // Configure Case relationships with Restrict delete behavior to avoid SQL Server multiple cascade path cycles
             builder.Entity<Case>()
                 .HasOne(c => c.Client)

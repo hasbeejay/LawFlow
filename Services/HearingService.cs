@@ -109,5 +109,16 @@ namespace LawFlow.Services
             await _context.SaveChangesAsync();
             return true;
         }
+        // Paginated hearing fetching
+        public async Task<List<Hearing>> GetHearingsPagedAsync(int page, int pageSize)
+        {
+            return await _context.Hearings
+                .AsNoTracking()
+                .OrderBy(h => h.HearingDate)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+        }
     }
 }
+

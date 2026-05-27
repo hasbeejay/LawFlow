@@ -322,8 +322,7 @@ else
             // Recent cases — safe enum parse
             if (Enum.TryParse<UserRole>(_role, ignoreCase: true, out var parsedRole))
             {
-                var cases = await CaseService.GetCasesForUserAsync(_userId, parsedRole);
-                _recentCases = cases.Take(8).ToList();
+                _recentCases = await CaseService.GetRecentCasesForUserAsync(_userId, parsedRole, 8);
             }
         }
         catch (Exception ex)

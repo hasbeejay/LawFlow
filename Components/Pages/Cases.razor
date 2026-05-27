@@ -11,6 +11,9 @@
 @inject ISnackbar Snackbar
 @using System.Security.Claims
 @using Microsoft.AspNetCore.Components.Forms
+@using System.Collections.Generic
+@using System.Linq
+@using LawFlow.Models
 
 <PageTitle>Judicial Records - LawFlow</PageTitle>
 
@@ -266,89 +269,81 @@
     [SupplyParameterFromQuery(Name = "q")]
     public string? QuerySearch { get; set; }
 
+    private int _pageSize = 10;
+    private string _role = string.Empty;
+    private string _userId = string.Empty;
+    private string _searchQuery = string.Empty;
+    private CaseStatus? _selectedStatus;
     private bool _loading = true;
     private bool _showNewCaseForm = false;
     private bool _submitting = false;
-    private string _role = string.Empty;
-    private string _userId = string.Empty;
     private IBrowserFile? _selectedFirFile;
     private const long MaxUploadBytes = 25L * 1024L * 1024L;
-
-    // Filters
-    private string _searchQuery = string.Empty;
-    private CaseStatus? _selectedStatus;
-
-    private List<Case> _allCases = new();
-    private List<Case> _filteredCases = new();
-
     private NewCaseViewModel _newCaseModel = new();
 
+        private List<Case> _filteredCases = new();
+        private async Task LoadCases()
+        {
+            _filteredCases = await CaseService.GetCasesForUserAsync(_userId, Enum.Parse<UserRole>(_role));
+            await FilterCases();
+            StateHasChanged();
+        }
     protected override async Task OnInitializedAsync()
     {
         var authState = await AuthStateProvider.GetAuthenticationStateAsync();
         var user = authState.User;
-
         if (user.Identity?.IsAuthenticated ?? false)
         {
             _role = user.FindFirst(ClaimTypes.Role)?.Value ?? "Client";
             _userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "";
         }
-
-        // Role sub-routing correction
         var roleLower = _role.ToLowerInvariant();
         var route = Navigation.ToBaseRelativePath(Navigation.Uri).Trim('/').ToLowerInvariant();
-        var firstSegment = route.Split('/', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
         var knownRoles = new[] { "admin", "lawyer", "client", "judge", "police", "clerk" };
+        var firstSegment = route.Split('/', System.StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
         var hasRoleSegment = !string.IsNullOrEmpty(firstSegment) && knownRoles.Contains(firstSegment);
         var mismatch = hasRoleSegment && firstSegment != roleLower;
         var isGenericCasesRoute = route == "cases";
-
         if (mismatch || isGenericCasesRoute)
         {
             Navigation.NavigateTo($"/{roleLower}/cases");
             return;
         }
-
-        try
-        {
-            await LoadCases();
-        }
-        catch (Exception ex)
-        {
-            _loading = false;
-            Snackbar.Add($"Case records failed to load: {ex.Message}", Severity.Error);
-        }
-    }
-
-    private async Task LoadCases()
-    {
-        _loading = true;
-        _allCases = await CaseService.GetCasesForUserAsync(_userId, Enum.Parse<UserRole>(_role));
+        // Load initial case data
+        await LoadCases();
         if (!string.IsNullOrWhiteSpace(QuerySearch))
             _searchQuery = QuerySearch.Trim();
-        FilterCases();
         _loading = false;
     }
 
-    private void FilterCases()
+    private async Task<TableData<Case>> LoadPagedCasesAsync(TableState state)
     {
-        var query = _allCases.AsQueryable();
+        var page = state.Page + 1;
+        var pageSize = state.PageSize > 0 ? state.PageSize : _pageSize;
+        var items = await CaseService.GetCasesPagedForUserAsync(_userId, Enum.Parse<UserRole>(_role), page, pageSize);
+        return new TableData<Case>() { Items = items, TotalItems = items.Count };
+    }
 
+    private async Task FilterCases()
+    {
+        // Fetch all cases for the user
+        var allCases = await CaseService.GetCasesForUserAsync(_userId, Enum.Parse<UserRole>(_role));
+        // Apply search filter
+        if (!string.IsNullOrWhiteSpace(_searchQuery))
+        {
+            var lower = _searchQuery.Trim().ToLowerInvariant();
+            allCases = allCases.Where(c =>
+                (c.Title?.ToLowerInvariant().Contains(lower) ?? false) ||
+                (c.CaseNumber?.ToLowerInvariant().Contains(lower) ?? false) ||
+                (c.Description?.ToLowerInvariant().Contains(lower) ?? false)
+            ).ToList();
+        }
+        // Apply status filter
         if (_selectedStatus.HasValue)
         {
-            query = query.Where(c => c.Status == _selectedStatus.Value);
+            allCases = allCases.Where(c => c.Status == _selectedStatus.Value).ToList();
         }
-
-        if (!string.IsNullOrEmpty(_searchQuery))
-        {
-            var txt = _searchQuery.ToLower();
-            query = query.Where(c => c.CaseNumber.ToLower().Contains(txt) ||
-                                     c.Title.ToLower().Contains(txt) ||
-                                     c.Description.ToLower().Contains(txt) ||
-                                     (c.Client != null && c.Client.FullName.ToLower().Contains(txt)));
-        }
-
-        _filteredCases = query.ToList();
+        _filteredCases = allCases;
     }
 
     private void ToggleNewCaseForm()

@@ -26,12 +26,13 @@ namespace LawFlow.Services
                 .Include(c => c.Judge)
                 .Include(c => c.Police)
                 .Include(c => c.Clerk)
+                .AsNoTracking()
                 .OrderByDescending(c => c.CreatedAt)
                 .ToListAsync();
         }
 
-        // Get cases filtered by role
-        public async Task<List<Case>> GetCasesForUserAsync(string userId, UserRole role)
+        // Get cases for user with pagination
+        public async Task<List<Case>> GetCasesPagedForUserAsync(string userId, UserRole role, int page, int pageSize)
         {
             var query = _context.Cases
                 .Include(c => c.Client)
@@ -39,6 +40,7 @@ namespace LawFlow.Services
                 .Include(c => c.Judge)
                 .Include(c => c.Police)
                 .Include(c => c.Clerk)
+                .AsNoTracking()
                 .AsQueryable();
 
             switch (role)
@@ -47,7 +49,45 @@ namespace LawFlow.Services
                     query = query.Where(c => c.ClientId == userId);
                     break;
                 case UserRole.Lawyer:
-                    // Show cases assigned OR cases available for lawyers to accept (AvailableForLawyers status)
+                    query = query.Where(c => c.LawyerId == userId || (c.Status == CaseStatus.AvailableForLawyers && c.LawyerId == null));
+                    break;
+                case UserRole.Judge:
+                    query = query.Where(c => c.JudgeId == userId);
+                    break;
+                case UserRole.Police:
+                    query = query.Where(c => c.PoliceId == userId);
+                    break;
+                case UserRole.Clerk:
+                    query = query.Where(c => c.ClerkId == userId);
+                    break;
+                case UserRole.Admin:
+                    // Admin sees all
+                    break;
+            }
+
+            return await query.OrderByDescending(c => c.CreatedAt)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+        }
+        // Get all cases for a user without pagination
+        public async Task<List<Case>> GetCasesForUserAsync(string userId, UserRole role)
+        {
+            var query = _context.Cases
+                .Include(c => c.Client)
+                .Include(c => c.Lawyer)
+                .Include(c => c.Judge)
+                .Include(c => c.Police)
+                .Include(c => c.Clerk)
+                .AsNoTracking()
+                .AsQueryable();
+
+            switch (role)
+            {
+                case UserRole.Client:
+                    query = query.Where(c => c.ClientId == userId);
+                    break;
+                case UserRole.Lawyer:
                     query = query.Where(c => c.LawyerId == userId || (c.Status == CaseStatus.AvailableForLawyers && c.LawyerId == null));
                     break;
                 case UserRole.Judge:
@@ -66,6 +106,38 @@ namespace LawFlow.Services
 
             return await query.OrderByDescending(c => c.CreatedAt).ToListAsync();
         }
+        
+        // Get limited cases filtered by role for dashboards
+        public async Task<List<Case>> GetRecentCasesForUserAsync(string userId, UserRole role, int limit)
+        {
+            var query = _context.Cases
+                .Include(c => c.Client)
+                .AsNoTracking()
+                .AsQueryable();
+
+            switch (role)
+            {
+                case UserRole.Client:
+                    query = query.Where(c => c.ClientId == userId);
+                    break;
+                case UserRole.Lawyer:
+                    query = query.Where(c => c.LawyerId == userId || (c.Status == CaseStatus.AvailableForLawyers && c.LawyerId == null));
+                    break;
+                case UserRole.Judge:
+                    query = query.Where(c => c.JudgeId == userId);
+                    break;
+                case UserRole.Police:
+                    query = query.Where(c => c.PoliceId == userId);
+                    break;
+                case UserRole.Clerk:
+                    query = query.Where(c => c.ClerkId == userId);
+                    break;
+                case UserRole.Admin:
+                    break;
+            }
+
+            return await query.OrderByDescending(c => c.CreatedAt).Take(limit).ToListAsync();
+        }
 
         public async Task<Case?> GetCaseByIdAsync(int id)
         {
@@ -82,6 +154,8 @@ namespace LawFlow.Services
                     .ThenInclude(p => p.Officer)
                 .Include(c => c.Verdict)
                     .ThenInclude(v => v!.Judge)
+                .AsNoTracking()
+                .AsSplitQuery()
                 .FirstOrDefaultAsync(c => c.Id == id);
         }
 
@@ -92,6 +166,7 @@ namespace LawFlow.Services
                 .Include(c => c.Client)
                 .Include(c => c.Lawyer)
                 .Include(c => c.Judge)
+                .AsNoTracking()
                 .AsQueryable();
 
             if (status.HasValue)
@@ -413,7 +488,7 @@ namespace LawFlow.Services
 
             if (!clients.Any()) return; // Sanity check
 
-            var faker = new Bogus.Faker("en_US");
+            var faker = new Bogus.Faker("en_PK");
             var casesToInsert = new List<Case>();
             var docsToInsert = new List<Document>();
             var hearingsToInsert = new List<Hearing>();
@@ -422,11 +497,11 @@ namespace LawFlow.Services
 
             var caseStatuses = Enum.GetValues(typeof(CaseStatus)).Cast<CaseStatus>().ToList();
 
-            int caseCount = 2500; // Large scale over 5 years
+            int caseCount = 500; // 500 cases over 1 year
             
             for (int i = 1; i <= caseCount; i++)
             {
-                var createdAt = faker.Date.Past(5).ToUniversalTime();
+                var createdAt = faker.Date.Past(1).ToUniversalTime();
                 var client = faker.PickRandom(clients);
                 var status = faker.PickRandom(caseStatuses);
                 
