@@ -499,27 +499,40 @@ a[class*="btn"],
     transition: box-shadow 0.22s ease, filter 0.22s ease, border-color 0.22s ease, background-color 0.22s ease, color 0.22s ease !important;
 }
 
+/* ------------------------------------------------------------------ */
+/* Chart SVG hardening (prevents “no colors / cooked charts”)       */
+/* ------------------------------------------------------------------ */
+.lf-grid-line { stroke: rgb(var(--lf-hairline) / 0.7) !important; }
+.lf-stroke-track { stroke: rgb(var(--lf-hairline)) !important; }
+.lf-stroke-primary { stroke: rgb(var(--lf-primary)) !important; }
+.lf-stroke-info { stroke: rgb(var(--lf-info)) !important; }
+.lf-stroke-success { stroke: rgb(var(--lf-success)) !important; }
+.lf-stroke-warning { stroke: rgb(var(--lf-warning)) !important; }
+.lf-stroke-danger { stroke: rgb(var(--lf-danger)) !important; }
+.lf-area-primary { fill: rgb(var(--lf-primary) / 0.14) !important; }
+.lf-area-info { fill: rgb(var(--lf-info) / 0.12) !important; }
+
+
 button:hover:not(:disabled),
 .mud-button:hover:not(:disabled),
-.lf-nav:hover,
 a[class*="btn"]:hover,
 .lf-btn:hover,
 .lf-btn-ghost:hover,
 .mud-button-filled:hover {
     transform: none !important;
-    box-shadow: 0 0 0 1px rgba(91, 60, 222, 0.16), 0 0 18px rgba(91, 60, 222, 0.22) !important;
+    /* Use warm bronze glow from Styles/lf.css instead of legacy violet */
+    box-shadow: 0 0 0 1px rgb(var(--lf-primary) / 0.18), 0 0 18px rgb(var(--lf-primary) / 0.22) !important;
     filter: brightness(1.05);
     z-index: 10;
 }
 
 .mud-dark-mode button:hover:not(:disabled),
 .dark button:hover:not(:disabled),
-.mud-dark-mode .lf-nav:hover,
-.dark .lf-nav:hover,
 .mud-dark-mode .mud-button:hover:not(:disabled),
 .dark .mud-button:hover:not(:disabled) {
-    box-shadow: 0 0 0 1px rgba(124, 92, 250, 0.24), 0 0 22px rgba(124, 92, 250, 0.38) !important;
+    box-shadow: 0 0 0 1px rgb(var(--lf-primary) / 0.22), 0 0 22px rgb(var(--lf-primary) / 0.34) !important;
 }
+
 
 .lf-input-icon-btn:hover:not(:disabled) {
     box-shadow: 0 0 0 1px rgba(91, 60, 222, 0.14), 0 0 12px rgba(91, 60, 222, 0.22) !important;
