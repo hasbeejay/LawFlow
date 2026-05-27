@@ -1,0 +1,544 @@
+/* LawFlow UI System - 2026 Refresh */
+
+:root {
+    --lf-primary: #6f3f25;
+    --lf-primary-strong: #4a2a19;
+    --lf-secondary: #6f5a3a;
+    --lf-tertiary: #b8843e;
+    --lf-info: #52677a;
+    --lf-success: #557a46;
+    --lf-warning: #a0642a;
+    --lf-danger: #9e3f32;
+
+    --lf-bg: #f6f0e8;
+    --lf-bg-2: #eee3d5;
+    --lf-surface: #fff9f0;
+    --lf-surface-elevated: #fbf1e3;
+
+    --lf-text: #211a14;
+    --lf-text-soft: #514235;
+    --lf-text-muted: #6f5e4c;
+
+    --lf-border: rgba(93, 63, 39, 0.18);
+    --lf-border-strong: rgba(93, 63, 39, 0.34);
+
+    --lf-shadow-sm: 0 2px 8px rgba(67, 43, 25, 0.10);
+    --lf-shadow-md: 0 12px 30px rgba(67, 43, 25, 0.12);
+    --lf-shadow-lg: 0 18px 45px rgba(67, 43, 25, 0.18);
+
+    --lf-appbar-bg: rgba(255, 249, 240, 0.88);
+    --lf-drawer-bg: linear-gradient(180deg, #fff9f0 0%, #efe1cf 100%);
+    --lf-main-bg: radial-gradient(circle at 12% -15%, rgba(184, 132, 62, 0.18), transparent 42%), linear-gradient(180deg, #f6f0e8 0%, #eadac7 100%);
+}
+
+.mud-dark-mode,
+.dark {
+    --lf-primary: #c48654;
+    --lf-primary-strong: #f0c59a;
+    --lf-secondary: #a8916f;
+    --lf-tertiary: #d1a05a;
+    --lf-info: #849db0;
+    --lf-success: #8bab68;
+    --lf-warning: #d18946;
+    --lf-danger: #cc5c4c;
+
+    --lf-bg: #120d0a;
+    --lf-bg-2: #1a120e;
+    --lf-surface: #1c1511;
+    --lf-surface-elevated: #261c16;
+
+    --lf-text: #f1e3d0;
+    --lf-text-soft: #d7bea3;
+    --lf-text-muted: #b79f87;
+
+    --lf-border: rgba(196, 134, 84, 0.24);
+    --lf-border-strong: rgba(196, 134, 84, 0.44);
+
+    --lf-shadow-sm: 0 2px 10px rgba(0, 0, 0, 0.35);
+    --lf-shadow-md: 0 12px 30px rgba(0, 0, 0, 0.35);
+    --lf-shadow-lg: 0 20px 50px rgba(0, 0, 0, 0.45);
+
+    --lf-appbar-bg: rgba(28, 21, 17, 0.9);
+    --lf-drawer-bg: linear-gradient(180deg, #1c1511 0%, #120d0a 100%);
+    --lf-main-bg: radial-gradient(circle at 20% -20%, rgba(196, 134, 84, 0.16), transparent 45%), linear-gradient(180deg, #120d0a 0%, #1a120e 100%);
+}
+
+html,
+body {
+    margin: 0;
+    padding: 0;
+    min-height: 100%;
+}
+
+body {
+    font-family: "Plus Jakarta Sans", "Outfit", "Segoe UI", sans-serif !important;
+    background: var(--lf-main-bg) !important;
+    color: var(--lf-text) !important;
+    transition: background-color 180ms ease, color 180ms ease;
+}
+
+.text-muted {
+    color: var(--lf-text-muted) !important;
+    opacity: 1 !important;
+}
+
+/* Layout shell */
+.lf-app-layout {
+    background: transparent;
+}
+
+.lf-appbar {
+    border-bottom: 1px solid var(--lf-border) !important;
+    background: var(--lf-appbar-bg) !important;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+}
+
+.lf-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--lf-primary-strong);
+    font-weight: 800;
+    letter-spacing: -0.015em;
+}
+
+.lf-brand-wordmark {
+    display: inline-flex;
+    gap: 6px;
+    align-items: baseline;
+}
+
+.lf-brand-accent {
+    color: var(--lf-secondary);
+}
+
+.lf-toolbar-icon,
+.lf-toolbar-icon .mud-icon-root,
+.lf-toolbar-icon .mud-badge-root,
+.lf-topbar .mud-icon-button-root,
+.lf-topbar .mud-icon-root {
+    color: var(--lf-text-soft) !important;
+}
+
+.lf-toolbar-icon:hover,
+.lf-topbar .mud-icon-button-root:hover {
+    background: rgba(108, 145, 206, 0.12) !important;
+}
+
+.lf-user-chip {
+    border-radius: 999px !important;
+    font-weight: 700 !important;
+    padding-inline: 8px !important;
+}
+
+.lf-signout-btn {
+    border-radius: 999px !important;
+    text-transform: none !important;
+    font-weight: 700 !important;
+    min-width: 112px;
+}
+
+.lf-drawer {
+    background: var(--lf-drawer-bg) !important;
+    border-right: 1px solid var(--lf-border) !important;
+}
+
+.lf-drawer-profile {
+    border-bottom: 1px solid var(--lf-border);
+}
+
+.lf-main-content {
+    background: transparent;
+    min-height: calc(100vh - 64px);
+}
+
+/* Cards and sections */
+.lf-glass-panel {
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.78) 100%) !important;
+    border: 1px solid var(--lf-border) !important;
+    box-shadow: var(--lf-shadow-md) !important;
+    border-radius: 12px !important;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    transition: box-shadow 180ms ease, border-color 180ms ease, background-color 180ms ease;
+}
+
+.mud-dark-mode .lf-glass-panel,
+.dark .lf-glass-panel {
+    background: linear-gradient(180deg, rgba(25, 38, 57, 0.88) 0%, rgba(19, 31, 49, 0.82) 100%) !important;
+}
+
+.lf-glass-panel:hover {
+    box-shadow: 0 0 0 1px rgba(91, 60, 222, 0.12), var(--lf-shadow-md) !important;
+    border-color: var(--lf-border-strong) !important;
+}
+
+.lf-glow-card {
+    background: var(--lf-surface-elevated) !important;
+    border: 1px solid var(--lf-border) !important;
+    border-radius: 12px !important;
+    box-shadow: var(--lf-shadow-sm) !important;
+    transition: box-shadow 180ms ease, border-color 180ms ease, background-color 180ms ease;
+}
+
+.lf-glow-card:hover {
+    border-color: var(--lf-border-strong) !important;
+    box-shadow: 0 0 0 1px rgba(91, 60, 222, 0.12), var(--lf-shadow-md) !important;
+}
+
+.mud-paper {
+    background: rgb(var(--lf-surface)) !important;
+}
+
+/* Navigation */
+.mud-navmenu {
+    gap: 4px;
+}
+
+.mud-nav-link {
+    border-radius: 10px !important;
+    margin: 2px 8px !important;
+    min-height: 44px;
+    color: var(--lf-text-soft) !important;
+    transition: background-color 140ms ease, color 140ms ease, box-shadow 140ms ease;
+}
+
+.mud-nav-link:hover {
+    background: rgba(90, 126, 182, 0.14) !important;
+    color: var(--lf-primary-strong) !important;
+}
+
+.mud-nav-link.active {
+    color: var(--lf-primary-strong) !important;
+    background: linear-gradient(90deg, rgba(122, 157, 212, 0.2), rgba(122, 157, 212, 0.08)) !important;
+    border-left: 3px solid var(--lf-secondary);
+    font-weight: 700 !important;
+}
+
+.mud-dark-mode .mud-nav-link:hover,
+.dark .mud-nav-link:hover {
+    color: var(--lf-text) !important;
+}
+
+.mud-dark-mode .mud-nav-link.active,
+.dark .mud-nav-link.active {
+    color: var(--lf-text) !important;
+    background: linear-gradient(90deg, rgba(127, 171, 255, 0.24), rgba(127, 171, 255, 0.1)) !important;
+}
+
+/* Forms */
+.mud-input-control,
+.mud-select,
+.mud-input {
+    color: var(--lf-text) !important;
+}
+
+.mud-input-outlined .mud-input-outlined-border {
+    border-color: var(--lf-border) !important;
+}
+
+.mud-input-outlined:hover .mud-input-outlined-border,
+.mud-input.mud-input-outlined.mud-input-focused .mud-input-outlined-border {
+    border-color: rgb(var(--lf-primary)) !important;
+}
+
+/* Tables */
+.mud-table-root {
+    border-collapse: separate !important;
+    border-spacing: 0 8px !important;
+}
+
+.mud-table-row {
+    background: var(--lf-surface-elevated) !important;
+    box-shadow: var(--lf-shadow-sm) !important;
+}
+
+.mud-table-cell {
+    border-bottom: none !important;
+    color: var(--lf-text) !important;
+}
+
+/* Extra dark-mode hardening for Mud tables/filters */
+.dark .mud-table-root,
+.dark .mud-table-container {
+    background: transparent !important;
+}
+
+.dark .mud-table-head .mud-table-cell {
+    background: color-mix(in srgb, var(--lf-surface-elevated) 92%, transparent) !important;
+    color: var(--lf-text-soft) !important;
+    border-bottom: 1px solid var(--lf-border) !important;
+}
+
+.dark .mud-table-body .mud-table-row {
+    background: var(--lf-surface-elevated) !important;
+}
+
+.dark .mud-table-body .mud-table-cell {
+    color: var(--lf-text) !important;
+}
+
+.dark .mud-input > input,
+.dark .mud-select-input,
+.dark .mud-input-slot {
+    color: var(--lf-text) !important;
+}
+
+/* Buttons */
+.mud-button {
+    border-radius: 10px !important;
+    letter-spacing: 0 !important;
+}
+
+.mud-button-filled {
+    box-shadow: 0 6px 16px rgba(22, 46, 81, 0.2) !important;
+}
+
+.mud-dark-mode .mud-button-filled,
+.dark .mud-button-filled {
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35) !important;
+}
+
+/* Chips and badges */
+.mud-chip {
+    font-weight: 700;
+}
+
+/* Fixes for hardcoded inline whites and low-contrast blocks in existing pages */
+[style*="background: white"],
+[style*="background:white"] {
+    background: var(--lf-surface-elevated) !important;
+}
+
+.mud-dark-mode [style*="rgba(0,0,0,0.02)"],
+.mud-dark-mode [style*="rgba(0, 0, 0, 0.02)"],
+.mud-dark-mode [style*="rgba(0,0,0,0.05)"],
+.mud-dark-mode [style*="rgba(0, 0, 0, 0.05)"],
+.dark [style*="rgba(0,0,0,0.02)"],
+.dark [style*="rgba(0, 0, 0, 0.02)"],
+.dark [style*="rgba(0,0,0,0.05)"],
+.dark [style*="rgba(0, 0, 0, 0.05)"] {
+    background: rgba(158, 182, 220, 0.08) !important;
+    border-color: rgba(158, 182, 220, 0.2) !important;
+}
+
+.mud-dark-mode [style*="color:#1E3A8A"],
+.mud-dark-mode [style*="color: #1E3A8A"],
+.mud-dark-mode [style*="color:#3B82F6"],
+.mud-dark-mode [style*="color: #3B82F6"],
+.dark [style*="color:#1E3A8A"],
+.dark [style*="color: #1E3A8A"],
+.dark [style*="color:#3B82F6"],
+.dark [style*="color: #3B82F6"] {
+    color: rgb(var(--lf-primary)) !important;
+}
+
+/* Login redesign */
+.lf-auth-shell {
+    min-height: 100vh;
+    padding: 32px 16px;
+    background:
+        radial-gradient(1200px 600px at -10% -15%, rgba(79, 133, 212, 0.14), transparent 45%),
+        radial-gradient(800px 520px at 110% 110%, rgba(47, 143, 131, 0.13), transparent 40%),
+        var(--lf-main-bg);
+}
+
+.lf-auth-grid {
+    width: min(1120px, 100%);
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1.1fr 0.9fr;
+    gap: 24px;
+}
+
+.lf-auth-brand {
+    border-radius: 20px;
+    padding: 40px;
+}
+
+.lf-auth-kicker {
+    font-size: 13px;
+    color: var(--lf-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 700;
+}
+
+.lf-auth-title {
+    margin-top: 16px;
+    margin-bottom: 12px;
+    color: var(--lf-primary-strong);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+    font-size: clamp(1.7rem, 2.4vw, 2.5rem);
+}
+
+.lf-auth-subtitle {
+    color: var(--lf-text-soft);
+    max-width: 44ch;
+    line-height: 1.6;
+}
+
+.lf-auth-meta {
+    margin-top: 24px;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.lf-auth-meta-card {
+    border: 1px solid var(--lf-border);
+    border-radius: 12px;
+    background: color-mix(in srgb, var(--lf-surface-elevated) 88%, transparent);
+    padding: 12px;
+}
+
+.lf-auth-meta-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--lf-text-muted);
+}
+
+.lf-auth-meta-value {
+    margin-top: 6px;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--lf-text);
+}
+
+.lf-auth-card {
+    border-radius: 20px;
+    padding: 30px;
+}
+
+.lf-auth-actions {
+    margin-top: 18px;
+}
+
+.lf-auth-demo {
+    margin-top: 18px;
+    border-top: 1px solid var(--lf-border);
+    padding-top: 16px;
+}
+
+.lf-auth-demo .mud-button {
+    border-radius: 999px !important;
+}
+
+@media (max-width: 992px) {
+    .lf-auth-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .lf-auth-brand {
+        padding: 28px;
+    }
+
+    .lf-auth-card {
+        padding: 22px;
+    }
+
+    .lf-main-content {
+        padding: 16px !important;
+    }
+
+    .lf-signout-btn .mud-button-label {
+        display: none;
+    }
+
+    .lf-signout-btn {
+        min-width: 42px;
+        width: 42px;
+        height: 42px;
+        padding: 0 !important;
+    }
+}
+
+/* Motion */
+.lf-page-transition {
+    animation: lf-fade-slide 240ms ease-out;
+}
+
+@keyframes lf-fade-slide {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Scrollbars */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: color-mix(in srgb, var(--lf-text-muted) 45%, transparent);
+    border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: color-mix(in srgb, var(--lf-text-muted) 62%, transparent);
+}
+
+/* Custom Global Button & Nav Animations */
+button,
+.mud-button,
+.lf-nav,
+a[class*="btn"],
+.lf-btn,
+.lf-btn-ghost,
+.mud-button-filled {
+    transition: box-shadow 0.22s ease, filter 0.22s ease, border-color 0.22s ease, background-color 0.22s ease, color 0.22s ease !important;
+}
+
+/* ------------------------------------------------------------------ */
+/* Chart SVG hardening (prevents “no colors / cooked charts”)       */
+/* ------------------------------------------------------------------ */
+.lf-grid-line { stroke: rgb(var(--lf-hairline) / 0.7) !important; }
+.lf-stroke-track { stroke: rgb(var(--lf-hairline)) !important; }
+.lf-stroke-primary { stroke: rgb(var(--lf-primary)) !important; }
+.lf-stroke-info { stroke: rgb(var(--lf-info)) !important; }
+.lf-stroke-success { stroke: rgb(var(--lf-success)) !important; }
+.lf-stroke-warning { stroke: rgb(var(--lf-warning)) !important; }
+.lf-stroke-danger { stroke: rgb(var(--lf-danger)) !important; }
+.lf-area-primary { fill: rgb(var(--lf-primary) / 0.14) !important; }
+.lf-area-info { fill: rgb(var(--lf-info) / 0.12) !important; }
+
+
+button:hover:not(:disabled),
+.mud-button:hover:not(:disabled),
+a[class*="btn"]:hover,
+.lf-btn:hover,
+.lf-btn-ghost:hover,
+.mud-button-filled:hover {
+    transform: none !important;
+    /* Use warm bronze glow from Styles/lf.css instead of legacy violet */
+    box-shadow: 0 0 0 1px rgb(var(--lf-primary) / 0.18), 0 0 18px rgb(var(--lf-primary) / 0.22) !important;
+    filter: brightness(1.05);
+    z-index: 10;
+}
+
+.mud-dark-mode button:hover:not(:disabled),
+.dark button:hover:not(:disabled),
+.mud-dark-mode .mud-button:hover:not(:disabled),
+.dark .mud-button:hover:not(:disabled) {
+    box-shadow: 0 0 0 1px rgb(var(--lf-primary) / 0.22), 0 0 22px rgb(var(--lf-primary) / 0.34) !important;
+}
+
+
+.lf-input-icon-btn:hover:not(:disabled) {
+    box-shadow: 0 0 0 1px rgba(91, 60, 222, 0.14), 0 0 12px rgba(91, 60, 222, 0.22) !important;
+}
+
+.dark .lf-input-icon-btn:hover:not(:disabled),
+.mud-dark-mode .lf-input-icon-btn:hover:not(:disabled) {
+    box-shadow: 0 0 0 1px rgba(124, 92, 250, 0.22), 0 0 14px rgba(124, 92, 250, 0.34) !important;
+}
