@@ -106,7 +106,6 @@
 /Users/hasbeejay/Desktop/Github Repos/LawFlow/obj/Debug/net10.0/compressed/tzxjg6is5z-{0}-6x2ajsl5c8-6x2ajsl5c8.gz
 /Users/hasbeejay/Desktop/Github Repos/LawFlow/obj/Debug/net10.0/compressed/0wz98yz2xy-{0}-jolev99wdd-jolev99wdd.gz
 /Users/hasbeejay/Desktop/Github Repos/LawFlow/obj/Debug/net10.0/compressed/o7k4cxtn0u-{0}-h82a7aihv0-h82a7aihv0.gz
-/Users/hasbeejay/Desktop/Github Repos/LawFlow/obj/Debug/net10.0/compressed/se26rdiey6-{0}-th0ggwbxfj-th0ggwbxfj.gz
 /Users/hasbeejay/Desktop/Github Repos/LawFlow/obj/Debug/net10.0/compressed/0ihnqj2b8x-{0}-ej96puwv3k-ej96puwv3k.gz
 /Users/hasbeejay/Desktop/Github Repos/LawFlow/obj/Debug/net10.0/compressed/zxp4s0uvjp-{0}-cj5793hgrt-cj5793hgrt.gz
 /Users/hasbeejay/Desktop/Github Repos/LawFlow/obj/Debug/net10.0/compressed/3n0ncg9rax-{0}-ap51uywg3a-ap51uywg3a.gz
@@ -122,4 +121,5 @@
 /Users/hasbeejay/Desktop/Github Repos/LawFlow/obj/Debug/net10.0/LawFlow.pdb
 /Users/hasbeejay/Desktop/Github Repos/LawFlow/obj/Debug/net10.0/LawFlow.genruntimeconfig.cache
 /Users/hasbeejay/Desktop/Github Repos/LawFlow/obj/Debug/net10.0/ref/LawFlow.dll
-/Users/hasbeejay/Desktop/Github Repos/LawFlow/obj/Debug/net10.0/compressed/o4b58mm576-{0}-wch399pyib-wch399pyib.gz
+/Users/hasbeejay/Desktop/Github Repos/LawFlow/obj/Debug/net10.0/compressed/se26rdiey6-{0}-146ie9n1i1-146ie9n1i1.gz
+/Users/hasbeejay/Desktop/Github Repos/LawFlow/obj/Debug/net10.0/compressed/o4b58mm576-{0}-8z7y5mf7fj-8z7y5mf7fj.gz

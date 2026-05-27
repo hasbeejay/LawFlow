@@ -31,13 +31,13 @@
     align-items: center;
     justify-content: center;
     box-shadow: 0 10px 25px rgba(91, 60, 222, 0.4);
-    transition: all 0.3s ease;
+    transition: box-shadow 0.3s ease, filter 0.3s ease, border-color 0.3s ease, background-color 0.3s ease;
     border: none;
     text-decoration: none;
   }
   .primary-glow-btn:hover {
-    transform: scale(1.05);
     box-shadow: 0 15px 35px rgba(91, 60, 222, 0.6);
+    filter: brightness(1.05);
   }
   .github-btn {
     padding: 1.25rem 2.5rem;
@@ -48,7 +48,7 @@
     align-items: center;
     justify-content: center;
     border: 1px solid rgb(var(--lf-hairline));
-    transition: all 0.3s ease;
+    transition: box-shadow 0.3s ease, border-color 0.3s ease, background-color 0.3s ease, color 0.3s ease;
     background: rgb(var(--lf-surface) / 0.5);
     backdrop-filter: blur(10px);
     text-decoration: none;
@@ -115,7 +115,7 @@
                 <div class="flex flex-col sm:flex-row items-center w-full sm:w-auto" style="gap: 1.25rem;">
                     <a href="/login" class="primary-glow-btn w-full sm:w-auto group">
                         Access Dashboard
-                        <LfIcon Name="arrow-right" Size="18" Class="ml-2 transition-transform group-hover:translate-x-1" />
+                        <LfIcon Name="arrow-right" Size="18" Class="ml-2" />
                     </a>
                     
                     <a href="https://github.com/hasbeejay/LawFlow" target="_blank" rel="noopener noreferrer" class="github-btn w-full sm:w-auto">
@@ -127,7 +127,7 @@
 
             <!-- Right Illustration -->
             <div class="relative flex justify-center lg:justify-end animate-fade-in-up" style="animation-delay: 200ms;">
-                <img src="/images/law_illustration_transparent.png" alt="Law and Justice" class="relative z-10 w-full max-w-md lg:max-w-lg object-contain drop-shadow-2xl hover:-translate-y-1 transition-transform duration-200 ease-out" />
+                <img src="/images/law_illustration_transparent.png" alt="Law and Justice" class="relative z-10 w-full max-w-md lg:max-w-lg object-contain drop-shadow-2xl" />
             </div>
         </div>
 

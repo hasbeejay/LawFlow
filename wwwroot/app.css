@@ -1,66 +1,66 @@
 /* LawFlow UI System - 2026 Refresh */
 
 :root {
-    --lf-primary: #1f3f65;
-    --lf-primary-strong: #153250;
-    --lf-secondary: #2f8f83;
-    --lf-tertiary: #bf8b30;
-    --lf-info: #3b67d6;
-    --lf-success: #1f9d67;
-    --lf-warning: #cb8b2a;
-    --lf-danger: #c84f4f;
+    --lf-primary: #6f3f25;
+    --lf-primary-strong: #4a2a19;
+    --lf-secondary: #6f5a3a;
+    --lf-tertiary: #b8843e;
+    --lf-info: #52677a;
+    --lf-success: #557a46;
+    --lf-warning: #a0642a;
+    --lf-danger: #9e3f32;
 
-    --lf-bg: #f3f6fb;
-    --lf-bg-2: #eef3f9;
-    --lf-surface: #ffffff;
-    --lf-surface-elevated: #ffffff;
+    --lf-bg: #f6f0e8;
+    --lf-bg-2: #eee3d5;
+    --lf-surface: #fff9f0;
+    --lf-surface-elevated: #fbf1e3;
 
-    --lf-text: #1a2738;
-    --lf-text-soft: #4e6178;
-    --lf-text-muted: #6d7f95;
+    --lf-text: #211a14;
+    --lf-text-soft: #514235;
+    --lf-text-muted: #6f5e4c;
 
-    --lf-border: rgba(25, 45, 72, 0.14);
-    --lf-border-strong: rgba(25, 45, 72, 0.26);
+    --lf-border: rgba(93, 63, 39, 0.18);
+    --lf-border-strong: rgba(93, 63, 39, 0.34);
 
-    --lf-shadow-sm: 0 2px 8px rgba(16, 31, 53, 0.08);
-    --lf-shadow-md: 0 12px 30px rgba(16, 31, 53, 0.08);
-    --lf-shadow-lg: 0 18px 45px rgba(16, 31, 53, 0.14);
+    --lf-shadow-sm: 0 2px 8px rgba(67, 43, 25, 0.10);
+    --lf-shadow-md: 0 12px 30px rgba(67, 43, 25, 0.12);
+    --lf-shadow-lg: 0 18px 45px rgba(67, 43, 25, 0.18);
 
-    --lf-appbar-bg: rgba(255, 255, 255, 0.86);
-    --lf-drawer-bg: linear-gradient(180deg, #fbfdff 0%, #f2f6fc 100%);
-    --lf-main-bg: linear-gradient(180deg, #f3f6fb 0%, #edf2f9 100%);
+    --lf-appbar-bg: rgba(255, 249, 240, 0.88);
+    --lf-drawer-bg: linear-gradient(180deg, #fff9f0 0%, #efe1cf 100%);
+    --lf-main-bg: radial-gradient(circle at 12% -15%, rgba(184, 132, 62, 0.18), transparent 42%), linear-gradient(180deg, #f6f0e8 0%, #eadac7 100%);
 }
 
 .mud-dark-mode,
 .dark {
-    --lf-primary: #8fb7ff;
-    --lf-primary-strong: #c7dcff;
-    --lf-secondary: #59c1b2;
-    --lf-tertiary: #e0b66d;
-    --lf-info: #83a9ff;
-    --lf-success: #54c783;
-    --lf-warning: #d6a34a;
-    --lf-danger: #f38b8b;
+    --lf-primary: #c48654;
+    --lf-primary-strong: #f0c59a;
+    --lf-secondary: #a8916f;
+    --lf-tertiary: #d1a05a;
+    --lf-info: #849db0;
+    --lf-success: #8bab68;
+    --lf-warning: #d18946;
+    --lf-danger: #cc5c4c;
 
-    --lf-bg: #0a121d;
-    --lf-bg-2: #0f1826;
-    --lf-surface: #131f31;
-    --lf-surface-elevated: #18253a;
+    --lf-bg: #120d0a;
+    --lf-bg-2: #1a120e;
+    --lf-surface: #1c1511;
+    --lf-surface-elevated: #261c16;
 
-    --lf-text: #e5ecf7;
-    --lf-text-soft: #c2d2e8;
-    --lf-text-muted: #9cb0cc;
+    --lf-text: #f1e3d0;
+    --lf-text-soft: #d7bea3;
+    --lf-text-muted: #b79f87;
 
-    --lf-border: rgba(145, 173, 215, 0.2);
-    --lf-border-strong: rgba(145, 173, 215, 0.4);
+    --lf-border: rgba(196, 134, 84, 0.24);
+    --lf-border-strong: rgba(196, 134, 84, 0.44);
 
     --lf-shadow-sm: 0 2px 10px rgba(0, 0, 0, 0.35);
     --lf-shadow-md: 0 12px 30px rgba(0, 0, 0, 0.35);
     --lf-shadow-lg: 0 20px 50px rgba(0, 0, 0, 0.45);
 
-    --lf-appbar-bg: rgba(13, 24, 40, 0.9);
-    --lf-drawer-bg: linear-gradient(180deg, #0f1b2d 0%, #0b1626 100%);
-    --lf-main-bg: radial-gradient(circle at 20% -20%, rgba(108, 157, 255, 0.12), transparent 45%), linear-gradient(180deg, #0a121d 0%, #0f1826 100%);
+    --lf-appbar-bg: rgba(28, 21, 17, 0.9);
+    --lf-drawer-bg: linear-gradient(180deg, #1c1511 0%, #120d0a 100%);
+    --lf-main-bg: radial-gradient(circle at 20% -20%, rgba(196, 134, 84, 0.16), transparent 45%), linear-gradient(180deg, #120d0a 0%, #1a120e 100%);
 }
 
 html,
@@ -158,10 +158,10 @@ body {
     background: linear-gradient(180deg, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.78) 100%) !important;
     border: 1px solid var(--lf-border) !important;
     box-shadow: var(--lf-shadow-md) !important;
-    border-radius: 16px !important;
+    border-radius: 12px !important;
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
-    transition: transform 160ms ease, box-shadow 180ms ease, border-color 180ms ease;
+    transition: box-shadow 180ms ease, border-color 180ms ease, background-color 180ms ease;
 }
 
 .mud-dark-mode .lf-glass-panel,
@@ -170,26 +170,25 @@ body {
 }
 
 .lf-glass-panel:hover {
-    transform: translateY(-1px);
-    box-shadow: var(--lf-shadow-lg) !important;
+    box-shadow: 0 0 0 1px rgba(91, 60, 222, 0.12), var(--lf-shadow-md) !important;
     border-color: var(--lf-border-strong) !important;
 }
 
 .lf-glow-card {
     background: var(--lf-surface-elevated) !important;
     border: 1px solid var(--lf-border) !important;
-    border-radius: 14px !important;
+    border-radius: 12px !important;
     box-shadow: var(--lf-shadow-sm) !important;
-    transition: transform 140ms ease, box-shadow 180ms ease;
+    transition: box-shadow 180ms ease, border-color 180ms ease, background-color 180ms ease;
 }
 
 .lf-glow-card:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--lf-shadow-md) !important;
+    border-color: var(--lf-border-strong) !important;
+    box-shadow: 0 0 0 1px rgba(91, 60, 222, 0.12), var(--lf-shadow-md) !important;
 }
 
 .mud-paper {
-    background: var(--lf-surface) !important;
+    background: rgb(var(--lf-surface)) !important;
 }
 
 /* Navigation */
@@ -202,7 +201,7 @@ body {
     margin: 2px 8px !important;
     min-height: 44px;
     color: var(--lf-text-soft) !important;
-    transition: background-color 140ms ease, color 140ms ease, transform 140ms ease;
+    transition: background-color 140ms ease, color 140ms ease, box-shadow 140ms ease;
 }
 
 .mud-nav-link:hover {
@@ -241,7 +240,7 @@ body {
 
 .mud-input-outlined:hover .mud-input-outlined-border,
 .mud-input.mud-input-outlined.mud-input-focused .mud-input-outlined-border {
-    border-color: var(--lf-primary) !important;
+    border-color: rgb(var(--lf-primary)) !important;
 }
 
 /* Tables */
@@ -332,7 +331,7 @@ body {
 .dark [style*="color: #1E3A8A"],
 .dark [style*="color:#3B82F6"],
 .dark [style*="color: #3B82F6"] {
-    color: var(--lf-primary) !important;
+    color: rgb(var(--lf-primary)) !important;
 }
 
 /* Login redesign */
@@ -497,7 +496,7 @@ a[class*="btn"],
 .lf-btn,
 .lf-btn-ghost,
 .mud-button-filled {
-    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease, filter 0.3s ease !important;
+    transition: box-shadow 0.22s ease, filter 0.22s ease, border-color 0.22s ease, background-color 0.22s ease, color 0.22s ease !important;
 }
 
 button:hover:not(:disabled),
@@ -507,8 +506,8 @@ a[class*="btn"]:hover,
 .lf-btn:hover,
 .lf-btn-ghost:hover,
 .mud-button-filled:hover {
-    transform: scale(1.02) translateY(-1px) !important;
-    box-shadow: 0 8px 20px rgba(91, 60, 222, 0.3) !important;
+    transform: none !important;
+    box-shadow: 0 0 0 1px rgba(91, 60, 222, 0.16), 0 0 18px rgba(91, 60, 222, 0.22) !important;
     filter: brightness(1.05);
     z-index: 10;
 }
@@ -519,5 +518,14 @@ a[class*="btn"]:hover,
 .dark .lf-nav:hover,
 .mud-dark-mode .mud-button:hover:not(:disabled),
 .dark .mud-button:hover:not(:disabled) {
-    box-shadow: 0 10px 30px rgba(124, 92, 250, 0.5) !important;
+    box-shadow: 0 0 0 1px rgba(124, 92, 250, 0.24), 0 0 22px rgba(124, 92, 250, 0.38) !important;
+}
+
+.lf-input-icon-btn:hover:not(:disabled) {
+    box-shadow: 0 0 0 1px rgba(91, 60, 222, 0.14), 0 0 12px rgba(91, 60, 222, 0.22) !important;
+}
+
+.dark .lf-input-icon-btn:hover:not(:disabled),
+.mud-dark-mode .lf-input-icon-btn:hover:not(:disabled) {
+    box-shadow: 0 0 0 1px rgba(124, 92, 250, 0.22), 0 0 14px rgba(124, 92, 250, 0.34) !important;
 }

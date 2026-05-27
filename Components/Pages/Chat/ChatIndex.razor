@@ -57,7 +57,7 @@ else
         @foreach (var c in _cases)
         {
             <button type="button" @onclick="@(() => Open(c.Id))"
-                    class="lf-card p-5 text-left flex flex-col h-full w-full justify-between gap-4 transition transform hover:-translate-y-1 hover:shadow-sm dark:hover:shadow-sm hover:border-primary/40 z-10 relative">
+                    class="lf-card p-5 text-left flex flex-col h-full w-full justify-between gap-4 transition-colors hover:shadow-sm dark:hover:shadow-sm hover:border-primary/40 z-10 relative group">
                 <div class="flex flex-col gap-3 w-full">
                     <div class="flex items-center justify-between w-full">
                         <span class="lf-tag-num border-transparent bg-canvas/50">@c.CaseNumber</span>
@@ -70,7 +70,7 @@ else
                 </div>
                 <div class="mt-2 pt-3 border-t border-hairline/50 flex items-center justify-between font-mono text-2xs text-muted w-full">
                     <span class="px-2 py-1 rounded-sm bg-canvas/60">@(_role) ↔ @_otherRole</span>
-                    <span class="text-primary font-medium opacity-0 -translate-x-2 group-hover:translate-x-0 group-hover:opacity-100 transition-all duration-200">Open chat &rarr;</span>
+                    <span class="text-primary font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-200">Open chat &rarr;</span>
                 </div>
             </button>
         }

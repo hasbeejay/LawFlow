@@ -21,7 +21,7 @@
     <!-- Breadcrumbs / Header -->
     <div class="d-flex flex-column flex-sm-row justify-space-between align-start align-sm-center mb-6">
         <div>
-            <MudText Typo="Typo.h4" Class="font-weight-bold" Style="color: var(--lf-primary); font-weight: 700;">
+            <MudText Typo="Typo.h4" Class="font-weight-bold" Style="color: rgb(var(--lf-primary)); font-weight: 700;">
                 Judicial Case Files
             </MudText>
             <MudText Typo="Typo.body2" Class="text-muted mt-1">Review, search, and manage judicial records.</MudText>
@@ -158,7 +158,7 @@
                           Immediate="true"
                           OnKeyUp="FilterCases"
                           Margin="Margin.Dense"
-                          Style="border-radius: 8px; background: white;" />
+                          Style="border-radius: 8px; background: var(--lf-surface-elevated);" />
 
             <MudSelect T="CaseStatus?" 
                        Label="Status Filter" 
@@ -166,7 +166,7 @@
                        @bind-Value="_selectedStatus" 
                        SelectedValuesChanged="FilterCases"
                        Margin="Margin.Dense"
-                       Style="border-radius: 8px; background: white; max-width: 250px;">
+                       Style="border-radius: 8px; background: var(--lf-surface-elevated); max-width: 250px;">
                 <MudSelectItem T="CaseStatus?" Value="@((CaseStatus?)null)">All Case Statuses</MudSelectItem>
                 <MudSelectItem T="CaseStatus?" Value="@(CaseStatus.Created)">Complaint Lodged</MudSelectItem>
                 <MudSelectItem T="CaseStatus?" Value="@(CaseStatus.ReviewedByAdmin)">Reviewed By Admin</MudSelectItem>

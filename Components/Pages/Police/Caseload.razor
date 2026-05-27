@@ -11,7 +11,7 @@
 <div class="lf-page-transition">
     <div class="d-flex flex-column flex-sm-row justify-space-between align-start align-sm-center mb-6">
         <div>
-            <MudText Typo="Typo.h4" Class="font-weight-bold" Style="color: var(--lf-primary); font-weight: 700;">
+            <MudText Typo="Typo.h4" Class="font-weight-bold" Style="color: rgb(var(--lf-primary)); font-weight: 700;">
                 Investigation Docket Queue
             </MudText>
             <MudText Typo="Typo.body2" Class="text-muted mt-1">Manage active criminal case reports, submit investigation summaries, and register evidence packages.</MudText>
@@ -35,13 +35,13 @@
                 </MudPaper>
             </MudItem>
             <MudItem xs="12" sm="4">
-                <MudPaper Class="pa-4 lf-glow-card" Style="background: white; border-left: 5px solid #F59E0B;">
+                <MudPaper Class="pa-4 lf-glow-card" Style="background: var(--lf-surface-elevated); border-left: 5px solid #F59E0B;">
                     <MudText Typo="Typo.subtitle2" Class="text-muted font-weight-bold">Active Investigation</MudText>
                     <MudText Typo="Typo.h3" Class="font-weight-bold mt-1 text-warning">@_cases.Count(c => c.Status == CaseStatus.Investigation)</MudText>
                 </MudPaper>
             </MudItem>
             <MudItem xs="12" sm="4">
-                <MudPaper Class="pa-4 lf-glow-card" Style="background: white; border-left: 5px solid #10B981;">
+                <MudPaper Class="pa-4 lf-glow-card" Style="background: var(--lf-surface-elevated); border-left: 5px solid #10B981;">
                     <MudText Typo="Typo.subtitle2" Class="text-muted font-weight-bold">Concluded Inquiries</MudText>
                     <MudText Typo="Typo.h3" Class="font-weight-bold mt-1 text-success">@_cases.Count(c => c.Status == CaseStatus.Closed || c.Status == CaseStatus.Hearing)</MudText>
                 </MudPaper>
@@ -60,7 +60,7 @@
                                       Immediate="true"
                                       OnKeyUp="FilterCases"
                                       Margin="Margin.Dense"
-                                      Style="max-width: 300px; background: white;" />
+                                      Style="max-width: 300px; background: var(--lf-surface-elevated);" />
                     </div>
 
                     <MudTable Items="@_filteredCases" Hover="true" Breakpoint="Breakpoint.Sm" Elevation="0" Style="background:transparent;">

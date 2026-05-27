@@ -263,9 +263,12 @@
             background: linear-gradient(135deg, rgba(91,60,222,.08), rgba(181,134,42,.06));
             border: 1px solid var(--lf-border, rgba(0,0,0,.08));
             color: inherit;
-            transition: transform .15s ease, border-color .15s ease;
+            transition: box-shadow .15s ease, border-color .15s ease, background .15s ease;
         }
-        .lf-welcome-author:hover { transform: translateY(-1px); border-color: rgba(91,60,222,.45); }
+        .lf-welcome-author:hover {
+            border-color: rgba(91,60,222,.45);
+            box-shadow: 0 0 0 1px rgba(91,60,222,.10), 0 0 16px rgba(91,60,222,.16);
+        }
         .lf-welcome-author-avatar {
             width: 44px; height: 44px;
             display: inline-flex; align-items: center; justify-content: center;
@@ -297,7 +300,7 @@
             font: inherit; cursor: pointer;
             padding: 10px 16px; border-radius: 10px;
             font-weight: 600; font-size: 13.5px;
-            transition: transform .12s ease, background .15s ease, border-color .15s ease;
+            transition: box-shadow .12s ease, background .15s ease, border-color .15s ease, filter .15s ease;
         }
         .lf-welcome-btn-ghost {
             background: transparent;
@@ -311,7 +314,10 @@
             color: #fff;
             box-shadow: 0 12px 28px -16px rgba(91,60,222,.85);
         }
-        .lf-welcome-btn-primary:hover { transform: translateY(-1px); }
+        .lf-welcome-btn-primary:hover {
+            filter: brightness(1.05);
+            box-shadow: 0 0 0 1px rgba(91,60,222,.12), 0 0 18px rgba(91,60,222,.22);
+        }
     </style>
 }
 

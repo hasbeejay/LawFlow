@@ -11,7 +11,7 @@
     {
         <div class="fixed inset-0 z-[70] w-full h-full bg-transparent"
              @onclick="Close"></div>
-        <div class="absolute @alignCls mt-2 min-w-[220px] z-[80] bg-white dark:bg-[#15151E] border border-hairline shadow-2xl rounded-xl text-ink p-1 animate-fade-in-up"
+        <div class="absolute @alignCls mt-2 min-w-[220px] max-w-[calc(100vw-1rem)] z-[80] bg-surface border border-hairline shadow-2xl rounded-card text-ink p-1 animate-fade-in-up"
              @onclick:stopPropagation="true">
             @ChildContent
         </div>

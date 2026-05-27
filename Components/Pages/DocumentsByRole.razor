@@ -42,7 +42,7 @@ else
                     {
                         var active = c.Id == _selectedCaseId;
                         <button type="button" @onclick="@(() => Select(c.Id))"
-                                class="w-full text-left p-4 rounded-xl border transition-colors flex flex-col gap-2.5 group @(active ? "border-primary/50 bg-primary/5 shadow-sm" : "border-hairline/50 bg-surface/50 hover:border-primary/30 hover:bg-surface hover:shadow-sm hover:-translate-y-[1px]")">
+                                class="w-full text-left p-4 rounded-card border transition-colors flex flex-col gap-2.5 group @(active ? "border-primary/50 bg-primary/5 shadow-sm" : "border-hairline/50 bg-surface/50 hover:border-primary/30 hover:bg-surface hover:shadow-sm")">
                             <div class="flex items-start justify-between w-full gap-2">
                                 <span class="lf-tag-num border-transparent bg-canvas/60 group-hover:text-ink transition-colors">@c.CaseNumber</span>
                                 <LfStatusChip Status="@c.Status" />

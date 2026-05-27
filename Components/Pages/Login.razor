@@ -128,6 +128,7 @@
                                      Type="@(_showPassword ? "text" : "password")"
                                      StartIcon="shield"
                                      EndIcon="@(_showPassword ? "eye-off" : "eye")"
+                                     EndIconLabel="@(_showPassword ? "Hide password" : "Show password")"
                                      OnEndIconClick="TogglePasswordVisibility"
                                      Placeholder="••••••••••"
                                      AutoComplete="current-password"

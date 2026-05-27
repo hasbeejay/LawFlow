@@ -49,7 +49,7 @@ else
                         @GetStatusLabel(_case.Status)
                     </MudChip>
                 </div>
-                <MudText Typo="Typo.h4" Class="font-weight-bold mt-2" Style="color: var(--lf-primary); font-weight:700;">
+                <MudText Typo="Typo.h4" Class="font-weight-bold mt-2" Style="color: rgb(var(--lf-primary)); font-weight:700;">
                     @_case.Title
                 </MudText>
                 <MudText Typo="Typo.caption" Class="text-muted">Filing Date: @_case.CreatedAt.ToLocalTime().ToString("f")</MudText>
@@ -234,7 +234,7 @@ else
                 <!-- JUDGE ANNOUNCEMENT DRAFT PANEL -->
                 @if (_role == "Judge" && _case.JudgeId == _userId && _case.Status != CaseStatus.Closed)
                 {
-                    <MudPaper Class="pa-6 lf-glass-panel mb-6" Style="border: 1.5px dashed var(--lf-accent); border-radius: 16px;">
+                    <MudPaper Class="pa-6 lf-glass-panel mb-6" Style="border: 1.5px dashed rgb(var(--lf-info)); border-radius: 16px;">
                         <MudText Typo="Typo.h6" Class="font-weight-bold mb-2">Presiding Judge: Draft Court Announcement</MudText>
                         <MudText Typo="Typo.body2" Class="text-muted mb-4">Draft an order or notice to be routed to Court Clerk for broadcast coordination.</MudText>
                         <MudTextField @bind-Value="_judgeAnnouncementText" Label="Announcement Content" Variant="Variant.Outlined" Lines="3" Class="mb-4" Placeholder="e.g. Ordered, that all parties submit final brief files before next scheduled hearing." />
@@ -249,11 +249,11 @@ else
                 {
                     @foreach (var draft in _pendingDraftAnnouncements)
                     {
-                        <MudPaper Class="pa-6 lf-glow-card mb-6" Outlined="true" Style="border: 2px solid var(--lf-accent); border-radius: 16px; background: rgba(14,165,233,0.03);">
+                        <MudPaper Class="pa-6 lf-glow-card mb-6" Outlined="true" Style="border: 2px solid rgb(var(--lf-info)); border-radius: 16px; background: rgba(14,165,233,0.03);">
                             <MudText Typo="Typo.h6" Class="font-weight-bold text-info mb-2">Clerk Action: Pending Judicial Announcement</MudText>
                             <MudText Typo="Typo.body2" Class="mb-3">The Presiding Judge has drafted a court notice for this proceeding. Coordinate and broadcast it to all parties.</MudText>
                             
-                            <div class="pa-4 my-3" style="background:var(--lf-surface); border-radius:8px; border:1px solid var(--lf-border);">
+                            <div class="pa-4 my-3" style="background:rgb(var(--lf-surface)); border-radius:8px; border:1px solid var(--lf-border);">
                                 <MudText Typo="Typo.body2" Style="font-style:italic;">"@draft.Message"</MudText>
                             </div>
 
@@ -293,7 +293,7 @@ else
                         <MudText Typo="Typo.h5" Class="font-weight-bold mt-2" Style="color: #10B981;">OFFICIAL COURT VERDICT</MudText>
                         <MudText Typo="Typo.caption" Class="text-muted d-block mb-4">IN THE HIGH COURT OF LAWFLOW — CIVIL & CRIMINAL JURISDICTION</MudText>
                         
-                        <div class="pa-4 my-4" style="background:white; border-radius:10px; border:1px solid rgba(16,185,129,0.2);">
+                            <div class="pa-4 my-4" style="background:var(--lf-surface-elevated); border-radius:10px; border:1px solid rgba(16,185,129,0.2);">
                             <MudText Typo="Typo.subtitle1" Class="font-weight-bold">Verdict Type: <span class="text-danger">@_case.Verdict.Type.ToString().ToUpper()</span></MudText>
                             <MudText Typo="Typo.body2" Class="mt-2" Style="white-space: pre-wrap; font-style: italic; line-height: 1.6;">
                                 "@_case.Verdict.Details"
@@ -430,7 +430,7 @@ else
                     {
                         @foreach (var h in _case.Hearings.OrderByDescending(h => h.HearingDate))
                         {
-                            <div class="pa-3 mb-3" style="border: 1px solid rgba(0,0,0,0.06); border-radius: 8px; background: white;">
+                            <div class="pa-3 mb-3" style="border: 1px solid var(--lf-border); border-radius: 8px; background: var(--lf-surface-elevated);">
                                 <div class="d-flex justify-space-between align-center mb-2">
                                     <MudChip T="string" Size="Size.Small" Color="Color.Primary" Style="border-radius:4px;">@h.Status</MudChip>
                                     <MudText Typo="Typo.caption" Class="text-muted">@h.HearingDate.ToLocalTime().ToString("g")</MudText>
@@ -456,7 +456,7 @@ else
                     {
                         @foreach (var r in _case.PoliceReports)
                         {
-                            <div class="pa-3 mb-3" style="border-left: 4px solid #F59E0B; border-radius: 0 8px 8px 0; background: white; box-shadow: 0 2px 8px rgba(0,0,0,0.02);">
+                            <div class="pa-3 mb-3" style="border-left: 4px solid #F59E0B; border-radius: 0 8px 8px 0; background: var(--lf-surface-elevated); box-shadow: 0 2px 8px rgba(0,0,0,0.02);">
                                 <MudText Typo="Typo.caption" Class="text-muted d-block">Filed by @r.Officer?.FullName</MudText>
                                 <MudText Typo="Typo.body2" Class="mt-1" Style="line-height:1.4;">@r.Summary</MudText>
                                 @if (r.CriminalRecordUpdated)

@@ -35,7 +35,8 @@
         @if (OnEndIconClick.HasDelegate && !string.IsNullOrEmpty(EndIcon))
         {
             <button type="button" tabindex="-1" @onclick="OnEndIconClick"
-                    class="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted hover:text-ink p-1 rounded-xs">
+                    class="lf-input-icon-btn absolute right-2.5 top-1/2 -translate-y-1/2 text-muted hover:text-ink p-1 rounded-xs"
+                    aria-label="@EndIconLabel">
                 <LfIcon Name="@EndIcon" Size="16" />
             </button>
         }
@@ -69,6 +70,7 @@
     [Parameter] public string? Placeholder { get; set; }
     [Parameter] public string? StartIcon { get; set; }
     [Parameter] public string? EndIcon { get; set; }
+    [Parameter] public string EndIconLabel { get; set; } = "Toggle input option";
     [Parameter] public string? Value { get; set; }
     [Parameter] public bool Required { get; set; }
     [Parameter] public bool Disabled { get; set; }

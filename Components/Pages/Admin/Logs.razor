@@ -8,7 +8,7 @@
     <!-- Top Header -->
     <div class="d-flex flex-column flex-sm-row justify-space-between align-start align-sm-center mb-6">
         <div>
-            <MudText Typo="Typo.h4" Class="font-weight-bold" Style="color: var(--lf-primary); font-weight: 700;">
+            <MudText Typo="Typo.h4" Class="font-weight-bold" Style="color: rgb(var(--lf-primary)); font-weight: 700;">
                 Enterprise Security Audit logs
             </MudText>
             <MudText Typo="Typo.body2" Class="text-muted mt-1">Audit judicial logs, workflow transactions, and permission states in real-time.</MudText>
@@ -27,7 +27,7 @@
                           Immediate="true"
                           OnKeyUp="FilterLogs"
                           Margin="Margin.Dense"
-                          Style="border-radius:8px; background:white; max-width: 400px;" />
+                          Style="border-radius:8px; background:var(--lf-surface-elevated); max-width: 400px;" />
         </div>
 
         @if (_loading)
@@ -55,7 +55,7 @@
                         </MudChip>
                     </MudTd>
                     <MudTd DataLabel="Action">
-                        <span style="font-weight:700; color:var(--lf-primary);">@context.Action</span>
+                        <span style="font-weight:700; color:rgb(var(--lf-primary));">@context.Action</span>
                     </MudTd>
                     <MudTd DataLabel="Details" Style="font-size:13px; line-height:1.4;">@context.Details</MudTd>
                 </RowTemplate>

@@ -57,7 +57,7 @@ else
                 {
                     var mine = m.SenderId == _userId;
                     <div style="align-self: @(mine ? "flex-end" : "flex-start"); max-width: 78%;">
-                        <div style="border-radius: 12px; padding: 10px 12px; background: @(mine ? "var(--lf-primary)" : "var(--lf-surface)"); color: @(mine ? "#fff" : "var(--lf-text)"); border: 1px solid var(--lf-border);">
+                        <div style="border-radius: 12px; padding: 10px 12px; background: @(mine ? "rgb(var(--lf-primary))" : "rgb(var(--lf-surface))"); color: @(mine ? "#fff" : "var(--lf-text)"); border: 1px solid var(--lf-border);">
                             <div class="flex items-center gap-2" style="font-size: 11px; font-weight: 600; opacity: 0.85;">
                                 <span>@m.SenderName</span>
                                 <span style="opacity: 0.6;">· @m.SenderRole</span>

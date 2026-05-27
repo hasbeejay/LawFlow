@@ -3,50 +3,50 @@
 @tailwind utilities;
 
 /* ------------------------------------------------------------------ */
-/* Midnight Gavel — design tokens                                      */
+/* Dusky Court — design tokens                                         */
 /* Light is default. Dark activates via `.dark` class on <html>.       */
 /* ------------------------------------------------------------------ */
 @layer base {
   :root {
     /* surfaces */
-    --lf-canvas:    250 250 251;   /* #FAFAFB */
-    --lf-surface:   255 255 255;   /* #FFFFFF */
-    --lf-elevated:  255 255 255;   /* same as surface in light */
-    --lf-hairline:  225 225 232;   /* #E1E1E8 — slightly darker for visible card edges */
+    --lf-canvas:    247 239 231;   /* #F7EFE7 */
+    --lf-surface:   255 247 243;   /* #FFF7F3 */
+    --lf-elevated:  242 233 227;   /* #F2E9E3 */
+    --lf-hairline:  217 199 191;   /* #D9C7BF */
 
     /* text */
-    --lf-ink:        10 10 15;      /* #0A0A0F */
-    --lf-muted:      88 88 100;     /* #585864 — bumped for better contrast on white */
+    --lf-ink:        43 31 26;      /* #2B1F1A */
+    --lf-muted:      138 111 99;     /* #8A6F63 */
 
     /* brand */
-    --lf-primary:    91 60 222;     /* #5B3CDE — deeper, more saturated violet on light */
+    --lf-primary:    166 90 59;     /* #A65A3B — poppy-bronze */
     --lf-primary-fg: 255 255 255;
-    --lf-amber:      181 134 42;    /* #B5862A — brand-mark only */
+    --lf-amber:      196 138 70;    /* #C48A46 — brass/amber */
 
     /* status */
-    --lf-success: 22 163 74;    /* #16A34A */
-    --lf-warning: 234 88 12;    /* #EA580C */
-    --lf-danger:  220 38 38;    /* #DC2626 */
-    --lf-info:    2 132 199;    /* #0284C7 */
+    --lf-success: 90 122 85;    /* #5A7A55 */
+    --lf-warning: 179 107 47;   /* #B36B2F */
+    --lf-danger:  139 46 46;    /* #8B2E2E */
+    --lf-info:    107 122 135;   /* #6B7A87 */
   }
 
   .dark {
-    --lf-canvas:    10 10 15;       /* #0A0A0F */
-    --lf-surface:   21 21 30;       /* #15151E */
-    --lf-elevated:  28 28 39;       /* slight lift over surface */
-    --lf-hairline:  37 37 47;       /* #25252F */
+    --lf-canvas:    15 10 8;       /* #0F0A08 */
+    --lf-surface:   28 20 17;      /* #1C1411 */
+    --lf-elevated:  38 26 21;      /* #261A15 */
+    --lf-hairline:  57 44 35;      /* #392C23 */
 
-    --lf-ink:        236 236 241;   /* #ECECF1 */
-    --lf-muted:      139 139 150;   /* #8B8B96 */
+    --lf-ink:        245 236 230;   /* #F5ECE6 */
+    --lf-muted:      199 179 168;   /* #C7B3A8 */
 
-    --lf-primary:    124 92 250;    /* #7C5CFA */
+    --lf-primary:    217 142 112;   /* #D98E70 — warm poppy-bronze */
     --lf-primary-fg: 255 255 255;
-    --lf-amber:      212 162 76;    /* #D4A24C */
+    --lf-amber:      214 166 104;   /* #D6A668 */
 
-    --lf-success: 74 222 128;
-    --lf-warning: 251 146 60;
-    --lf-danger:  239 68 68;
-    --lf-info:    56 189 248;
+    --lf-success: 139 171 104;
+    --lf-warning: 209 137 70;
+    --lf-danger:  204 92 76;
+    --lf-info:    132 157 176;
   }
 
   html, body {
@@ -93,11 +93,18 @@
       radial-gradient(500px 400px at 50% 110%, rgb(var(--lf-amber) / 0.05), transparent 60%);
   }
 
-  /* focus ring — violet halo, the recurring signature */
-  *:focus-visible {
+  /* focus ring — violet halo for actual interactive controls */
+  :is(a, button, input, select, textarea, summary, [role="button"], [tabindex]:not([tabindex="-1"])):focus-visible {
     outline: none;
     box-shadow: 0 0 0 2px rgb(var(--lf-canvas)), 0 0 0 4px rgb(var(--lf-primary) / 0.55);
     border-radius: 6px;
+  }
+  h1:focus,
+  h2:focus,
+  h3:focus,
+  [tabindex="-1"]:focus {
+    outline: none;
+    box-shadow: none;
   }
 
   /* numeric / id treatment */
@@ -393,7 +400,7 @@
     font-weight: 500;
     white-space: nowrap;
     user-select: none;
-    transition: background-color 150ms ease-out, color 150ms ease-out, border-color 150ms ease-out, filter 150ms ease-out, transform 150ms ease-out;
+    transition: background-color 150ms ease-out, color 150ms ease-out, border-color 150ms ease-out, filter 150ms ease-out, box-shadow 150ms ease-out;
     cursor: pointer;
   }
   .lf-btn:disabled,
@@ -408,15 +415,19 @@
     border: 1px solid rgb(var(--lf-primary));
     box-shadow: 0 1px 0 0 rgb(255 255 255 / 0.10) inset, 0 1px 2px 0 rgb(var(--lf-primary) / 0.4);
   }
-  .lf-btn-primary:hover  { filter: brightness(1.07); }
-  .lf-btn-primary:active { filter: brightness(0.95); transform: translateY(0.5px); }
+  .lf-btn-primary:hover  { filter: brightness(1.07); box-shadow: 0 0 0 1px rgb(var(--lf-primary) / 0.22), 0 0 20px rgb(var(--lf-primary) / 0.26); }
+  .lf-btn-primary:active { filter: brightness(0.95); }
 
   .lf-btn-ghost {
     background-color: transparent;
     color: rgb(var(--lf-ink));
     border: 1px solid transparent;
   }
-  .lf-btn-ghost:hover { background-color: rgb(var(--lf-ink) / 0.05); }
+  .lf-btn-ghost:hover {
+    background-color: rgb(var(--lf-ink) / 0.05);
+    border-color: rgb(var(--lf-primary) / 0.18);
+    box-shadow: 0 0 0 2px rgb(var(--lf-primary) / 0.18), 0 0 28px rgb(var(--lf-primary) / 0.28);
+  }
 
   .lf-btn-outline {
     background-color: rgb(var(--lf-surface));
@@ -425,7 +436,8 @@
   }
   .lf-btn-outline:hover {
     background-color: rgb(var(--lf-ink) / 0.025);
-    border-color: rgb(var(--lf-muted) / 0.5);
+    border-color: rgb(var(--lf-primary) / 0.28);
+    box-shadow: 0 0 0 2px rgb(var(--lf-primary) / 0.12), 0 0 20px rgb(var(--lf-primary) / 0.22);
   }
 
   .lf-btn-danger {
@@ -442,6 +454,18 @@
   }
   .lf-input:hover { border-color: rgb(var(--lf-muted) / 0.55); }
   .lf-input:focus { outline: none; border-color: rgb(var(--lf-primary) / 0.7); }
+
+  .lf-input-icon-btn {
+    transition: color 150ms ease-out, background-color 150ms ease-out, box-shadow 150ms ease-out;
+  }
+  .lf-input-icon-btn:hover {
+    background-color: rgb(var(--lf-primary) / 0.08);
+    box-shadow: 0 0 0 2px rgb(var(--lf-primary) / 0.12), 0 0 18px rgb(var(--lf-primary) / 0.22);
+  }
+  .lf-input-icon-btn:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgb(var(--lf-primary) / 0.16);
+  }
 
   /* reduce over-eager "transition-all" animation to safe visual changes only */
   .transition-all {
@@ -465,9 +489,14 @@
   /* nav link */
   .lf-nav {
     @apply flex items-center gap-2.5 px-3 py-2 rounded-card text-sm;
-    @apply text-muted transition-colors;
+    transition: background-color 150ms ease-out, color 150ms ease-out, border-color 150ms ease-out, box-shadow 150ms ease-out;
+    @apply text-muted;
   }
-  .lf-nav:hover { color: rgb(var(--lf-ink)); background: rgb(var(--lf-ink) / 0.04); }
+  .lf-nav:hover {
+    color: rgb(var(--lf-ink));
+    background: rgb(var(--lf-primary) / 0.07);
+    box-shadow: 0 0 0 2px rgb(var(--lf-primary) / 0.14), 0 0 28px rgb(var(--lf-primary) / 0.22);
+  }
   .lf-nav-active {
     color: rgb(var(--lf-ink));
     background: rgb(var(--lf-primary) / 0.10);
@@ -488,15 +517,15 @@
     animation: fade-in-up 180ms ease-out both;
   }
 
-  /* KPI tile — inherits lf-card (liquid glass) plus padding + subtle hover lift.
+  /* KPI tile — inherits lf-card (liquid glass) plus padding + subtle hover glow.
      Don't override ::after here — lf-card's distortion rim handles the bottom edge. */
   .lf-kpi {
     @apply lf-card p-5;
-    transition: transform 220ms cubic-bezier(0.16, 1, 0.3, 1), border-color 220ms;
+    transition: border-color 220ms, box-shadow 220ms;
   }
   .lf-kpi:hover {
-    transform: translateY(-1px);
     border-color: rgb(255 255 255 / 0.7);
+    box-shadow: 0 0 0 2px rgb(var(--lf-primary) / 0.14), 0 0 30px rgb(var(--lf-primary) / 0.26);
   }
   .dark .lf-kpi:hover {
     border-color: rgb(255 255 255 / 0.2);
@@ -660,7 +689,25 @@
   border-color: rgb(var(--lf-hairline)) !important;
 }
 
-/* Override the old lf-glass-panel from app.css that the un-migrated pages still use */
+/* Override the old lf-glass-panel/glow-card from app.css that the un-migrated pages still use */
+.lf-glass-panel {
+  border-radius: 12px !important;
+  transition: border-color 180ms ease, box-shadow 180ms ease, background-color 180ms ease !important;
+}
+.lf-glass-panel:hover {
+  transform: none !important;
+  border-color: rgb(var(--lf-primary) / 0.22) !important;
+  box-shadow: 0 0 0 2px rgb(var(--lf-primary) / 0.16), 0 0 32px rgb(var(--lf-primary) / 0.28) !important;
+}
+.lf-glow-card {
+  border-radius: 12px !important;
+  transition: border-color 180ms ease, box-shadow 180ms ease, background-color 180ms ease !important;
+}
+.lf-glow-card:hover {
+  transform: none !important;
+  border-color: rgb(var(--lf-primary) / 0.22) !important;
+  box-shadow: 0 0 0 2px rgb(var(--lf-primary) / 0.16), 0 0 32px rgb(var(--lf-primary) / 0.28) !important;
+}
 .dark .lf-glass-panel {
   background-color: rgb(var(--lf-surface) / 0.6) !important;
   border: 1px solid rgb(var(--lf-hairline)) !important;
