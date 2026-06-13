@@ -31,9 +31,37 @@ namespace LawFlow.Services
                 .ToListAsync();
         }
 
-        // Get cases for user with pagination
-        public async Task<List<Case>> GetCasesPagedForUserAsync(string userId, UserRole role, int page, int pageSize)
+        private IQueryable<Case> GetRoleScopedCases(IQueryable<Case> query, string userId, UserRole role)
         {
+            return role switch
+            {
+                UserRole.Client => query.Where(c => c.ClientId == userId),
+                UserRole.Lawyer => query.Where(c => c.LawyerId == userId || (c.Status == CaseStatus.AvailableForLawyers && c.LawyerId == null)),
+                UserRole.Judge => query.Where(c => c.JudgeId == userId),
+                UserRole.Police => query.Where(c => c.PoliceId == userId),
+                UserRole.Clerk => query.Where(c => c.ClerkId == userId),
+                UserRole.Admin => query,
+                _ => query.Where(c => false)
+            };
+        }
+
+        private static string? NormalizeSearch(string? queryText)
+        {
+            if (string.IsNullOrWhiteSpace(queryText)) return null;
+            return queryText.Trim();
+        }
+
+        // Get cases for user with pagination + optional search + status filter (server-side)
+        public async Task<List<Case>> GetCasesPagedForUserAsync(
+            string userId,
+            UserRole role,
+            int page,
+            int pageSize,
+            string? searchQuery,
+            CaseStatus? status)
+        {
+            searchQuery = NormalizeSearch(searchQuery);
+
             var query = _context.Cases
                 .Include(c => c.Client)
                 .Include(c => c.Lawyer)
@@ -43,26 +71,18 @@ namespace LawFlow.Services
                 .AsNoTracking()
                 .AsQueryable();
 
-            switch (role)
+            query = GetRoleScopedCases(query, userId, role);
+
+            if (status.HasValue)
+                query = query.Where(c => c.Status == status.Value);
+
+            if (!string.IsNullOrEmpty(searchQuery))
             {
-                case UserRole.Client:
-                    query = query.Where(c => c.ClientId == userId);
-                    break;
-                case UserRole.Lawyer:
-                    query = query.Where(c => c.LawyerId == userId || (c.Status == CaseStatus.AvailableForLawyers && c.LawyerId == null));
-                    break;
-                case UserRole.Judge:
-                    query = query.Where(c => c.JudgeId == userId);
-                    break;
-                case UserRole.Police:
-                    query = query.Where(c => c.PoliceId == userId);
-                    break;
-                case UserRole.Clerk:
-                    query = query.Where(c => c.ClerkId == userId);
-                    break;
-                case UserRole.Admin:
-                    // Admin sees all
-                    break;
+                var pattern = $"%{searchQuery}%";
+                query = query.Where(c =>
+                    EF.Functions.ILike(c.CaseNumber, pattern) ||
+                    EF.Functions.ILike(c.Title, pattern) ||
+                    EF.Functions.ILike(c.Description, pattern));
             }
 
             return await query.OrderByDescending(c => c.CreatedAt)
@@ -70,6 +90,11 @@ namespace LawFlow.Services
                 .Take(pageSize)
                 .ToListAsync();
         }
+
+        // Backwards-compatible overload used elsewhere (no search/status)
+        public Task<List<Case>> GetCasesPagedForUserAsync(string userId, UserRole role, int page, int pageSize)
+            => GetCasesPagedForUserAsync(userId, role, page, pageSize, searchQuery: null, status: null);
+
         // Get all cases for a user without pagination
         public async Task<List<Case>> GetCasesForUserAsync(string userId, UserRole role)
         {

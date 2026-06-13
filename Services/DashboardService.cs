@@ -146,26 +146,31 @@ namespace LawFlow.Services
             var lineData = new double[12];
             var barData = new double[12];
 
-            // Select only the needed columns instead of the entire Case entity
+            // Aggregate in SQL (avoid loading all cases for the year)
             var year = DateTime.UtcNow.Year;
-            var caseData = await _context.Cases
+
+            var monthCounts = await _context.Cases
                 .Where(c => c.CreatedAt.Year == year)
-                .Select(c => new { c.CreatedAt.Month, c.Status })
+                .GroupBy(c => new { c.CreatedAt.Month, c.Status })
+                .Select(g => new { g.Key.Month, g.Key.Status, Count = g.Count() })
                 .AsNoTracking()
                 .ToListAsync();
-            
+
             for (int i = 0; i < 12; i++)
             {
-                lineData[i] = caseData.Count(c => c.Month == (i + 1));
-                barData[i] = caseData.Count(c => c.Month == (i + 1) && c.Status == CaseStatus.Closed);
+                var month = i + 1;
+                lineData[i] = monthCounts.Where(x => x.Month == month).Sum(x => x.Count);
+                barData[i] = monthCounts.Where(x => x.Month == month && x.Status == CaseStatus.Closed).Sum(x => x.Count);
             }
 
+
             // Guarantee some default values if database was just cleared, so chart is never empty
-            if (caseData.Count == 0)
+            if (monthCounts.Count == 0)
             {
                 lineData = new double[] { 12, 19, 3, 5, 2, 3, 7, 10, 15, 8, 12, 5 };
                 barData = new double[] { 8, 11, 2, 4, 1, 2, 5, 8, 11, 5, 9, 3 };
             }
+
 
             return new CaseCompletionTrends
             {

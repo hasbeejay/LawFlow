@@ -1615,11 +1615,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "/Users/hasbeejay/Desktop/Github Repos/LawFlow/LawFlow.csproj",
+      "projectUniqueName": "/Users/hasbeejay/Desktop/Semester Projects/LawFlow/LawFlow.csproj",
       "projectName": "LawFlow",
-      "projectPath": "/Users/hasbeejay/Desktop/Github Repos/LawFlow/LawFlow.csproj",
+      "projectPath": "/Users/hasbeejay/Desktop/Semester Projects/LawFlow/LawFlow.csproj",
       "packagesPath": "/Users/hasbeejay/.nuget/packages/",
-      "outputPath": "/Users/hasbeejay/Desktop/Github Repos/LawFlow/obj/",
+      "outputPath": "/Users/hasbeejay/Desktop/Semester Projects/LawFlow/obj/",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "/Users/hasbeejay/.nuget/NuGet/NuGet.Config"

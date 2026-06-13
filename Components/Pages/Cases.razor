@@ -190,7 +190,9 @@
         }
         else
         {
-            <MudTable Items="@_filteredCases" Hover="true" Breakpoint="Breakpoint.Sm" Elevation="0" Style="background: transparent;">
+                <MudTable Items="@_filteredCases" Hover="true" Breakpoint="Breakpoint.Sm" Elevation="0" Style="background: transparent;">
+
+
                 <HeaderContent>
                     <MudTh><MudTableSortLabel SortBy="new Func<Case, object>(x=>x.CaseNumber)">Case ID</MudTableSortLabel></MudTh>
                     <MudTh><MudTableSortLabel SortBy="new Func<Case, object>(x=>x.Title)">Title</MudTableSortLabel></MudTh>
@@ -282,12 +284,18 @@
     private NewCaseViewModel _newCaseModel = new();
 
         private List<Case> _filteredCases = new();
+        private UserRole _parsedRole;
+
+        private int _totalItems = 0;
+
         private async Task LoadCases()
         {
-            _filteredCases = await CaseService.GetCasesForUserAsync(_userId, Enum.Parse<UserRole>(_role));
+            _parsedRole = Enum.Parse<UserRole>(_role);
+            _filteredCases.Clear();
             await FilterCases();
             StateHasChanged();
         }
+
     protected override async Task OnInitializedAsync()
     {
         var authState = await AuthStateProvider.GetAuthenticationStateAsync();
@@ -316,13 +324,24 @@
         _loading = false;
     }
 
-    private async Task<TableData<Case>> LoadPagedCasesAsync(TableState state)
-    {
-        var page = state.Page + 1;
-        var pageSize = state.PageSize > 0 ? state.PageSize : _pageSize;
-        var items = await CaseService.GetCasesPagedForUserAsync(_userId, Enum.Parse<UserRole>(_role), page, pageSize);
-        return new TableData<Case>() { Items = items, TotalItems = items.Count };
-    }
+        // TODO: MudTable server paging wiring will be added after aligning with the exact MudBlazor Table signature in this project.
+        // For now, keep the page-loading fast path out of this component.
+        private async Task<TableData<Case>> LoadPagedCasesAsync(TableState state)
+        {
+            var page = state.Page + 1;
+            var pageSize = state.PageSize > 0 ? state.PageSize : _pageSize;
+            var items = await CaseService.GetCasesPagedForUserAsync(
+                _userId,
+                _parsedRole,
+                page,
+                pageSize,
+                searchQuery: _searchQuery,
+                status: _selectedStatus);
+
+            return new TableData<Case>() { Items = items, TotalItems = items.Count };
+        }
+
+
 
     private async Task FilterCases()
     {
